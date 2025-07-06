@@ -10,7 +10,6 @@ import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 
-@Slf4j
 @Component
 @RequiredArgsConstructor
 public class RedisService {
@@ -19,7 +18,6 @@ public class RedisService {
 
     public void setValue(String key, String value, Long timeout) {
         ValueOperations<String, String> values = redisTemplate.opsForValue();
-        log.info("Saving setValue: {}", key);
         values.set(key, value, Duration.ofMillis(timeout));
     }
 

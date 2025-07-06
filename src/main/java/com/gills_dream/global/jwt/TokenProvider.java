@@ -1,7 +1,7 @@
 package com.gills_dream.global.jwt;
 
 import com.gills_dream.domain.member.entity.Member;
-import com.gills_dream.global.common.TokenPair;
+import com.gills_dream.global.common.record.TokenPair;
 import com.gills_dream.domain.member.repository.MemberRepository;
 import com.gills_dream.global.apiPayload.code.status.ErrorStatus;
 import com.gills_dream.global.apiPayload.exception.GeneralException;
@@ -23,7 +23,6 @@ import java.security.Key;
 import java.time.Duration;
 import java.util.Date;
 
-@Slf4j
 @Component
 @RequiredArgsConstructor
 public class TokenProvider implements InitializingBean {
@@ -89,7 +88,6 @@ public class TokenProvider implements InitializingBean {
 
     public Authentication getAuthentication(String token) {
         String email = getUsernameFromToken(token);
-        log.info("Getting authentication for token user: {}", email);
         UserDetails userDetails = customUserDetailsService.loadUserByUsername(email);
 
         return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
@@ -121,7 +119,6 @@ public class TokenProvider implements InitializingBean {
 
         if (getExpirationTime(refreshToken) <= getExpirationTime(accessToken)) {
             refreshToken = createRefreshToken(member.getEmail());
-            log.info("reissue refresh token: {}", member.getEmail());
             redisService.setValue(member.getEmail(), refreshToken, Duration.ofDays(28).toMillis());
         }
 

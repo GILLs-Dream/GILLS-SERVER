@@ -3,7 +3,7 @@ package com.gills_dream.domain.member.controller;
 import com.gills_dream.domain.member.converter.MemberConverter;
 import com.gills_dream.domain.member.dto.MemberResponseDto;
 import com.gills_dream.global.apiPayload.code.status.SuccessStatus;
-import com.gills_dream.global.common.TokenPair;
+import com.gills_dream.global.common.record.TokenPair;
 import com.gills_dream.domain.member.service.MemberService;
 import com.gills_dream.global.apiPayload.ApiResponse;
 import com.gills_dream.global.jwt.CustomUserDetails;

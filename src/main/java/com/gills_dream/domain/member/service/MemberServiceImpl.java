@@ -8,12 +8,11 @@ import com.gills_dream.domain.member.entity.RoleType;
 import com.gills_dream.global.apiPayload.code.status.ErrorStatus;
 import com.gills_dream.global.apiPayload.exception.GeneralException;
 import com.gills_dream.global.common.properties.AdminProperties;
-import com.gills_dream.global.common.TokenPair;
+import com.gills_dream.global.common.record.TokenPair;
 import com.gills_dream.domain.member.repository.MemberRepository;
 import com.gills_dream.global.jwt.TokenProvider;
 import com.gills_dream.global.redis.RedisService;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,7 +22,6 @@ import java.time.Duration;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class MemberServiceImpl implements MemberService {
     private final MemberRepository memberRepository;
     private final KakaoService kakaoService;
@@ -50,7 +48,6 @@ public class MemberServiceImpl implements MemberService {
         String refreshToken = tokenProvider.createRefreshToken(member.getEmail());
 
         // Redis에 refresh token 저장
-        log.info("Saving refresh token for email: {}", member.getEmail());
         redisService.setValue(member.getEmail(), refreshToken, Duration.ofDays(28).toMillis());
 
         return new TokenPair(member, accessToken, refreshToken);
