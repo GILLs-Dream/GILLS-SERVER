@@ -39,7 +39,6 @@ out/
 ### yml ###
 application.yml
 docker.yml
-application-private.yml
 
 ### DS_Store ##
 .DS_Store

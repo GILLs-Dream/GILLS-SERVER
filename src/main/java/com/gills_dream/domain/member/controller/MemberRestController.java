@@ -25,7 +25,7 @@ import java.time.Duration;
 public class MemberRestController {
     private final MemberService memberService;
 
-    @GetMapping("/oauth/kakao/login")
+    @PostMapping("/oauth/kakao/login")
     @Operation(summary = "카카오 로그인, 회원가입", description = "프론트가 로그인 api를 호출하면서 백엔드에게 인가 코드를 넘겨줍니다")
     public ResponseEntity<ApiResponse<MemberResponseDto.LoginResultDto>> kakaoLogin(@RequestParam("code") String code) throws IOException {
         TokenPair tokenPair= memberService.kakaoLogin(code);
@@ -49,5 +49,6 @@ public class MemberRestController {
 
         return ResponseEntity.ok().headers(headers).body(body);
     }
+
 }
 
