@@ -20,14 +20,13 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Key;
+import java.time.Duration;
 import java.util.Date;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class TokenProvider implements InitializingBean {
-    private static final long ACCESS_TOKEN_VALIDITY_SECONDS = 24 * 60 * 60; // access token: 24시간
-    private static final long REFRESH_TOKEN_VALIDITY_SECONDS = 24 * 60 * 60 * 7; // refresh token: 1주일
 
     private Key key;
     private final CustomUserDetailsServiceImpl customUserDetailsService;
@@ -57,8 +56,7 @@ public class TokenProvider implements InitializingBean {
     }
 
     public String createAccessToken(String email) {
-        long now = (new Date()).getTime();
-        Date validity = new Date(now + ACCESS_TOKEN_VALIDITY_SECONDS * 1000);
+        Date validity = new Date(System.currentTimeMillis() + Duration.ofDays(1).toMillis());
         String role = getUserRoleByUsername(email);
 
         return Jwts.builder()
@@ -70,8 +68,7 @@ public class TokenProvider implements InitializingBean {
     }
 
     public String createRefreshToken(String email) {
-        long now = (new Date()).getTime();
-        Date validity = new Date(now + REFRESH_TOKEN_VALIDITY_SECONDS * 1000);
+        Date validity = new Date(System.currentTimeMillis() + Duration.ofDays(28).toMillis());
 
         return Jwts.builder()
                 .setSubject(email)
@@ -82,7 +79,7 @@ public class TokenProvider implements InitializingBean {
 
     public String getUserRoleByUsername(String email) {
         Member member = memberRepository.findByEmail(email)
-                .orElseThrow(() -> new GeneralException(ErrorStatus.USER_NOT_FOUND));
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
         return member.getRoleType().name();
     }
 
@@ -108,16 +105,12 @@ public class TokenProvider implements InitializingBean {
 
             return true;
         } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
-            log.info("잘못된 JWT 서명입니다.");
             throw new GeneralException(ErrorStatus.INVALID_SIGNATURE);
         } catch (ExpiredJwtException e) {
-            log.info("만료된 JWT 토큰입니다.");
             throw new GeneralException(ErrorStatus.EXPIRED_TOKEN);
         } catch (UnsupportedJwtException e) {
-            log.info("지원되지 않는 JWT 토큰입니다.");
             throw new GeneralException(ErrorStatus.UNSUPPORTED_TOKEN);
         } catch (IllegalArgumentException e) {
-            log.info("JWT 토큰이 잘못되었습니다.");
             throw new GeneralException(ErrorStatus.INVALID_TOKEN);
         }
     }
@@ -128,6 +121,8 @@ public class TokenProvider implements InitializingBean {
 
         if (getExpirationTime(refreshToken) <= getExpirationTime(accessToken)) {
             refreshToken = createRefreshToken(member.getEmail());
+            log.info("reissue refresh token: {}", member.getEmail());
+            redisService.setValue(member.getEmail(), refreshToken, Duration.ofDays(28).toMillis());
         }
 
         return new TokenPair(member, accessToken, refreshToken);
