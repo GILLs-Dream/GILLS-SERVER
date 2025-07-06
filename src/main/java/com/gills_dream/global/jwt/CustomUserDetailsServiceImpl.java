@@ -17,13 +17,10 @@ public class CustomUserDetailsServiceImpl implements UserDetailsService {
     private final MemberRepository memberRepository;
 
     @Override
-    public UserDetails loadUserByUsername(String name) throws UsernameNotFoundException {
-        Member member = memberRepository.findByName(name).orElseThrow(()->new GeneralException(ErrorStatus.USER_NOT_FOUND));
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        // Username이 email이라고 가정
+        Member member = memberRepository.findByEmail(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
         return new CustomUserDetails(member);
-    }
-
-    public Member findUserByUserDetails(UserDetails userDetails) {
-        return memberRepository.findByName(userDetails.getUsername())
-                .orElseThrow(()->new GeneralException(ErrorStatus.USER_NOT_FOUND));
     }
 }

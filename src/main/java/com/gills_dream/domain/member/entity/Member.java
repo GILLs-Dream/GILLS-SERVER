@@ -14,7 +14,7 @@ import org.hibernate.annotations.DynamicUpdate;
 @AllArgsConstructor
 public class Member {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long memberId;
 
     @Column(nullable = false)
@@ -22,12 +22,12 @@ public class Member {
     private LoginType loginType;
 
     @Column(length = 10, nullable = false)
-    private String name;
+    private String nickName;
 
     private String profileImg;
 
-    @Builder.Default
-    private Boolean marketingAgreement = false;
+    @Column(nullable = false)
+    private String email;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)

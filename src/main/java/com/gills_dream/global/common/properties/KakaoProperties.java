@@ -1,4 +1,4 @@
-package com.gills_dream.domain.member.entity;
+package com.gills_dream.global.common.properties;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -10,6 +10,8 @@ import org.springframework.stereotype.Component;
 @Component
 @ConfigurationProperties(prefix = "kakao")
 public class KakaoProperties {
-    private String apiKey;
+    private String clientId;
     private String redirectUri;
+    private String tokenUri;
+    private String userInfoUri;
 }

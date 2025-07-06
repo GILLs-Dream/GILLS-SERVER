@@ -20,6 +20,16 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
+    private static final String[] PERMITTED_PATTERNS = {
+            "/",
+            "/member/oauth/kakao/login",
+            "/login",
+            "/swagger-ui/**",
+            "/swagger-resources/**",
+            "/v3/api-docs/**",
+            "/resources/**"
+    };
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -32,16 +42,8 @@ public class SecurityConfig {
                 .csrf(CsrfConfigurer::disable)
                 .formLogin((auth) -> auth.disable())
                 .sessionManagement(configurer -> configurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests((requests) -> requests
-                        .requestMatchers("/","users/sign-in", "users/sign-up", "users/reissue"
-                                ,"/user/**"
-                                ,"/candidates/**"
-                                ,"/votes/teams/status"
-                                ,"/votes/leaders/*/status"
-                                ,"/swagger-ui/**"
-                                ,"/swagger-resources/**"
-                                ,"/v3/api-docs/**"
-                                , "/resources/**").permitAll()
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(PERMITTED_PATTERNS).permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

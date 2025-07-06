@@ -1,6 +1,7 @@
 package com.gills_dream.global.jwt;
 
 import com.gills_dream.domain.member.entity.Member;
+import com.gills_dream.global.common.TokenPair;
 import com.gills_dream.domain.member.repository.MemberRepository;
 import com.gills_dream.global.apiPayload.code.status.ErrorStatus;
 import com.gills_dream.global.apiPayload.exception.GeneralException;
@@ -42,7 +43,7 @@ public class TokenProvider implements InitializingBean {
         this.key = Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public String getNameFromToken(String token) {
+    public String getUsernameFromToken(String token) {
         try {
             return Jwts.parser()
                     .setSigningKey(key)
@@ -55,32 +56,32 @@ public class TokenProvider implements InitializingBean {
         }
     }
 
-    public String createAccessToken(String name) {
+    public String createAccessToken(String email) {
         long now = (new Date()).getTime();
         Date validity = new Date(now + ACCESS_TOKEN_VALIDITY_SECONDS * 1000);
-        String role = getUserRoleByName(name);
+        String role = getUserRoleByUsername(email);
 
         return Jwts.builder()
-                .setSubject(name)
+                .setSubject(email)
                 .claim("role", role)
                 .signWith(key, SignatureAlgorithm.HS512)
                 .setExpiration(validity)
                 .compact();
     }
 
-    public String createRefreshToken(String name) {
+    public String createRefreshToken(String email) {
         long now = (new Date()).getTime();
         Date validity = new Date(now + REFRESH_TOKEN_VALIDITY_SECONDS * 1000);
 
         return Jwts.builder()
-                .setSubject(name)
+                .setSubject(email)
                 .signWith(key, SignatureAlgorithm.HS512)
                 .setExpiration(validity)
                 .compact();
     }
 
-    public String getUserRoleByName(String name) {
-        Member member = memberRepository.findByName(name)
+    public String getUserRoleByUsername(String email) {
+        Member member = memberRepository.findByEmail(email)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.USER_NOT_FOUND));
         return member.getRoleType().name();
     }
@@ -90,9 +91,9 @@ public class TokenProvider implements InitializingBean {
     }
 
     public Authentication getAuthentication(String token) {
-        String name = getNameFromToken(token);
-        log.info("Getting authentication for token user: {}", name);
-        UserDetails userDetails = customUserDetailsService.loadUserByUsername(name);
+        String email = getUsernameFromToken(token);
+        log.info("Getting authentication for token user: {}", email);
+        UserDetails userDetails = customUserDetailsService.loadUserByUsername(email);
 
         return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
     }
@@ -123,15 +124,12 @@ public class TokenProvider implements InitializingBean {
 
     @Transactional
     public TokenPair reissue(Member member, String refreshToken) {
-        String accessToken = createAccessToken(member.getName());
+        String accessToken = createAccessToken(member.getEmail());
 
         if (getExpirationTime(refreshToken) <= getExpirationTime(accessToken)) {
-            refreshToken = createRefreshToken(member.getName());
+            refreshToken = createRefreshToken(member.getEmail());
         }
 
         return new TokenPair(member, accessToken, refreshToken);
-    }
-
-    public record TokenPair(Member user, String accessToken, String refreshToken) {
     }
 }

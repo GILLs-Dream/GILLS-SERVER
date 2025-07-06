@@ -1,6 +1,6 @@
 package com.gills_dream.domain.temp.contoller;
 
-import com.gills_dream.domain.member.entity.KakaoProperties;
+import com.gills_dream.global.common.properties.KakaoProperties;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -12,14 +12,14 @@ import org.springframework.web.bind.annotation.*;
 @Controller
 @RequiredArgsConstructor
 public class TempController {
-    private final KakaoProperties kakaoApi;
+    private final KakaoProperties kakaoProperties;
 
     @GetMapping("/login")
     @Operation(summary = "카카오 로그인 테스트")
     public String loginForm(Model model)
     {
-        model.addAttribute("kakaoApiKey", kakaoApi.getApiKey());
-        model.addAttribute("kakaoRedirectUri", kakaoApi.getRedirectUri());
+        model.addAttribute("clientId", kakaoProperties.getClientId());
+        model.addAttribute("redirectUri", kakaoProperties.getRedirectUri());
         return "login";
     }
 }
