@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Objects;
@@ -16,43 +17,39 @@ import java.util.Objects;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class KakaoServiceImpl implements KakaoService {
     private final KakaoProperties kakaoProperties;
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestClient restClient = RestClient.create();
 
     @Override
-    @Transactional(readOnly = true)
     public String getAccessToken(String code) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         body.add("grant_type", "authorization_code");
         body.add("client_id", kakaoProperties.getClientId());
         body.add("redirect_uri", kakaoProperties.getRedirectUri());
         body.add("code", code);
 
-        ResponseEntity<MemberResponseDto.TokenDto> response = restTemplate.postForEntity(
-                kakaoProperties.getTokenUri(),
-                new HttpEntity<>(body, headers),
-                MemberResponseDto.TokenDto.class
-        );
-        return Objects.requireNonNull(response.getBody()).getAccessToken();
+        MemberResponseDto.TokenDto tokenDto = restClient
+                .post()
+                .uri(kakaoProperties.getTokenUri())
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .body(body)
+                .retrieve()
+                .body(MemberResponseDto.TokenDto.class);
+
+        return Objects.requireNonNull(tokenDto).accessToken();
     }
 
     @Override
-    @Transactional(readOnly = true)
     public MemberResponseDto.KakaoUserInfoDto getUserInfo(String accessToken) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(accessToken);
+        MemberResponseDto.KakaoUserInfoDto userInfoDto = restClient
+                .get()
+                .uri(kakaoProperties.getUserInfoUri())
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+                .retrieve()
+                .body(MemberResponseDto.KakaoUserInfoDto.class);
 
-        ResponseEntity<MemberResponseDto.KakaoUserInfoDto> response = restTemplate.exchange(
-                kakaoProperties.getUserInfoUri(),
-                HttpMethod.GET,
-                new HttpEntity<>(headers),
-                MemberResponseDto.KakaoUserInfoDto.class
-        );
-
-        return Objects.requireNonNull(response.getBody());
+        return Objects.requireNonNull(userInfoDto);
     }
 }

@@ -13,15 +13,13 @@ import com.gills_dream.domain.member.repository.MemberRepository;
 import com.gills_dream.global.jwt.TokenProvider;
 import com.gills_dream.global.redis.RedisService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
-
 import java.time.Duration;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class MemberServiceImpl implements MemberService {
     private final MemberRepository memberRepository;
     private final KakaoService kakaoService;
@@ -61,24 +59,6 @@ public class MemberServiceImpl implements MemberService {
         // 로그아웃 시 refreshToken을 redis에서 삭제하고 accessToken을 redis에 저장
         redisService.deleteValue(member.getEmail()); // 재로그인 방지
         redisService.setValue(accessToken, "logout", tokenProvider.getExpirationTime(accessToken)); // AccessToken을 블랙리스트에 저장
-    }
-
-    @Override
-    @Transactional
-    public TokenPair reissue(String refreshToken) {
-        // ValidateToken false 반환 -> 사용하려는 refreshToken이 유효하지 않음 (redis에 없음)
-        if (!tokenProvider.validateToken(refreshToken)) throw new GeneralException(ErrorStatus.INVALID_TOKEN);
-
-        String email = tokenProvider.getUsernameFromToken(refreshToken);
-        Member member = memberRepository.findByEmail(email)
-                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
-
-        String redisRefreshToken = redisService.getValue(member.getEmail());
-        if (StringUtils.isEmpty(refreshToken) || StringUtils.isEmpty(redisRefreshToken) || !redisRefreshToken.equals(refreshToken)) {
-            throw new GeneralException(ErrorStatus.INVALID_TOKEN);
-        }
-
-        return tokenProvider.reissue(member, refreshToken);
     }
 
     private RoleType decideRole(String email) {

@@ -23,6 +23,7 @@ public class SecurityConfig {
     private static final String[] PERMITTED_PATTERNS = {
             "/",
             "/member/oauth/kakao/login",
+            "/member/reissue",
             "/login",
             "/swagger-ui/**",
             "/swagger-resources/**",

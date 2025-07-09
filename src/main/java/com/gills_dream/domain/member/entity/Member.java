@@ -2,14 +2,10 @@ package com.gills_dream.domain.member.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.DynamicInsert;
-import org.hibernate.annotations.DynamicUpdate;
 
 @Entity
 @Getter
 @Builder
-@DynamicUpdate
-@DynamicInsert
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 public class Member {
@@ -22,7 +18,7 @@ public class Member {
     private LoginType loginType;
 
     @Column(length = 10, nullable = false)
-    private String nickName;
+    private String nickname;
 
     private String profileImg;
 
