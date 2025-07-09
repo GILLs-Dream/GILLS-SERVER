@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - develop
+      - deploy/#5-cicd
 
 permissions: write-all
 
