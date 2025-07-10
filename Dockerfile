@@ -2,6 +2,7 @@
 FROM openjdk:21-jdk-slim AS builder
 WORKDIR /app
 COPY . .
+RUN chmod +x ./gradlew
 RUN ./gradlew build -x test
 
 # 실행 단계
