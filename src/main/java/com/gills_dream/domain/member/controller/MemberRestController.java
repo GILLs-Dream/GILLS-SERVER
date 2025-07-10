@@ -1,18 +1,20 @@
 package com.gills_dream.domain.member.controller;
 
 import com.gills_dream.domain.member.converter.MemberConverter;
+import com.gills_dream.domain.member.dto.MemberRequestDto;
 import com.gills_dream.domain.member.dto.MemberResponseDto;
+import com.gills_dream.domain.member.entity.Member;
 import com.gills_dream.global.apiPayload.code.status.SuccessStatus;
 import com.gills_dream.global.common.record.TokenPair;
 import com.gills_dream.domain.member.service.MemberService;
 import com.gills_dream.global.apiPayload.ApiResponse;
 import com.gills_dream.global.jwt.CustomUserDetails;
 import com.gills_dream.global.jwt.JwtAuthenticationFilter;
-import com.gills_dream.domain.jwtToken.service.JwtTokenService;
 import com.gills_dream.global.jwt.TokenUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -51,6 +53,14 @@ public class MemberRestController {
     public ApiResponse<MemberResponseDto.LoginResultDto> kakaoLogout(HttpServletRequest request, @AuthenticationPrincipal CustomUserDetails userDetails) {
         memberService.kakaoLogout(jwtAuthenticationFilter.resolveToken(request), userDetails.getMember());
         return ApiResponse.onSuccess(SuccessStatus._OK);
+    }
+
+    @PatchMapping("/setting")
+    @Operation(summary = "프로필 설정 + 이용약관 동의")
+    public ApiResponse<MemberResponseDto.ProfileResultDto> setProfile(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                                                      @RequestBody @Valid MemberRequestDto.ProfileDto request) {
+        Member member = memberService.setProfile(userDetails.getMember(), request);
+        return ApiResponse.onSuccess(MemberConverter.toProfileResultDto(member));
     }
 }
 

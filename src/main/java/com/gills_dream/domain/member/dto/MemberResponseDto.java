@@ -11,8 +11,16 @@ public class MemberResponseDto {
             @Schema(description = "멤버 id", example = "1")
             Long memberId,
 
-            @Schema(description = "멤버 이름", example = "길순이")
-            String name
+            @Schema(description = "멤버 이메일", example = "gillsoon@gmail.com")
+            String email
+    ) {}
+
+    public record ProfileResultDto (
+        @Schema(description = "멤버 id", example = "1")
+        Long memberId,
+
+        @Schema(description = "멤버 닉네임", example = "길순이")
+        String nickname
     ) {}
 
 

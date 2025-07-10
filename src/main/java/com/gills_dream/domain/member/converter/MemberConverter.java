@@ -9,7 +9,7 @@ public class MemberConverter {
 
     public static MemberResponseDto.LoginResultDto toLoginResultDto(Member member) {
         return new MemberResponseDto.LoginResultDto(
-                member.getMemberId(),
+                member.getId(),
                 member.getEmail()
         );
     }
@@ -20,5 +20,12 @@ public class MemberConverter {
                 .loginType(login)
                 .roleType(role)
                 .build();
+    }
+
+    public static MemberResponseDto.ProfileResultDto toProfileResultDto(Member member) {
+        return new MemberResponseDto.ProfileResultDto(
+                member.getId(),
+                member.getNickname()
+        );
     }
 }
