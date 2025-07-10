@@ -2,7 +2,6 @@ package com.gills_dream.domain.jwtToken.controller;
 
 import com.gills_dream.domain.jwtToken.service.JwtTokenService;
 import com.gills_dream.global.common.record.TokenPair;
-import com.gills_dream.global.jwt.CustomUserDetails;
 import com.gills_dream.global.jwt.TokenUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

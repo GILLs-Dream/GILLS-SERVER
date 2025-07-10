@@ -17,7 +17,7 @@ public class Member {
     @Enumerated(EnumType.STRING)
     private LoginType loginType;
 
-    @Column(length = 10, nullable = false)
+    @Column(length = 10)
     private String nickname;
 
     private String profileImg;

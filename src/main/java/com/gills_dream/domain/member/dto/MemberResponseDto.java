@@ -45,23 +45,6 @@ public class MemberResponseDto {
             @Schema(description = "이메일", example = "kakao@gmail.com")
             @JsonProperty("email")
             private String email;
-
-            @JsonProperty("profile")
-            private Profile profile;
-
-            @Getter
-            @NoArgsConstructor
-            @JsonIgnoreProperties(ignoreUnknown = true)
-            public static class Profile {
-
-                @Schema(description = "닉네임", example = "길순이")
-                @JsonProperty("nickname")
-                private String nickname;
-
-                @Schema(description = "프로필 사진", example = "http://yyy.kakao.com/dn/.../img_640x640.jpg")
-                @JsonProperty("profile_image_url")
-                private String profileImg;
-            }
         }
     }
 }
