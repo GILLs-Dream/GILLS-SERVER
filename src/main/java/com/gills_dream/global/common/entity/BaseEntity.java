@@ -1,5 +1,6 @@
 package com.gills_dream.global.common.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
 import lombok.Getter;
@@ -15,8 +16,13 @@ import java.time.LocalDateTime;
 public abstract class BaseEntity {
 
     @CreatedDate
+    @Column(nullable = false, columnDefinition = "TIMESTAMP")
     private LocalDateTime createdAt;
 
     @LastModifiedDate
+    @Column(nullable = false, columnDefinition = "TIMESTAMP")
     private LocalDateTime updatedAt;
+
+    @Column(columnDefinition = "TIMESTAMP")
+    private LocalDateTime deletedAt;
 }
