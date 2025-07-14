@@ -1,4 +1,4 @@
-package com.gills_dream.global.common;
+package com.gills_dream.global.common.entity;
 
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
