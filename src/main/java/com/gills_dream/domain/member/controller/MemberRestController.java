@@ -59,8 +59,8 @@ public class MemberRestController {
     @Operation(summary = "프로필 설정 + 이용약관 동의")
     public ApiResponse<MemberResponseDto.ProfileResultDto> setProfile(@AuthenticationPrincipal CustomUserDetails userDetails,
                                                                       @RequestBody @Valid MemberRequestDto.ProfileDto request) {
-        Member member = memberService.setProfile(userDetails.getMember(), request);
-        return ApiResponse.onSuccess(MemberConverter.toProfileResultDto(member));
+        memberService.setProfile(userDetails.getMember(), request);
+        return ApiResponse.onSuccess(SuccessStatus._OK);
     }
 }
 

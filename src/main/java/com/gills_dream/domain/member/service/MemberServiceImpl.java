@@ -65,7 +65,7 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     @Transactional
-    public Member setProfile(Member member, MemberRequestDto.ProfileDto request) {
+    public void setProfile(Member member, MemberRequestDto.ProfileDto request) {
         if (!Objects.equals(member.getId(), request.memberId())) throw new GeneralException(ErrorStatus.MEMBER_NOT_FOUND);
 
         if (request.nickname() == null) throw new GeneralException(ErrorStatus.NICKNAME_IS_NECESSARY);
@@ -74,8 +74,7 @@ public class MemberServiceImpl implements MemberService {
         if (request.marketingAgreement() != null) member.setMarketingAgreement(request.marketingAgreement());
 
         memberRepository.save(member);
-
-        return member;
+        MemberConverter.toProfileResultDto(member);
     }
 
     private RoleType decideRole(String email) {
