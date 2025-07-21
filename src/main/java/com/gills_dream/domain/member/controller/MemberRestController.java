@@ -1,0 +1,56 @@
+package com.gills_dream.domain.member.controller;
+
+import com.gills_dream.domain.member.converter.MemberConverter;
+import com.gills_dream.domain.member.dto.MemberResponseDto;
+import com.gills_dream.global.apiPayload.code.status.SuccessStatus;
+import com.gills_dream.global.common.record.TokenPair;
+import com.gills_dream.domain.member.service.MemberService;
+import com.gills_dream.global.apiPayload.ApiResponse;
+import com.gills_dream.global.jwt.CustomUserDetails;
+import com.gills_dream.global.jwt.JwtAuthenticationFilter;
+import com.gills_dream.domain.jwtToken.service.JwtTokenService;
+import com.gills_dream.global.jwt.TokenUtils;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
+
+@Tag(name = "멤버", description = "멤버 로그인 관련 API")
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/member")
+public class MemberRestController {
+    private final MemberService memberService;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final TokenUtils tokenUtils;
+
+    @PostMapping("/oauth/kakao/login")
+    @Operation(summary = "카카오 로그인, 회원가입", description = "프론트가 로그인 api를 호출하면서 백엔드에게 인가 코드를 넘겨줍니다")
+    public ResponseEntity<ApiResponse<MemberResponseDto.LoginResultDto>> kakaoLogin(@RequestParam("code") String code) throws IOException {
+        TokenPair tokenPair= memberService.kakaoLogin(code);
+
+        // Token 처리
+        HttpHeaders headers = new HttpHeaders();
+        tokenUtils.addAccessToken(headers, tokenPair.accessToken());
+        tokenUtils.addRefreshToken(headers, tokenPair.refreshToken());
+
+        // Response body 처리
+        ApiResponse<MemberResponseDto.LoginResultDto> body = ApiResponse.onSuccess(MemberConverter.toLoginResultDto(tokenPair.member()));
+
+        return ResponseEntity.ok().headers(headers).body(body);
+    }
+
+    @PostMapping("/oauth/kakao/logout")
+    @Operation(summary = "카카오 로그아웃")
+    public ApiResponse<MemberResponseDto.LoginResultDto> kakaoLogout(HttpServletRequest request, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        memberService.kakaoLogout(jwtAuthenticationFilter.resolveToken(request), userDetails.getMember());
+        return ApiResponse.onSuccess(SuccessStatus._OK);
+    }
+}
+
