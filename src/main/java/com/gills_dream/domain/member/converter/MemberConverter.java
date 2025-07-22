@@ -21,11 +21,4 @@ public class MemberConverter {
                 .roleType(role)
                 .build();
     }
-
-    public static MemberResponseDto.ProfileResultDto toProfileResultDto(Member member) {
-        return new MemberResponseDto.ProfileResultDto(
-                member.getId(),
-                member.getNickname()
-        );
-    }
 }

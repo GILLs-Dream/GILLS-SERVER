@@ -42,7 +42,11 @@ public class MemberServiceImpl implements MemberService {
         // 우리 서버의 jwt 토큰 발행
         String email = kakaoUser.getKakaoAccount().getEmail();
         Member member = memberRepository.findByEmail(email)
-                .orElseGet(() -> memberRepository.save(MemberConverter.toMember(kakaoUser, decideRole(email), LoginType.KAKAO)));
+                .orElseGet(() -> memberRepository.save(Member.builder()
+                        .email(kakaoUser.getKakaoAccount().getEmail())
+                        .loginType(LoginType.KAKAO)
+                        .roleType(decideRole(email))
+                        .build()));
 
         String accessToken = tokenProvider.createAccessToken(member.getEmail());
         String refreshToken = tokenProvider.createRefreshToken(member.getEmail());
@@ -65,16 +69,19 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     @Transactional
-    public void setProfile(Member member, MemberRequestDto.ProfileDto request) {
+    public MemberResponseDto.ProfileResultDto setProfile(Member member, MemberRequestDto.ProfileDto request) {
         if (!Objects.equals(member.getId(), request.memberId())) throw new GeneralException(ErrorStatus.MEMBER_NOT_FOUND);
 
         if (request.nickname() == null) throw new GeneralException(ErrorStatus.NICKNAME_IS_NECESSARY);
-        member.setNickname(request.nickname());
-        if (request.profileImg() != null) member.setProfileImg(request.profileImg());
-        if (request.marketingAgreement() != null) member.setMarketingAgreement(request.marketingAgreement());
+        member.updateNickname(request.nickname());
+        if (request.profileImg() != null) member.updateProfileImg(request.profileImg());
+        if (request.marketingAgreement() != null) member.updateMarketingAgreement(request.marketingAgreement());
 
         memberRepository.save(member);
-        MemberConverter.toProfileResultDto(member);
+        return new MemberResponseDto.ProfileResultDto(
+                member.getId(),
+                member.getNickname()
+        );
     }
 
     private RoleType decideRole(String email) {
