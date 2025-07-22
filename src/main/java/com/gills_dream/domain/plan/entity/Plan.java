@@ -3,6 +3,7 @@ package com.gills_dream.domain.plan.entity;
 import com.gills_dream.domain.member.entity.Member;
 import com.gills_dream.domain.place.entity.Place;
 import com.gills_dream.domain.plan.enumerate.CategoryType;
+import com.gills_dream.domain.plan.enumerate.MoodType;
 import com.gills_dream.domain.plan.enumerate.TransportType;
 import com.gills_dream.domain.plan.vo.PlanPeriod;
 import com.gills_dream.domain.plan.vo.PlanSummary;
@@ -34,7 +35,7 @@ public class Plan extends BaseEntity {
     private Member member;
 
     // Todo: Team 구현 후, nullable = false 추가
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "team_id")
     private Team team;
 
@@ -66,9 +67,15 @@ public class Plan extends BaseEntity {
     @JoinTable(name = "plan_place", joinColumns = @JoinColumn(name = "plan_id"), inverseJoinColumns = @JoinColumn(name = "place_id"))
     private List<Place> places = new ArrayList<>();
 
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "plan_mood", joinColumns = @JoinColumn(name = "plan_id"))
+    @Enumerated(EnumType.STRING)
+    @Column(name = "mood_type")
+    private List<MoodType> moods = new ArrayList<>();
+
     @Builder
     public Plan(Member member, Team team, PlanSummary summary, PlanPeriod period,
-                Boolean isPinned, Long party, List<TransportType> transports, List<CategoryType> categories) {
+                Boolean isPinned, Long party, List<TransportType> transports, List<CategoryType> categories, List<MoodType> moods) {
         this.member = member;
         this.team = team;
         this.summary = summary;
@@ -77,5 +84,6 @@ public class Plan extends BaseEntity {
         this.party = party;
         this.transports = transports != null ? new ArrayList<>(transports) : new ArrayList<>();
         this.categories = categories != null ? new ArrayList<>(categories) : new ArrayList<>();
+        this.moods = moods != null ? new ArrayList<>(moods) : new ArrayList<>();
     }
 }

@@ -11,6 +11,7 @@ import com.gills_dream.global.apiPayload.exception.GeneralException;
 import com.gills_dream.global.common.properties.AdminProperties;
 import com.gills_dream.global.common.record.TokenPair;
 import com.gills_dream.domain.member.repository.MemberRepository;
+import com.gills_dream.global.jwt.CustomUserDetails;
 import com.gills_dream.global.jwt.TokenProvider;
 import com.gills_dream.global.redis.RedisService;
 import lombok.RequiredArgsConstructor;

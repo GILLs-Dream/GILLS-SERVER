@@ -1,7 +1,11 @@
 package com.gills_dream.domain.member.entity;
 
+import com.gills_dream.domain.plan.entity.Plan;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -28,6 +32,9 @@ public class Member {
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private LoginType loginType;
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
+    private List<Plan> planList = new ArrayList<>();
 
     @Builder
     public Member(String email, LoginType loginType, RoleType roleType) {

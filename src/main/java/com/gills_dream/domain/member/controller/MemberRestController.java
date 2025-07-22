@@ -10,7 +10,6 @@ import com.gills_dream.domain.member.service.MemberService;
 import com.gills_dream.global.apiPayload.ApiResponse;
 import com.gills_dream.global.jwt.CustomUserDetails;
 import com.gills_dream.global.jwt.JwtAuthenticationFilter;
-import com.gills_dream.global.jwt.TokenUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,8 +19,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import java.io.IOException;
 
 @Tag(name = "멤버", description = "멤버 로그인 관련 API")
 @RestController
