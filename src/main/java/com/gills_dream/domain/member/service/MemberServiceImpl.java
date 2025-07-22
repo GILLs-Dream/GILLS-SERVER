@@ -1,6 +1,7 @@
 package com.gills_dream.domain.member.service;
 
 import com.gills_dream.domain.member.converter.MemberConverter;
+import com.gills_dream.domain.member.dto.MemberRequestDto;
 import com.gills_dream.domain.member.dto.MemberResponseDto;
 import com.gills_dream.domain.member.entity.LoginType;
 import com.gills_dream.domain.member.entity.Member;
@@ -16,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.Duration;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -40,7 +42,11 @@ public class MemberServiceImpl implements MemberService {
         // 우리 서버의 jwt 토큰 발행
         String email = kakaoUser.getKakaoAccount().getEmail();
         Member member = memberRepository.findByEmail(email)
-                .orElseGet(() -> memberRepository.save(MemberConverter.toMember(kakaoUser, decideRole(email), LoginType.KAKAO)));
+                .orElseGet(() -> memberRepository.save(Member.builder()
+                        .email(kakaoUser.getKakaoAccount().getEmail())
+                        .loginType(LoginType.KAKAO)
+                        .roleType(decideRole(email))
+                        .build()));
 
         String accessToken = tokenProvider.createAccessToken(member.getEmail());
         String refreshToken = tokenProvider.createRefreshToken(member.getEmail());
@@ -59,6 +65,23 @@ public class MemberServiceImpl implements MemberService {
         // 로그아웃 시 refreshToken을 redis에서 삭제하고 accessToken을 redis에 저장
         redisService.deleteValue(member.getEmail()); // 재로그인 방지
         redisService.setValue(accessToken, "logout", tokenProvider.getExpirationTime(accessToken)); // AccessToken을 블랙리스트에 저장
+    }
+
+    @Override
+    @Transactional
+    public MemberResponseDto.ProfileResultDto setProfile(Member member, MemberRequestDto.ProfileDto request) {
+        if (!Objects.equals(member.getId(), request.memberId())) throw new GeneralException(ErrorStatus.MEMBER_NOT_FOUND);
+
+        if (request.nickname() == null) throw new GeneralException(ErrorStatus.NICKNAME_IS_NECESSARY);
+        member.updateNickname(request.nickname());
+        if (request.profileImg() != null) member.updateProfileImg(request.profileImg());
+        if (request.marketingAgreement() != null) member.updateMarketingAgreement(request.marketingAgreement());
+
+        memberRepository.save(member);
+        return new MemberResponseDto.ProfileResultDto(
+                member.getId(),
+                member.getNickname()
+        );
     }
 
     private RoleType decideRole(String email) {
