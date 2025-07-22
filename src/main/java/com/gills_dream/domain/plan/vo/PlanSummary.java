@@ -13,6 +13,9 @@ public class PlanSummary {
     private String detail;
 
     @Column(columnDefinition = "TEXT")
+    private String summary;
+
+    @Column(columnDefinition = "TEXT")
     private String thumbnailUrl;
 
     // Todo: 정책 정해지면, enum으로 변경
@@ -20,9 +23,10 @@ public class PlanSummary {
     private String mood;
 
     @Builder
-    public PlanSummary(String title, String detail, String thumbnailUrl, String mood) {
+    public PlanSummary(String title, String detail, String summary, String thumbnailUrl, String mood) {
         this.title = title;
         this.detail = detail;
+        this.summary = summary;
         this.thumbnailUrl = thumbnailUrl;
         this.mood = mood;
     }
