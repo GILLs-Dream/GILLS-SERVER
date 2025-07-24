@@ -5,15 +5,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gills_dream.domain.plan.enumerate.MoodType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
@@ -22,7 +21,8 @@ public class GptServiceImpl implements GptService {
     private final ChatClient chatClient;
     private final ObjectMapper objectMapper;
 
-    private static final String SELECT_MOOD_PROMPT = "src/main/resources/gpt-prompt/select-mood-prompt.txt";
+    private static final String SELECT_MOOD_PROMPT = "gpt-prompt/select-mood-prompt.txt";
+    private static final String SUMMARIZE_MOOD_PROMPT = "gpt-prompt/summarize-mood-prompt.txt";
 
     @Override
     public List<MoodType> selectMood(String input) {
@@ -40,9 +40,36 @@ public class GptServiceImpl implements GptService {
         return moodTypeList;
     }
 
+    @Override
+    public String summarizeMood(String input) {
+        String summary;
+        try {
+            String prompt = buildSummarizeMoodPrompt(input);
+            String response = getResponse(prompt);
+            System.out.println(response);
+            summary = objectMapper.readValue(response, new TypeReference<>() {});
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to process GPT response", e);
+        }
+
+        return summary;
+    }
+
     private String buildSelectMoodPrompt(String input) throws IOException {
         try {
-            String template = Files.readString(Paths.get(SELECT_MOOD_PROMPT));
+            Resource resource = new ClassPathResource(SELECT_MOOD_PROMPT);
+            String template = new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+            return template
+                    .replace("{{input}}", input);
+        } catch (IOException e) {
+            throw new IOException("Failed to read prompt text", e);
+        }
+    }
+
+    private String buildSummarizeMoodPrompt(String input) throws IOException {
+        try {
+            Resource resource = new ClassPathResource(SUMMARIZE_MOOD_PROMPT);
+            String template = new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
             return template
                     .replace("{{input}}", input);
         } catch (IOException e) {

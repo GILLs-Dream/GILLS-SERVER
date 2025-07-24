@@ -5,5 +5,5 @@ import com.gills_dream.domain.plan.dto.PlanResponseDto;
 import com.gills_dream.global.jwt.CustomUserDetails;
 
 public interface PlanService {
-    PlanResponseDto.MoodResultDto selectMood(CustomUserDetails userDetails, PlanRequestDto.MoodTextDto request);
+    PlanResponseDto.MoodResultDto selectAndSummarizeMood(CustomUserDetails userDetails, PlanRequestDto.MoodTextDto request);
 }

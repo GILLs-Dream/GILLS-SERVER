@@ -27,20 +27,23 @@ public class PlanServiceImpl implements PlanService {
 
     @Override
     @Transactional
-    public PlanResponseDto.MoodResultDto selectMood(CustomUserDetails userDetails, PlanRequestDto.MoodTextDto request) {
+    public PlanResponseDto.MoodResultDto selectAndSummarizeMood(CustomUserDetails userDetails, PlanRequestDto.MoodTextDto request) {
         Member member = memberRepository.findById(userDetails.getMember().getId())
                 .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
         List<MoodType> moodTypeList = gptService.selectMood(request.inputText());
+        String summary = gptService.summarizeMood(request.inputText());
 
         Plan plan = Plan.builder()
                 .member(member)
                 .moods(moodTypeList)
+                .moodSummary(summary)
                 .build();
         planRepository.save(plan);
         member.getPlanList().add(plan);
 
         return new PlanResponseDto.MoodResultDto(
                 plan.getId(),
+                summary,
                 moodTypeList.stream().toList()
         );
     }

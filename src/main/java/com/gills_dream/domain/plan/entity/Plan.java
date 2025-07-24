@@ -45,6 +45,9 @@ public class Plan extends BaseEntity {
     @Column(columnDefinition = "bigint")
     private Long party;
 
+    @Column(columnDefinition = "TEXT")
+    private String mooodSummary;
+
     @Embedded
     private PlanPeriod period;
 
@@ -74,11 +77,12 @@ public class Plan extends BaseEntity {
     private List<MoodType> moods = new ArrayList<>();
 
     @Builder
-    public Plan(Member member, Team team, PlanSummary summary, PlanPeriod period,
+    public Plan(Member member, Team team, PlanSummary summary, PlanPeriod period, String moodSummary,
                 Boolean isPinned, Long party, List<TransportType> transports, List<CategoryType> categories, List<MoodType> moods) {
         this.member = member;
         this.team = team;
         this.summary = summary;
+        this.mooodSummary = moodSummary;
         this.period = period;
         this.isPinned = isPinned;
         this.party = party;

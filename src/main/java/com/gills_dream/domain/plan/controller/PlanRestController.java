@@ -23,9 +23,9 @@ public class PlanRestController {
     private final PlanService planService;
 
     @PostMapping("/mood")
-    @Operation(summary = "여행 분위기 ai로 저장")
+    @Operation(summary = "여행 분위기 ai로 저장", description = "MoodType 셀렉트, 문장 요약")
     public ApiResponse<PlanResponseDto.MoodResultDto> selectMood (@AuthenticationPrincipal CustomUserDetails userDetails,
                                                                   @Valid @RequestBody PlanRequestDto.MoodTextDto request) {
-        return ApiResponse.onSuccess(planService.selectMood(userDetails, request));
+        return ApiResponse.onSuccess(planService.selectAndSummarizeMood(userDetails, request));
     }
 }

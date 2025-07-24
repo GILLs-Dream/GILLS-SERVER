@@ -21,8 +21,8 @@ public enum MoodType {
     FAMILY_TRIP("가족 여행"),
     FRIENDS_TRIP("친구와 여행"),
     ALONE_TRIP("혼자 여행"),
+    COUPLE_TRIP("커플 여행"),
     FREEDOM("자유"),
-    RELAXING("여유"),
     PEACEFUL("고즈넉");
     private final String description;
 }
