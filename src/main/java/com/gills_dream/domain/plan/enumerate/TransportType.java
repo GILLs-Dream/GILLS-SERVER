@@ -7,12 +7,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum TransportType {
     BUS("버스"),
-    TRAIN("기차"),
-    PLANE("비행기"),
     CAR("자동차"),
     WALK("도보"),
     SUBWAY("지하철"),
-    SHIP("배"),
-    OTHER("기타");
+    BICYCLE("자전거");
     private final String description;
 }

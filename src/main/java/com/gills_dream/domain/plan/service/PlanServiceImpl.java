@@ -47,4 +47,31 @@ public class PlanServiceImpl implements PlanService {
                 moodTypeList.stream().toList()
         );
     }
+
+    @Override
+    @Transactional
+    public PlanResponseDto.TemplateResultDto saveDuration(CustomUserDetails userDetails, Long planId, PlanRequestDto.DurationDto request) {
+        Member member = memberRepository.findById(userDetails.getMember().getId())
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+
+
+    }
+
+    @Override
+    @Transactional
+    public PlanResponseDto.TemplateResultDto saveCompanion(CustomUserDetails userDetails, Long planId, PlanRequestDto.CompanionDto request) {
+        return null;
+    }
+
+    @Override
+    @Transactional
+    public PlanResponseDto.TemplateResultDto saveDestination(CustomUserDetails userDetails, Long planId, PlanRequestDto.DestinationDto request) {
+        return null;
+    }
+
+    @Override
+    @Transactional
+    public PlanResponseDto.TemplateResultDto savStyle(CustomUserDetails userDetails, Long planId, PlanRequestDto.StyleDto request) {
+        return null;
+    }
 }

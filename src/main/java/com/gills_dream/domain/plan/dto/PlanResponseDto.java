@@ -14,4 +14,9 @@ public class PlanResponseDto {
             @Schema(description = "선택된 무드 타입 리스트", example = "[ HEALING, NATURE, RELAXED ]")
             List<MoodType> moodTypeList
     ) {}
+
+    public record TemplateResultDto (
+            @Schema(description = "여행 id", example = "1")
+            Long planId
+    ) {}
 }
