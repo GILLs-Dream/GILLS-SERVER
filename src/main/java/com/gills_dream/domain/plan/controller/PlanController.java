@@ -5,9 +5,7 @@ import com.gills_dream.global.map.kakao.dto.MobilityRouteReq;
 import com.gills_dream.global.map.kakao.dto.MobilityRouteRes;
 import com.gills_dream.global.map.tmap.TmapPoiSearchClient;
 import com.gills_dream.global.map.tmap.TmapRouteClient;
-import com.gills_dream.global.map.tmap.dto.PedestrianRouteReq;
-import com.gills_dream.global.map.tmap.dto.PedestrianRouteRes;
-import com.gills_dream.global.map.tmap.dto.PoiSearchRes;
+import com.gills_dream.global.map.tmap.dto.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -37,6 +35,12 @@ public class PlanController {
     @PostMapping("/route/pedestrian")
     public PedestrianRouteRes tmapPedestrianRouteRequest(@RequestBody PedestrianRouteReq routeReq) {
         return tmapRouteClient.findPedestrianRoute(routeReq);
+    }
+
+    @Operation(summary = "TMAP 대중교통 경로 요청", description = "TMAP API로 대중교통 경로를 요청합니다.")
+    @PostMapping("/route/transit")
+    public TransitRawRes tmapTransitRouteRequest(@RequestBody TransitRouteReq req) {
+        return tmapRouteClient.findTransitRoute(req);
     }
 
     //Todo: 메소드 연동 후 삭제
