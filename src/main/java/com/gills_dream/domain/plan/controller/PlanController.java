@@ -3,16 +3,18 @@ package com.gills_dream.domain.plan.controller;
 import com.gills_dream.global.map.kakao.KakaoMobilityClient;
 import com.gills_dream.global.map.kakao.dto.MobilityRouteReq;
 import com.gills_dream.global.map.kakao.dto.MobilityRouteRes;
+import com.gills_dream.global.map.tmap.TmapPoiSearchClient;
 import com.gills_dream.global.map.tmap.TmapRouteClient;
 import com.gills_dream.global.map.tmap.dto.PedestrianRouteReq;
 import com.gills_dream.global.map.tmap.dto.PedestrianRouteRes;
+import com.gills_dream.global.map.tmap.dto.PoiSearchRes;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/v1/plan")
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class PlanController {
     private final KakaoMobilityClient kakaoMobilityClient;
     private final TmapRouteClient tmapRouteClient;
+    private final TmapPoiSearchClient tmapPoiSearchClient;
 
     //Todo: 메소드 연동 후 삭제
     @Operation(summary = "카카오 다중 경유지 길찾기 요청", description = "카카오 API를 사용하여 다중 경유지 길찾기 요청을 보냅니다.")
@@ -34,5 +37,15 @@ public class PlanController {
     @PostMapping("/route/pedestrian")
     public PedestrianRouteRes tmapPedestrianRouteRequest(@RequestBody PedestrianRouteReq routeReq) {
         return tmapRouteClient.findPedestrianRoute(routeReq);
+    }
+
+    //Todo: 메소드 연동 후 삭제
+    @Operation(summary = "Tmap POI 장소 검색", description = "장소명(키워드)으로 Tmap의 POI 데이터를 검색합니다.")
+    @GetMapping("/search/poi")
+    public List<PoiSearchRes.Poi> searchPoiByKeyword(
+            @Parameter(description = "검색 키워드", example = "경복궁") @RequestParam String keyword,
+            @Parameter(description = "검색 결과 개수", example = "5") @RequestParam(defaultValue = "5") int count
+    ) {
+        return tmapPoiSearchClient.searchPois(keyword, count);
     }
 }
