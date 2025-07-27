@@ -3,6 +3,9 @@ package com.gills_dream.domain.plan.controller;
 import com.gills_dream.global.map.kakao.KakaoMobilityClient;
 import com.gills_dream.global.map.kakao.dto.MobilityRouteReq;
 import com.gills_dream.global.map.kakao.dto.MobilityRouteRes;
+import com.gills_dream.global.map.openRouteService.ORSRouteClient;
+import com.gills_dream.global.map.openRouteService.dto.ORSRouteReq;
+import com.gills_dream.global.map.openRouteService.dto.ORSRouteRes;
 import com.gills_dream.global.map.tmap.TmapPoiSearchClient;
 import com.gills_dream.global.map.tmap.TmapRouteClient;
 import com.gills_dream.global.map.tmap.dto.*;
@@ -22,6 +25,7 @@ public class PlanController {
     private final KakaoMobilityClient kakaoMobilityClient;
     private final TmapRouteClient tmapRouteClient;
     private final TmapPoiSearchClient tmapPoiSearchClient;
+    private final ORSRouteClient orsRouteClient;
 
     //Todo: 메소드 연동 후 삭제
     @Operation(summary = "카카오 다중 경유지 길찾기 요청", description = "카카오 API를 사용하여 다중 경유지 길찾기 요청을 보냅니다.")
@@ -37,10 +41,18 @@ public class PlanController {
         return tmapRouteClient.findPedestrianRoute(routeReq);
     }
 
+    //Todo: 메소드 연동 후 삭제
     @Operation(summary = "TMAP 대중교통 경로 요청", description = "TMAP API로 대중교통 경로를 요청합니다.")
     @PostMapping("/route/transit")
     public TransitRawRes tmapTransitRouteRequest(@RequestBody TransitRouteReq req) {
         return tmapRouteClient.findTransitRoute(req);
+    }
+
+    //Todo: 메소드 연동 후 삭제
+    @Operation(summary = "ORS 자전거 경로 요청", description = "OpenRouteService API를 사용하여 자전거 경로를 요청합니다.")
+    @PostMapping("/route/bicycle")
+    public ORSRouteRes orsBicycleRouteRequest(@RequestBody ORSRouteReq req) {
+        return orsRouteClient.findBicycleRoute(req);
     }
 
     //Todo: 메소드 연동 후 삭제
