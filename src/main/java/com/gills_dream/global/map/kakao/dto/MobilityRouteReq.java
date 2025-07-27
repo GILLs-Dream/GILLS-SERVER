@@ -1,10 +1,10 @@
-package com.gills_dream.global.kakao.dto;
+package com.gills_dream.global.map.kakao.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 
 @Schema(description = "다중 경유지 길찾기 요청 DTO")
-public record RouteReq(
+public record MobilityRouteReq(
         @Schema(description = "출발지 정보")
         Place origin,
 

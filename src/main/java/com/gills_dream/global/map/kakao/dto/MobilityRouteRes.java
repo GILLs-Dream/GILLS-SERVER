@@ -1,11 +1,11 @@
-package com.gills_dream.global.kakao.dto;
+package com.gills_dream.global.map.kakao.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.List;
 
 @Schema(description = "다중 경유지 길찾기 응답")
-public record RouteRes(
+public record MobilityRouteRes(
         @Schema(description = "경로 요청 ID", example = "0194de353ee97a56a7807b8a505eb4da")
         String trans_id,
 
