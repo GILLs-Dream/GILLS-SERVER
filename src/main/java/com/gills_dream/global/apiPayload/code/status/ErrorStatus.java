@@ -27,7 +27,10 @@ public enum ErrorStatus implements BaseCode {
     // 멤버 관련 에러 응답
     MEMBER_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "USER ALREADY EXISTS", "유저가 이미 존재합니다."),
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "USER NOT FOUND", "유저를 찾을 수 없습니다."),
-    NICKNAME_IS_NECESSARY(HttpStatus.BAD_REQUEST, "NICKNAME IS NECESSARY", "닉네임은 필수입니다.");
+    NICKNAME_IS_NECESSARY(HttpStatus.BAD_REQUEST, "NICKNAME IS NECESSARY", "닉네임은 필수입니다."),
+
+    // 플랜 관련 에러 응답
+    PLAN_NOT_FOUND(HttpStatus.NOT_FOUND, "PLAN NOT FOUND", "계획을 찾을 수 없습니다.");
 
 
 

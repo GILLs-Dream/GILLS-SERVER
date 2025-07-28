@@ -53,6 +53,8 @@ public class PlanServiceImpl implements PlanService {
     public PlanResponseDto.TemplateResultDto saveDuration(CustomUserDetails userDetails, Long planId, PlanRequestDto.DurationDto request) {
         Member member = memberRepository.findById(userDetails.getMember().getId())
                 .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+        Plan plan = planRepository.findByIdAndMember(planId, member)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.PLAN_NOT_FOUND));
 
 
     }
