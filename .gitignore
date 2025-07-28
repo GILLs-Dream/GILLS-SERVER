@@ -45,3 +45,6 @@ docker.yml
 ._.DS_Store
 **/.DS_Store
 **/._.DS_햣Store
+
+### Prompt ###
+/src/main/resources/gpt-prompt/**
