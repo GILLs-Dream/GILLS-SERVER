@@ -80,9 +80,15 @@ public class Plan extends BaseEntity {
     @Column(name = "mood_type")
     private List<MoodType> moods = new ArrayList<>();
 
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "plan_youtube", joinColumns = @JoinColumn(name = "plan_id"))
+    @Enumerated(EnumType.STRING)
+    @Column(name = "youtube_url")
+    private List<String> youtubeUrls = new ArrayList<>();
+
     @Builder
     public Plan(Member member, Team team, PlanSummary summary, PlanPeriod period, String moodSummary, String teamName,
-                Boolean isPinned, Long party, List<TransportType> transports, List<CategoryType> categories, List<MoodType> moods) {
+                Boolean isPinned, Long party, List<TransportType> transports, List<CategoryType> categories, List<MoodType> moods, List<String> youtubeUrls) {
         this.member = member;
         this.team = team;
         this.summary = summary;
@@ -94,6 +100,7 @@ public class Plan extends BaseEntity {
         this.transports = transports != null ? new ArrayList<>(transports) : new ArrayList<>();
         this.categories = categories != null ? new ArrayList<>(categories) : new ArrayList<>();
         this.moods = moods != null ? new ArrayList<>(moods) : new ArrayList<>();
+        this.youtubeUrls = youtubeUrls != null ? new ArrayList<>(youtubeUrls) : new ArrayList<>();
     }
 
     public void updatePeriodAndCompanion(PlanPeriod period, Long party, String teamName) {

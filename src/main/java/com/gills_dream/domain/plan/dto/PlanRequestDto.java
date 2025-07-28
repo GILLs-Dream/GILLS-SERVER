@@ -55,7 +55,12 @@ public class PlanRequestDto {
     public record StyleDto (
             @Schema(description = "주요 교통수단 [ 도보, 대중교통, 자동차, 자전거 ]", example = "도보")
             String transport,
-            @Schema(description = "선호 카테고리", example = "[ \"음식\", \"자연\", \"문화\"]")
+            @Schema(description = "선호 카테고리 리스트", example = "[ \"음식\", \"자연\", \"문화\"]")
             List<String> categoryTypeList
+    ) {}
+
+    public record YoutubeUrlDto (
+            @Schema(description = "유튜브 링크 리스트")
+            List<String> youtubeUrlList
     ) {}
 }

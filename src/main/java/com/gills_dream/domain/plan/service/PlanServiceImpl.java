@@ -79,6 +79,8 @@ public class PlanServiceImpl implements PlanService {
         Plan plan = planRepository.findByIdAndMember(planId, member)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.PLAN_NOT_FOUND));
 
+        // Todo: 세부사항 논의 후 구현
+
         return new PlanResponseDto.TemplateResultDto(plan.getId());
     }
 
@@ -95,5 +97,11 @@ public class PlanServiceImpl implements PlanService {
         plan.getCategories().addAll(request.categoryTypeList().stream().map(CategoryType::fromDescription).toList());
 
         return new PlanResponseDto.TemplateResultDto(plan.getId());
+    }
+
+    @Override
+    public PlanResponseDto.YoutubeResultDto saveYoutube(CustomUserDetails userDetails, Long planId, PlanRequestDto.YoutubeUrlDto request) {
+        // Todo: 스프링 파이썬 연동 후 구현
+        return null;
     }
 }

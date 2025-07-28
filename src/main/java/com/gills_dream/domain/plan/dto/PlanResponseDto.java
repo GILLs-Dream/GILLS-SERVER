@@ -19,4 +19,11 @@ public class PlanResponseDto {
             @Schema(description = "여행 id", example = "1")
             Long planId
     ) {}
+
+    public record YoutubeResultDto (
+            @Schema(description = "여행 id", example = "1")
+            Long planId,
+            @Schema(description = "추천 여행 장소 리스트")
+            List<String> recommendedList
+    ) {}
 }
