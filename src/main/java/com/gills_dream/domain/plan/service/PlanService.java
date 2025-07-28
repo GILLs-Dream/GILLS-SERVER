@@ -6,8 +6,7 @@ import com.gills_dream.global.jwt.CustomUserDetails;
 
 public interface PlanService {
     PlanResponseDto.MoodResultDto selectAndSummarizeMood(CustomUserDetails userDetails, PlanRequestDto.MoodTextDto request);
-    PlanResponseDto.TemplateResultDto saveDuration(CustomUserDetails userDetails, Long planId, PlanRequestDto.DurationDto request);
-    PlanResponseDto.TemplateResultDto saveCompanion(CustomUserDetails userDetails, Long planId, PlanRequestDto.CompanionDto request);
+    PlanResponseDto.TemplateResultDto saveDurationAndCompanion(CustomUserDetails userDetails, Long planId, PlanRequestDto.DurationAndCompanionDto request);
     PlanResponseDto.TemplateResultDto saveDestination(CustomUserDetails userDetails, Long planId, PlanRequestDto.DestinationDto request);
     PlanResponseDto.TemplateResultDto savStyle(CustomUserDetails userDetails, Long planId, PlanRequestDto.StyleDto request);
 }

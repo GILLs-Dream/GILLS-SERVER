@@ -27,27 +27,11 @@ public class PlanRestController {
     }
 
     @PatchMapping("/{planId}/duration")
-    @Operation(summary = "'얼마나?'에 해당하는 부분 저장")
-    public ApiResponse<PlanResponseDto.TemplateResultDto> saveDuration (@AuthenticationPrincipal CustomUserDetails userDetails,
+    @Operation(summary = "'얼마나? & 누구와?'에 해당하는 부분 저장")
+    public ApiResponse<PlanResponseDto.TemplateResultDto> saveDurationAndCompanion (@AuthenticationPrincipal CustomUserDetails userDetails,
                                                                         @PathVariable("planId") Long planId,
-                                                                        @Valid @RequestBody PlanRequestDto.DurationDto request) {
-        return ApiResponse.onSuccess(planService.saveDuration(userDetails, planId, request));
-    }
-
-    @PatchMapping("/{planId}/companion")
-    @Operation(summary = "'누구와?'에 해당하는 부분 저장")
-    public ApiResponse<PlanResponseDto.TemplateResultDto> saveCompanion (@AuthenticationPrincipal CustomUserDetails userDetails,
-                                                                         @PathVariable("planId") Long planId,
-                                                                          @Valid @RequestBody PlanRequestDto.CompanionDto request) {
-        return ApiResponse.onSuccess(planService.saveCompanion(userDetails, planId, request));
-    }
-
-    @PatchMapping("/{planId}/destination")
-    @Operation(summary = "'어디로?'에 해당하는 부분 저장")
-    public ApiResponse<PlanResponseDto.TemplateResultDto> saveDestination (@AuthenticationPrincipal CustomUserDetails userDetails,
-                                                                           @PathVariable("planId") Long planId,
-                                                                              @Valid @RequestBody PlanRequestDto.DestinationDto request) {
-        return ApiResponse.onSuccess(planService.saveDestination(userDetails, planId, request));
+                                                                        @Valid @RequestBody PlanRequestDto.DurationAndCompanionDto request) {
+        return ApiResponse.onSuccess(planService.saveDurationAndCompanion(userDetails, planId, request));
     }
 
     @PatchMapping("/{planId}/style")
@@ -56,6 +40,14 @@ public class PlanRestController {
                                                                      @PathVariable("planId") Long planId,
                                                                   @Valid @RequestBody PlanRequestDto.StyleDto request) {
         return ApiResponse.onSuccess(planService.savStyle(userDetails, planId, request));
+    }
+
+    @PatchMapping("/{planId}/destination")
+    @Operation(summary = "'어디로?'에 해당하는 부분 저장")
+    public ApiResponse<PlanResponseDto.TemplateResultDto> saveDestination (@AuthenticationPrincipal CustomUserDetails userDetails,
+                                                                           @PathVariable("planId") Long planId,
+                                                                           @Valid @RequestBody PlanRequestDto.DestinationDto request) {
+        return ApiResponse.onSuccess(planService.saveDestination(userDetails, planId, request));
     }
 
 //    @PostMapping("/{planId}/youtube")

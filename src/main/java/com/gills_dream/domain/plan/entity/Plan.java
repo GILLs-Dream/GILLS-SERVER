@@ -39,6 +39,10 @@ public class Plan extends BaseEntity {
     @JoinColumn(name = "team_id")
     private Team team;
 
+    // Todo: Team 구현 후, 삭제
+    @Column(columnDefinition = "TEXT")
+    private String teamName;
+
     @Column(columnDefinition = "tinyint")
     private Boolean isPinned;
 
@@ -77,17 +81,24 @@ public class Plan extends BaseEntity {
     private List<MoodType> moods = new ArrayList<>();
 
     @Builder
-    public Plan(Member member, Team team, PlanSummary summary, PlanPeriod period, String moodSummary,
+    public Plan(Member member, Team team, PlanSummary summary, PlanPeriod period, String moodSummary, String teamName,
                 Boolean isPinned, Long party, List<TransportType> transports, List<CategoryType> categories, List<MoodType> moods) {
         this.member = member;
         this.team = team;
         this.summary = summary;
         this.mooodSummary = moodSummary;
+        this.teamName = teamName;
         this.period = period;
         this.isPinned = isPinned;
         this.party = party;
         this.transports = transports != null ? new ArrayList<>(transports) : new ArrayList<>();
         this.categories = categories != null ? new ArrayList<>(categories) : new ArrayList<>();
         this.moods = moods != null ? new ArrayList<>(moods) : new ArrayList<>();
+    }
+
+    public void updatePeriodAndCompanion(PlanPeriod period, Long party, String teamName) {
+        this.period = period;
+        this.party = party;
+        this.teamName = teamName;
     }
 }

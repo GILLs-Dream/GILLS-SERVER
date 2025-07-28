@@ -30,8 +30,10 @@ public enum ErrorStatus implements BaseCode {
     NICKNAME_IS_NECESSARY(HttpStatus.BAD_REQUEST, "NICKNAME IS NECESSARY", "닉네임은 필수입니다."),
 
     // 플랜 관련 에러 응답
-    PLAN_NOT_FOUND(HttpStatus.NOT_FOUND, "PLAN NOT FOUND", "계획을 찾을 수 없습니다.");
+    PLAN_NOT_FOUND(HttpStatus.NOT_FOUND, "PLAN NOT FOUND", "계획을 찾을 수 없습니다."),
 
+    // 카테고리 관련 에러 응답
+    NO_SUCH_CATEGORY(HttpStatus.NOT_FOUND, "NO SUCH CATEGORY", "해당 카테고리가 존재하지 않습니다.");
 
 
     private final HttpStatus httpStatus;

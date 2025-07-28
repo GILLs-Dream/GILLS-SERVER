@@ -12,18 +12,15 @@ public class PlanRequestDto {
             String inputText
     ) {}
 
-    public record DurationDto (
+    public record DurationAndCompanionDto(
             @Schema(description = "여행 기간 (최대 7일)", example = "5")
-            Integer duration,
+            Long duration,
             @Schema(description = "여행 시작 날짜 (nullable)", example = "2025-07-25")
             LocalDate startDate,
             @Schema(description = "여행 끝 날짜 (nullable)", example = "2025-07-25")
-            LocalDate endDate
-    ) {}
-
-    public record CompanionDto (
+            LocalDate finishedDate,
             @Schema(description = "인원수", example = "5")
-            Integer party,
+            Long party,
             @Schema(description = "누구와", example = "길쑤니들")
             String companion
     ) {}
@@ -59,6 +56,6 @@ public class PlanRequestDto {
             @Schema(description = "주요 교통수단 [ 도보, 대중교통, 자동차, 자전거 ]", example = "도보")
             String transport,
             @Schema(description = "선호 카테고리", example = "[ \"음식\", \"자연\", \"문화\"]")
-            List<CategoryType> categoryTypeList
+            List<String> categoryTypeList
     ) {}
 }
