@@ -3,6 +3,7 @@ package com.gills_dream.domain.gpt.service;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gills_dream.domain.plan.enumerate.MoodType;
+import com.gills_dream.global.common.properties.PromptProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.core.io.ClassPathResource;
@@ -20,9 +21,7 @@ import java.util.List;
 public class GptServiceImpl implements GptService {
     private final ChatClient chatClient;
     private final ObjectMapper objectMapper;
-
-    private static final String SELECT_MOOD_PROMPT = "gpt-prompt/select-mood-prompt.txt";
-    private static final String SUMMARIZE_MOOD_PROMPT = "gpt-prompt/summarize-mood-prompt.txt";
+    private final PromptProperties promptProperties;
 
     @Override
     public List<MoodType> selectMood(String input) {
@@ -57,7 +56,7 @@ public class GptServiceImpl implements GptService {
 
     private String buildSelectMoodPrompt(String input) throws IOException {
         try {
-            Resource resource = new ClassPathResource(SELECT_MOOD_PROMPT);
+            Resource resource = new ClassPathResource(promptProperties.getSelectMood());
             String template = new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
             return template
                     .replace("{{input}}", input);
@@ -68,7 +67,7 @@ public class GptServiceImpl implements GptService {
 
     private String buildSummarizeMoodPrompt(String input) throws IOException {
         try {
-            Resource resource = new ClassPathResource(SUMMARIZE_MOOD_PROMPT);
+            Resource resource = new ClassPathResource(promptProperties.getSummarizeInput());
             String template = new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
             return template
                     .replace("{{input}}", input);
