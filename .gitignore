@@ -38,6 +38,8 @@ out/
 
 ### yml ###
 application.yml
+application-local.yml
+application-prod.yml
 docker.yml
 
 ### DS_Store ##
