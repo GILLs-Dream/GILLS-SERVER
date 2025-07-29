@@ -6,7 +6,7 @@ import com.gills_dream.domain.plan.enumerate.MoodType;
 import com.gills_dream.global.common.properties.PromptProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,7 +56,7 @@ public class GptServiceImpl implements GptService {
 
     private String buildSelectMoodPrompt(String input) throws IOException {
         try {
-            Resource resource = new ClassPathResource(promptProperties.getSelectMood());
+            Resource resource = new FileSystemResource(promptProperties.getSelectMood());
             String template = new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
             return template
                     .replace("{{input}}", input);
@@ -67,7 +67,7 @@ public class GptServiceImpl implements GptService {
 
     private String buildSummarizeMoodPrompt(String input) throws IOException {
         try {
-            Resource resource = new ClassPathResource(promptProperties.getSummarizeInput());
+            Resource resource = new FileSystemResource(promptProperties.getSummarizeInput());
             String template = new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
             return template
                     .replace("{{input}}", input);
