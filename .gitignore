@@ -50,3 +50,4 @@ docker.yml
 
 ### Prompt ###
 /src/main/resources/gpt-prompt/**
+/gpt-prompt/**
