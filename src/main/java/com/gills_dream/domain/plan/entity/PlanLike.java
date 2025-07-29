@@ -35,7 +35,7 @@ public class PlanLike {
         this.plan = plan;
         this.isLiked = isLiked != null ? isLiked : false;
         this.id = PlanLikeId.builder()
-                .memberId(member.getMemberId())
+                .memberId(member.getId())
                 .planId(plan.getId())
                 .build();
     }

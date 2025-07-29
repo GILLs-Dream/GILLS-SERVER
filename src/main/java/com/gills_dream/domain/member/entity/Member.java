@@ -1,23 +1,21 @@
 package com.gills_dream.domain.member.entity;
 
+import com.gills_dream.domain.plan.entity.Plan;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Getter
-@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
 public class Member {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long memberId;
+    private Long id;
 
-    @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
-    private LoginType loginType;
-
-    @Column(length = 10, nullable = false)
+    @Column(length = 10)
     private String nickname;
 
     private String profileImg;
@@ -25,7 +23,35 @@ public class Member {
     @Column(nullable = false)
     private String email;
 
+    private Boolean marketingAgreement = false;
+
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private RoleType roleType;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private LoginType loginType;
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
+    private List<Plan> planList = new ArrayList<>();
+
+    @Builder
+    public Member(String email, LoginType loginType, RoleType roleType) {
+        this.email = email;
+        this.loginType = loginType;
+        this.roleType = roleType;
+    }
+
+    public void updateNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
+    public void updateProfileImg(String profileImg) {
+        this.profileImg = profileImg;
+    }
+
+    public void updateMarketingAgreement(Boolean marketingAgreement) {
+        this.marketingAgreement = marketingAgreement;
+    }
 }

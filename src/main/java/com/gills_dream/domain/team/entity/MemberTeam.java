@@ -36,7 +36,7 @@ public class MemberTeam {
         this.team = team;
         this.role = role;
         this.id = MemberTeamId.builder()
-                .memberId(member.getMemberId())
+                .memberId(member.getId())
                 .teamId(team.getId())
                 .build();
     }
