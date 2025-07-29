@@ -1,6 +1,8 @@
 package com.gills_dream.domain.plan.controller;
 
+import com.gills_dream.global.map.kakao.KakaoMapClient;
 import com.gills_dream.global.map.kakao.KakaoMobilityClient;
+import com.gills_dream.global.map.kakao.dto.KeywordSearchRes;
 import com.gills_dream.global.map.kakao.dto.MobilityRouteReq;
 import com.gills_dream.global.map.kakao.dto.MobilityRouteRes;
 import com.gills_dream.global.map.openRouteService.ORSRouteClient;
@@ -23,6 +25,7 @@ import java.util.List;
 @Tag(name = "Plan", description = "여행계획 API")
 public class PlanController {
     private final KakaoMobilityClient kakaoMobilityClient;
+    private final KakaoMapClient kakaoMapClient;
     private final TmapRouteClient tmapRouteClient;
     private final TmapPoiSearchClient tmapPoiSearchClient;
     private final ORSRouteClient orsRouteClient;
@@ -57,11 +60,19 @@ public class PlanController {
 
     //Todo: 메소드 연동 후 삭제
     @Operation(summary = "Tmap POI 장소 검색", description = "장소명(키워드)으로 Tmap의 POI 데이터를 검색합니다.")
-    @GetMapping("/search/poi")
+    @GetMapping("/search/tmap/poi")
     public List<PoiSearchRes.Poi> searchPoiByKeyword(
             @Parameter(description = "검색 키워드", example = "경복궁") @RequestParam String keyword,
             @Parameter(description = "검색 결과 개수", example = "5") @RequestParam(defaultValue = "5") int count
     ) {
         return tmapPoiSearchClient.searchPois(keyword, count);
+    }
+
+    @Operation(summary = "KAKAO 키워드 장소 검색", description = "키워드로 KAKAO의 장소 데이터를 검색합니다.")
+    @GetMapping("/search/kakao/keyword")
+    public KeywordSearchRes searchKakaoByKeyword(
+            @Parameter(description = "검색 키워드", example = "경복궁") @RequestParam String keyword
+    ) {
+        return kakaoMapClient.searchByKeyword(keyword);
     }
 }
