@@ -103,9 +103,12 @@ public class Plan extends BaseEntity {
         this.youtubeUrls = youtubeUrls != null ? new ArrayList<>(youtubeUrls) : new ArrayList<>();
     }
 
-    public void updatePeriodAndCompanion(PlanPeriod period, Long party, String teamName) {
+    public void updatePeriod(PlanPeriod period) {
         this.period = period;
+    }
+
+    public void updateCompanion(String companion, Long party) {
+        this.teamName = companion;
         this.party = party;
-        this.teamName = teamName;
     }
 }

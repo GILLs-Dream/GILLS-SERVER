@@ -1,6 +1,5 @@
 package com.gills_dream.domain.plan.dto;
 
-import com.gills_dream.domain.plan.enumerate.CategoryType;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDate;
@@ -12,13 +11,16 @@ public class PlanRequestDto {
             String inputText
     ) {}
 
-    public record DurationAndCompanionDto(
+    public record DurationDto(
             @Schema(description = "여행 기간 (최대 7일)", example = "5")
             Long duration,
             @Schema(description = "여행 시작 날짜 (nullable)", example = "2025-07-25")
             LocalDate startDate,
             @Schema(description = "여행 끝 날짜 (nullable)", example = "2025-07-25")
-            LocalDate finishedDate,
+            LocalDate finishedDate
+    ) {}
+
+    public record CompanionDto (
             @Schema(description = "인원수", example = "5")
             Long party,
             @Schema(description = "누구와", example = "길쑤니들")

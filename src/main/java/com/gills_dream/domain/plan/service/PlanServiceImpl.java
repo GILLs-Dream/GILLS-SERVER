@@ -54,19 +54,29 @@ public class PlanServiceImpl implements PlanService {
 
     @Override
     @Transactional
-    public PlanResponseDto.TemplateResultDto saveDurationAndCompanion(CustomUserDetails userDetails, Long planId, PlanRequestDto.DurationAndCompanionDto request) {
+    public PlanResponseDto.TemplateResultDto saveDuration(CustomUserDetails userDetails, Long planId, PlanRequestDto.DurationDto request) {
         Member member = memberRepository.findById(userDetails.getId())
                 .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
         Plan plan = planRepository.findByIdAndMember(planId, member)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.PLAN_NOT_FOUND));
 
-        plan.updatePeriodAndCompanion (PlanPeriod.builder()
+        plan.updatePeriod (PlanPeriod.builder()
                 .startedAt(request.startDate())
                 .finishedAt(request.finishedDate())
                 .duration(request.duration())
-                .build(),
-                request.party(),
-                request.companion());
+                .build());
+
+        return new PlanResponseDto.TemplateResultDto(plan.getId());
+    }
+
+    @Override
+    public PlanResponseDto.TemplateResultDto saveCompanion(CustomUserDetails userDetails, Long planId, PlanRequestDto.CompanionDto request) {
+        Member member = memberRepository.findById(userDetails.getId())
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+        Plan plan = planRepository.findByIdAndMember(planId, member)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.PLAN_NOT_FOUND));
+
+        plan.updateCompanion(request.companion(), request.party());
 
         return new PlanResponseDto.TemplateResultDto(plan.getId());
     }
