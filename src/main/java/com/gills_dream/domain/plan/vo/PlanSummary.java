@@ -2,9 +2,12 @@ package com.gills_dream.domain.plan.vo;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
+import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.NoArgsConstructor;
 
 @Embeddable
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PlanSummary {
     @Column(columnDefinition = "varchar(100)")
     private String title;
