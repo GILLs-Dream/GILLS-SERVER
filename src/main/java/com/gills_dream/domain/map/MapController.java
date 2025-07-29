@@ -12,6 +12,7 @@ import com.gills_dream.global.map.tmap.TmapPoiSearchClient;
 import com.gills_dream.global.map.tmap.TmapRouteClient;
 import com.gills_dream.global.map.tmap.dto.*;
 import com.gills_dream.global.map.tourapi.TourApiClient;
+import com.gills_dream.global.map.tourapi.TourPlaceDetailRes;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -87,5 +88,12 @@ public class MapController {
             @RequestParam(defaultValue = "10") int numOfRows
     ) {
         return tourApiClient.searchByKeyword(keyword, category, pageNo, numOfRows);
+    }
+
+    @GetMapping("/detail")
+    public TourPlaceDetailRes getDetail(
+            @RequestParam String contentId
+    ) {
+        return tourApiClient.getPlaceDetail(contentId);
     }
 }

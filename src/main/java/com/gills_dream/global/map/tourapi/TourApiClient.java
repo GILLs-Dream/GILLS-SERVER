@@ -70,6 +70,7 @@ public class TourApiClient {
         if (items.isArray()) {
             for (JsonNode node : items) {
                 results.add(new TourKeywordSearchRes(
+                        node.path("contentid").asText(),
                         node.path("title").asText(),
                         node.path("addr1").asText(),
                         node.path("mapx").asText(),
@@ -80,5 +81,54 @@ public class TourApiClient {
         }
 
         return results;
+    }
+
+    public TourPlaceDetailRes getPlaceDetail(String contentId) {
+        try {
+            URI uri = UriComponentsBuilder.fromUriString("http://apis.data.go.kr/B551011/KorService2/detailCommon2")
+                    .queryParam("serviceKey", serviceKey)
+                    .queryParam("MobileApp", "TourApp")
+                    .queryParam("MobileOS", "IOS")
+                    .queryParam("_type", "json")
+                    .queryParam("contentId", contentId)
+                    .build(true)
+                    .toUri();
+
+            String json = restClient.get()
+                    .uri(uri)
+                    .retrieve()
+                    .body(String.class);
+
+            log.info("TourAPI raw response (detailCommon2):\n{}", json);
+            JsonNode root = objectMapper.readTree(json);
+            JsonNode item = root
+                    .path("response")
+                    .path("body")
+                    .path("items")
+                    .path("item");
+
+            if (item.isArray() && !item.isEmpty()) item = item.get(0);
+            if (item.isMissingNode()) return null;
+
+            return new TourPlaceDetailRes(
+                    item.path("contentid").asText(),
+                    item.path("title").asText(),
+                    item.path("overview").asText(),
+                    item.path("addr1").asText(),
+                    item.path("addr2").asText(),
+                    item.path("zipcode").asText(),
+                    item.path("mapx").asText(),
+                    item.path("mapy").asText(),
+                    item.path("cat1").asText(),
+                    item.path("cat2").asText(),
+                    item.path("cat3").asText(),
+                    item.path("sigungucode").asText(),
+                    item.path("firstimage").asText()
+            );
+
+        } catch (Exception e) {
+            log.error("Failed to fetch detail from TourAPI", e);
+            return null;
+        }
     }
 }
