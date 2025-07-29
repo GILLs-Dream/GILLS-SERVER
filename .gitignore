@@ -38,6 +38,8 @@ out/
 
 ### yml ###
 application.yml
+application-local.yml
+application-prod.yml
 docker.yml
 
 ### DS_Store ##
@@ -48,3 +50,6 @@ docker.yml
 
 ### Prompt ###
 /src/main/resources/gpt-prompt/**
+
+### Python ###
+/python-script/**

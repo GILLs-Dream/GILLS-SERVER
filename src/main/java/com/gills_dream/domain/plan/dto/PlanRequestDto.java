@@ -2,6 +2,7 @@ package com.gills_dream.domain.plan.dto;
 
 import com.gills_dream.domain.plan.enumerate.CategoryType;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Getter;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -59,8 +60,9 @@ public class PlanRequestDto {
             List<String> categoryTypeList
     ) {}
 
-    public record YoutubeUrlDto (
-            @Schema(description = "유튜브 링크 리스트")
-            List<String> youtubeUrlList
-    ) {}
+    @Getter
+    public static class YoutubeUrlDto {
+        @Schema(description = "받은 유튜브 링크 리스트")
+        private List<String> youtubeUrlList;
+    }
 }

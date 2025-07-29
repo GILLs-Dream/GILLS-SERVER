@@ -10,6 +10,7 @@ import com.gills_dream.domain.plan.enumerate.CategoryType;
 import com.gills_dream.domain.plan.enumerate.MoodType;
 import com.gills_dream.domain.plan.repository.PlanRepository;
 import com.gills_dream.domain.plan.vo.PlanPeriod;
+import com.gills_dream.domain.python.service.PythonService;
 import com.gills_dream.global.apiPayload.code.status.ErrorStatus;
 import com.gills_dream.global.apiPayload.exception.GeneralException;
 import com.gills_dream.global.jwt.CustomUserDetails;
@@ -28,6 +29,7 @@ public class PlanServiceImpl implements PlanService {
     private final GptService gptService;
     private final PlanRepository planRepository;
     private final MemberRepository memberRepository;
+    private final PythonService pythonService;
 
     @Override
     @Transactional
@@ -101,7 +103,13 @@ public class PlanServiceImpl implements PlanService {
 
     @Override
     public PlanResponseDto.YoutubeResultDto saveYoutube(CustomUserDetails userDetails, Long planId, PlanRequestDto.YoutubeUrlDto request) {
-        // Todo: 스프링 파이썬 연동 후 구현
-        return null;
+        Member member = memberRepository.findById(userDetails.getId())
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+        Plan plan = planRepository.findByIdAndMember(planId, member)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.PLAN_NOT_FOUND));
+
+        List<String> extractedPlaceList = pythonService.process_youtube(request);
+
+        return new PlanResponseDto.YoutubeResultDto(plan.getId(), extractedPlaceList);
     }
 }
