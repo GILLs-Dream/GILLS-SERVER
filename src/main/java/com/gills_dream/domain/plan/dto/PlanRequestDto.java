@@ -35,6 +35,8 @@ public class PlanRequestDto {
     ) {}
 
     public record TravelPlaceDto (
+            @Schema(description = "여행 지역 선택", example = "서울")
+            String region,
             @Schema(description = "여행 장소 이름", example = "동궁과 월지")
             String placeName,
             @Schema(description = "방문 날짜 (nullable)", example = "2025-07-25")
