@@ -6,5 +6,6 @@ import java.util.List;
 
 public interface GptService {
     List<MoodType> selectMood(String input);
-    String summarizeMood(String input);
+    String summarizeInput(String input);
+    List<String> filterPlace(List<String> extractedPlaceList);
 }

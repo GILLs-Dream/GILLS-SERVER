@@ -37,7 +37,7 @@ public class PlanServiceImpl implements PlanService {
         Member member = memberRepository.findById(userDetails.getMember().getId())
                 .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
         List<MoodType> moodTypeList = gptService.selectMood(request.inputText());
-        String summary = gptService.summarizeMood(request.inputText());
+        String summary = gptService.summarizeInput(request.inputText());
 
         Plan plan = Plan.builder()
                 .member(member)
@@ -57,10 +57,7 @@ public class PlanServiceImpl implements PlanService {
     @Override
     @Transactional
     public PlanResponseDto.TemplateResultDto saveDuration(CustomUserDetails userDetails, Long planId, PlanRequestDto.DurationDto request) {
-        Member member = memberRepository.findById(userDetails.getId())
-                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
-        Plan plan = planRepository.findByIdAndMember(planId, member)
-                .orElseThrow(() -> new GeneralException(ErrorStatus.PLAN_NOT_FOUND));
+        Plan plan = checkMemberAndPlan(userDetails, planId);
 
         plan.updatePeriod (PlanPeriod.builder()
                 .startedAt(request.startDate())
@@ -73,10 +70,7 @@ public class PlanServiceImpl implements PlanService {
 
     @Override
     public PlanResponseDto.TemplateResultDto saveCompanion(CustomUserDetails userDetails, Long planId, PlanRequestDto.CompanionDto request) {
-        Member member = memberRepository.findById(userDetails.getId())
-                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
-        Plan plan = planRepository.findByIdAndMember(planId, member)
-                .orElseThrow(() -> new GeneralException(ErrorStatus.PLAN_NOT_FOUND));
+        Plan plan = checkMemberAndPlan(userDetails, planId);
 
         plan.updateCompanion(request.companion(), request.party());
 
@@ -86,10 +80,7 @@ public class PlanServiceImpl implements PlanService {
     @Override
     @Transactional
     public PlanResponseDto.TemplateResultDto saveDestination(CustomUserDetails userDetails, Long planId, PlanRequestDto.DestinationDto request) {
-        Member member = memberRepository.findById(userDetails.getId())
-                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
-        Plan plan = planRepository.findByIdAndMember(planId, member)
-                .orElseThrow(() -> new GeneralException(ErrorStatus.PLAN_NOT_FOUND));
+        Plan plan = checkMemberAndPlan(userDetails, planId);
 
         // Todo: 세부사항 논의 후 구현
 
@@ -99,10 +90,7 @@ public class PlanServiceImpl implements PlanService {
     @Override
     @Transactional
     public PlanResponseDto.TemplateResultDto savStyle(CustomUserDetails userDetails, Long planId, PlanRequestDto.StyleDto request) {
-        Member member = memberRepository.findById(userDetails.getId())
-                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
-        Plan plan = planRepository.findByIdAndMember(planId, member)
-                .orElseThrow(() -> new GeneralException(ErrorStatus.PLAN_NOT_FOUND));
+        Plan plan = checkMemberAndPlan(userDetails, planId);
 
         String tType = request.transport();
         plan.getTransports().addAll(TRANSPORT_MAP.get(tType));
@@ -113,13 +101,19 @@ public class PlanServiceImpl implements PlanService {
 
     @Override
     public PlanResponseDto.YoutubeResultDto saveYoutube(CustomUserDetails userDetails, Long planId, PlanRequestDto.YoutubeUrlDto request) {
+        Plan plan = checkMemberAndPlan(userDetails, planId);
+
+        List<String> extractedPlaceList = pythonService.processYoutube(request);
+        List<String> filteredPlaceList = gptService.filterPlace(extractedPlaceList);
+
+        return new PlanResponseDto.YoutubeResultDto(plan.getId(), filteredPlaceList);
+    }
+
+    private Plan checkMemberAndPlan(CustomUserDetails userDetails, Long planId) {
         Member member = memberRepository.findById(userDetails.getId())
                 .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
-        Plan plan = planRepository.findByIdAndMember(planId, member)
+
+        return planRepository.findByIdAndMember(planId, member)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.PLAN_NOT_FOUND));
-
-        List<String> extractedPlaceList = pythonService.process_youtube(request);
-
-        return new PlanResponseDto.YoutubeResultDto(plan.getId(), extractedPlaceList);
     }
 }

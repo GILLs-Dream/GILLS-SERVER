@@ -21,7 +21,7 @@ public class PythonServiceImpl implements PythonService {
     private final PythonProperties pythonProperties;
 
     @Override
-    public List<String> process_youtube(PlanRequestDto.YoutubeUrlDto request) {
+    public List<String> processYoutube(PlanRequestDto.YoutubeUrlDto request) {
         try {
             RestClient restClient = RestClient.builder().build();
 

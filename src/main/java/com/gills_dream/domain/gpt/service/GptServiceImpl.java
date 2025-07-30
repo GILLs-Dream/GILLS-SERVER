@@ -27,7 +27,7 @@ public class GptServiceImpl implements GptService {
     public List<MoodType> selectMood(String input) {
         List<MoodType> moodTypeList;
         try {
-            String prompt = buildSelectMoodPrompt(input);
+            String prompt = buildPrompt(input, promptProperties.getSelectMood());
             String response = getResponse(prompt);
             System.out.println(response);
             List<String> moodList = objectMapper.readValue(response, new TypeReference<>() {});
@@ -40,10 +40,10 @@ public class GptServiceImpl implements GptService {
     }
 
     @Override
-    public String summarizeMood(String input) {
+    public String summarizeInput(String input) {
         String summary;
         try {
-            String prompt = buildSummarizeMoodPrompt(input);
+            String prompt = buildPrompt(input, promptProperties.getSummarizeInput());
             String response = getResponse(prompt);
             System.out.println(response);
             summary = objectMapper.readValue(response, new TypeReference<>() {});
@@ -54,20 +54,24 @@ public class GptServiceImpl implements GptService {
         return summary;
     }
 
-    private String buildSelectMoodPrompt(String input) throws IOException {
+    @Override
+    public List<String> filterPlace(List<String> extractedPlaceList) {
+        List<String> filteredPlaceList;
         try {
-            Resource resource = new FileSystemResource(promptProperties.getSelectMood());
-            String template = new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-            return template
-                    .replace("{{input}}", input);
+            String prompt = buildPrompt(String.join(", ", extractedPlaceList), promptProperties.getFilterPlace());
+            String response = getResponse(prompt);
+            System.out.println(response);
+            filteredPlaceList = objectMapper.readValue(response, new TypeReference<>() {});
         } catch (IOException e) {
-            throw new IOException("Failed to read prompt text", e);
+            throw new RuntimeException("Failed to process GPT response", e);
         }
+
+        return filteredPlaceList;
     }
 
-    private String buildSummarizeMoodPrompt(String input) throws IOException {
+    private String buildPrompt(String input, String promptProperties) throws IOException {
         try {
-            Resource resource = new FileSystemResource(promptProperties.getSummarizeInput());
+            Resource resource = new FileSystemResource(promptProperties);
             String template = new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
             return template
                     .replace("{{input}}", input);
