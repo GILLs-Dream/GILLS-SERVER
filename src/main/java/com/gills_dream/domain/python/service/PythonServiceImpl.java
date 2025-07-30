@@ -9,8 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 
@@ -22,21 +22,18 @@ public class PythonServiceImpl implements PythonService {
 
     @Override
     public List<String> process_youtube(PlanRequestDto.YoutubeUrlDto request) {
-        RestTemplate restTemplate = new RestTemplate();
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<PlanRequestDto.YoutubeUrlDto> entity = new HttpEntity<>(request, headers);
-
         try {
-            ResponseEntity<PythonResponseDto.ProcessYoutubeDto> response = restTemplate.exchange(
-                    pythonProperties.getProcessYoutube(),
-                    HttpMethod.POST,
-                    entity,
-                    PythonResponseDto.ProcessYoutubeDto.class
-            );
+            RestClient restClient = RestClient.builder().build();
 
-            return  response.getBody().getPlaceList();
+            PythonResponseDto.ProcessYoutubeDto response = restClient
+                    .post()
+                    .uri(pythonProperties.getProcessYoutube())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(request)
+                    .retrieve()
+                    .body(PythonResponseDto.ProcessYoutubeDto.class);
+
+            return  response.getPlaceList();
 
         } catch (RestClientException e) {
             throw new GeneralException(ErrorStatus.PYTHON_SERVER_CONNECTION_ERROR);
