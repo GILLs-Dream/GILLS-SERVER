@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.*;
 public class TokenRestController {
     private final TokenUtils tokenUtils;
     private final CustomTokenService jwtTokenService;
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @GetMapping("member/reissue")
     @Operation(summary = "리프레시 토큰으로 엑세스 토큰 재발급", description = "프론트가 쿠키로 요청합니다")
