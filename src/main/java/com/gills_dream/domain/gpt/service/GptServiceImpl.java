@@ -3,6 +3,7 @@ package com.gills_dream.domain.gpt.service;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gills_dream.domain.plan.enumerate.MoodType;
+import com.gills_dream.domain.python.dto.PythonResponseDto;
 import com.gills_dream.global.common.properties.PromptProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.client.ChatClient;
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -55,13 +57,18 @@ public class GptServiceImpl implements GptService {
     }
 
     @Override
-    public List<String> filterPlace(List<String> extractedPlaceList) {
-        List<String> filteredPlaceList;
+    public List<String> filterPlace(PythonResponseDto.ProcessResultDto processDto, String region) {
+        List<String> filteredPlaceList = new ArrayList<>();
         try {
-            String prompt = buildPrompt(String.join(", ", extractedPlaceList), promptProperties.getFilterPlace());
-            String response = getResponse(prompt);
-            System.out.println(response);
-            filteredPlaceList = objectMapper.readValue(response, new TypeReference<>() {});
+            for (PythonResponseDto.VideoResultDto dto: processDto.getVideoResultDtoList()) {
+                List<String> newPlaceList;
+                String prompt = buildPrompt(dto, promptProperties.getFilterPlace(), region);
+                String response = getResponse(prompt);
+                System.out.println(response);
+                newPlaceList = objectMapper.readValue(response, new TypeReference<>() {});
+                filteredPlaceList.addAll(newPlaceList);
+            }
+
         } catch (IOException e) {
             throw new RuntimeException("Failed to process GPT response", e);
         }
@@ -75,6 +82,20 @@ public class GptServiceImpl implements GptService {
             String template = new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
             return template
                     .replace("{{input}}", input);
+        } catch (IOException e) {
+            throw new IOException("Failed to read prompt text", e);
+        }
+    }
+
+    private String buildPrompt(PythonResponseDto.VideoResultDto dto, String promptProperties, String region) throws IOException {
+        try {
+            Resource resource = new FileSystemResource(promptProperties);
+            String template = new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+            return template
+                    .replace("{{region}}", region)
+                    .replace("{{title}}", dto.getTitle())
+                    .replace("{{description}}", dto.getDescription())
+                    .replace("{{place-list}}", String.join(", ", dto.getPlaceList()));
         } catch (IOException e) {
             throw new IOException("Failed to read prompt text", e);
         }

@@ -58,11 +58,11 @@ public class PlanRestController {
         return ApiResponse.onSuccess(planService.saveDestination(userDetails, planId, request));
     }
 
-    @PostMapping("/{planId}/youtube")
+    @PostMapping("/{planId}/videos")
     @Operation(summary = "여행 장소 추천 위한 유튜브 링크 받음")
-    public ApiResponse<PlanResponseDto.YoutubeResultDto> saveYoutube (@AuthenticationPrincipal CustomUserDetails userDetails,
+    public ApiResponse<PlanResponseDto.VideoResultDto> saveVideo (@AuthenticationPrincipal CustomUserDetails userDetails,
                                                                       @PathVariable("planId") Long planId,
-                                                                      @Valid @RequestBody PlanRequestDto.YoutubeUrlDto request) {
-        return ApiResponse.onSuccess(planService.saveYoutube(userDetails, planId, request));
+                                                                      @Valid @RequestBody PlanRequestDto.VideoUrlDto request) {
+        return ApiResponse.onSuccess(planService.saveVideo(userDetails, planId, request));
     }
 }

@@ -13,8 +13,22 @@ public class PythonResponseDto {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class ProcessYoutubeDto {
-        @Schema(description = "유튜브 영상에서 추출된 장소 리스트")
+    public static class ProcessResultDto {
+        private List<VideoResultDto> videoResultDtoList;
+    }
+
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class VideoResultDto {
+        @Schema(description = "비디오 id")
+        private String videoId;
+        @Schema(description = "비디오 제목")
+        private String title;
+        @Schema(description = "비디오 설명")
+        private String description;
+        @Schema(description = "해당 영상에서 추출된 장소 리스트")
         private List<String> placeList;
     }
 }

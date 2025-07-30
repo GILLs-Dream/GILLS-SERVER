@@ -1,5 +1,4 @@
 package com.gills_dream.domain.python.service;
-
 import com.gills_dream.domain.plan.dto.PlanRequestDto;
 import com.gills_dream.domain.python.dto.PythonResponseDto;
 import com.gills_dream.global.apiPayload.code.status.ErrorStatus;
@@ -9,10 +8,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
 
-import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -21,19 +20,28 @@ public class PythonServiceImpl implements PythonService {
     private final PythonProperties pythonProperties;
 
     @Override
-    public List<String> processYoutube(PlanRequestDto.YoutubeUrlDto request) {
+    public PythonResponseDto.ProcessResultDto processVideo(PlanRequestDto.VideoUrlDto request){
         try {
-            RestClient restClient = RestClient.builder().build();
+            RestTemplate restTemplate = new RestTemplate();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
 
-            PythonResponseDto.ProcessYoutubeDto response = restClient
-                    .post()
-                    .uri(pythonProperties.getProcessYoutube())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(request)
-                    .retrieve()
-                    .body(PythonResponseDto.ProcessYoutubeDto.class);
+            HttpEntity<PlanRequestDto.VideoUrlDto> entity = new HttpEntity<>(request, headers);
 
-            return  response.getPlaceList();
+            ResponseEntity<PythonResponseDto.ProcessResultDto> response = restTemplate.exchange(
+                    pythonProperties.getProcessYoutube(),
+                    HttpMethod.POST,
+                    entity,
+                    PythonResponseDto.ProcessResultDto.class
+            );
+
+            if (Objects.requireNonNull(response.getBody()).getVideoResultDtoList() == null || response.getBody().getVideoResultDtoList().isEmpty()) {
+                throw new GeneralException(ErrorStatus.CANNOT_PROCESS_VIDEO);
+            }
+
+            return PythonResponseDto.ProcessResultDto.builder()
+                    .videoResultDtoList(response.getBody().getVideoResultDtoList())
+                    .build();
 
         } catch (RestClientException e) {
             throw new GeneralException(ErrorStatus.PYTHON_SERVER_CONNECTION_ERROR);

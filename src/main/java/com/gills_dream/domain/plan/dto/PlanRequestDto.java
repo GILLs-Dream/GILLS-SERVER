@@ -1,7 +1,11 @@
 package com.gills_dream.domain.plan.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -65,8 +69,16 @@ public class PlanRequestDto {
     ) {}
 
     @Getter
-    public static class YoutubeUrlDto {
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class VideoUrlDto {
+        @JsonProperty("region")
+        @Schema(description = "여행 지역", example = "경주")
+        private String region;
+
+        @JsonProperty("video_url_list")
         @Schema(description = "받은 유튜브 링크 리스트")
-        private List<String> youtubeUrlList;
+        private List<String> videoUrlList;
     }
 }
