@@ -3,6 +3,7 @@ package com.gills_dream.domain.plan.service;
 import com.gills_dream.domain.gpt.service.GptService;
 import com.gills_dream.domain.member.entity.Member;
 import com.gills_dream.domain.member.repository.MemberRepository;
+import com.gills_dream.domain.place.enumerate.Region;
 import com.gills_dream.domain.plan.dto.PlanRequestDto;
 import com.gills_dream.domain.plan.dto.PlanResponseDto;
 import com.gills_dream.domain.plan.entity.Plan;
@@ -10,6 +11,8 @@ import com.gills_dream.domain.plan.enumerate.CategoryType;
 import com.gills_dream.domain.plan.enumerate.MoodType;
 import com.gills_dream.domain.plan.repository.PlanRepository;
 import com.gills_dream.domain.plan.vo.PlanPeriod;
+import com.gills_dream.domain.python.dto.PythonResponseDto;
+import com.gills_dream.domain.python.service.PythonService;
 import com.gills_dream.global.apiPayload.code.status.ErrorStatus;
 import com.gills_dream.global.apiPayload.exception.GeneralException;
 import com.gills_dream.global.jwt.CustomUserDetails;
@@ -28,6 +31,7 @@ public class PlanServiceImpl implements PlanService {
     private final GptService gptService;
     private final PlanRepository planRepository;
     private final MemberRepository memberRepository;
+    private final PythonService pythonService;
 
     @Override
     @Transactional
@@ -35,7 +39,7 @@ public class PlanServiceImpl implements PlanService {
         Member member = memberRepository.findById(userDetails.getMember().getId())
                 .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
         List<MoodType> moodTypeList = gptService.selectMood(request.inputText());
-        String summary = gptService.summarizeMood(request.inputText());
+        String summary = gptService.summarizeInput(request.inputText());
 
         Plan plan = Plan.builder()
                 .member(member)
@@ -55,10 +59,7 @@ public class PlanServiceImpl implements PlanService {
     @Override
     @Transactional
     public PlanResponseDto.TemplateResultDto saveDuration(CustomUserDetails userDetails, Long planId, PlanRequestDto.DurationDto request) {
-        Member member = memberRepository.findById(userDetails.getId())
-                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
-        Plan plan = planRepository.findByIdAndMember(planId, member)
-                .orElseThrow(() -> new GeneralException(ErrorStatus.PLAN_NOT_FOUND));
+        Plan plan = checkMemberAndPlan(userDetails, planId);
 
         plan.updatePeriod (PlanPeriod.builder()
                 .startedAt(request.startDate())
@@ -71,10 +72,7 @@ public class PlanServiceImpl implements PlanService {
 
     @Override
     public PlanResponseDto.TemplateResultDto saveCompanion(CustomUserDetails userDetails, Long planId, PlanRequestDto.CompanionDto request) {
-        Member member = memberRepository.findById(userDetails.getId())
-                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
-        Plan plan = planRepository.findByIdAndMember(planId, member)
-                .orElseThrow(() -> new GeneralException(ErrorStatus.PLAN_NOT_FOUND));
+        Plan plan = checkMemberAndPlan(userDetails, planId);
 
         plan.updateCompanion(request.companion(), request.party());
 
@@ -84,10 +82,7 @@ public class PlanServiceImpl implements PlanService {
     @Override
     @Transactional
     public PlanResponseDto.TemplateResultDto saveDestination(CustomUserDetails userDetails, Long planId, PlanRequestDto.DestinationDto request) {
-        Member member = memberRepository.findById(userDetails.getId())
-                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
-        Plan plan = planRepository.findByIdAndMember(planId, member)
-                .orElseThrow(() -> new GeneralException(ErrorStatus.PLAN_NOT_FOUND));
+        Plan plan = checkMemberAndPlan(userDetails, planId);
 
         // Todo: 세부사항 논의 후 구현
 
@@ -97,10 +92,7 @@ public class PlanServiceImpl implements PlanService {
     @Override
     @Transactional
     public PlanResponseDto.TemplateResultDto savStyle(CustomUserDetails userDetails, Long planId, PlanRequestDto.StyleDto request) {
-        Member member = memberRepository.findById(userDetails.getId())
-                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
-        Plan plan = planRepository.findByIdAndMember(planId, member)
-                .orElseThrow(() -> new GeneralException(ErrorStatus.PLAN_NOT_FOUND));
+        Plan plan = checkMemberAndPlan(userDetails, planId);
 
         String tType = request.transport();
         plan.getTransports().addAll(TRANSPORT_MAP.get(tType));
@@ -110,8 +102,25 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
-    public PlanResponseDto.YoutubeResultDto saveYoutube(CustomUserDetails userDetails, Long planId, PlanRequestDto.YoutubeUrlDto request) {
-        // Todo: 스프링 파이썬 연동 후 구현
-        return null;
+    @Transactional
+    public PlanResponseDto.VideoResultDto saveVideo(CustomUserDetails userDetails, Long planId, PlanRequestDto.VideoUrlDto request) {
+        Plan plan = checkMemberAndPlan(userDetails, planId);
+
+        plan.updateRegion(Region.fromDescription(request.getRegion()));
+
+        PythonResponseDto.ProcessResultDto processDto = pythonService.processVideo(request);
+        plan.getYoutubeIds().addAll(processDto.getVideoResultDtoList().stream().map(PythonResponseDto.VideoResultDto::getVideoId).toList());
+        List<String> filteredPlaceList = gptService.filterPlace(processDto, request.getRegion());
+        plan.getCandidates().addAll(filteredPlaceList);
+
+        return new PlanResponseDto.VideoResultDto(plan.getId(), filteredPlaceList);
+    }
+
+    private Plan checkMemberAndPlan(CustomUserDetails userDetails, Long planId) {
+        Member member = memberRepository.findById(userDetails.getId())
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+
+        return planRepository.findByIdAndMember(planId, member)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.PLAN_NOT_FOUND));
     }
 }

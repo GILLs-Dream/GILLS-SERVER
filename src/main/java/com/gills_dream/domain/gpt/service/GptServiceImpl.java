@@ -3,6 +3,7 @@ package com.gills_dream.domain.gpt.service;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gills_dream.domain.plan.enumerate.MoodType;
+import com.gills_dream.domain.python.dto.PythonResponseDto;
 import com.gills_dream.global.common.properties.PromptProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.client.ChatClient;
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -27,7 +29,7 @@ public class GptServiceImpl implements GptService {
     public List<MoodType> selectMood(String input) {
         List<MoodType> moodTypeList;
         try {
-            String prompt = buildSelectMoodPrompt(input);
+            String prompt = buildPrompt(input, promptProperties.getSelectMood());
             String response = getResponse(prompt);
             System.out.println(response);
             List<String> moodList = objectMapper.readValue(response, new TypeReference<>() {});
@@ -40,10 +42,10 @@ public class GptServiceImpl implements GptService {
     }
 
     @Override
-    public String summarizeMood(String input) {
+    public String summarizeInput(String input) {
         String summary;
         try {
-            String prompt = buildSummarizeMoodPrompt(input);
+            String prompt = buildPrompt(input, promptProperties.getSummarizeInput());
             String response = getResponse(prompt);
             System.out.println(response);
             summary = objectMapper.readValue(response, new TypeReference<>() {});
@@ -54,9 +56,29 @@ public class GptServiceImpl implements GptService {
         return summary;
     }
 
-    private String buildSelectMoodPrompt(String input) throws IOException {
+    @Override
+    public List<String> filterPlace(PythonResponseDto.ProcessResultDto processDto, String region) {
+        List<String> filteredPlaceList = new ArrayList<>();
         try {
-            Resource resource = new FileSystemResource(promptProperties.getSelectMood());
+            for (PythonResponseDto.VideoResultDto dto: processDto.getVideoResultDtoList()) {
+                List<String> newPlaceList;
+                String prompt = buildPrompt(dto, promptProperties.getFilterPlace(), region);
+                String response = getResponse(prompt);
+                System.out.println(response);
+                newPlaceList = objectMapper.readValue(response, new TypeReference<>() {});
+                filteredPlaceList.addAll(newPlaceList);
+            }
+
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to process GPT response", e);
+        }
+
+        return filteredPlaceList;
+    }
+
+    private String buildPrompt(String input, String promptProperties) throws IOException {
+        try {
+            Resource resource = new FileSystemResource(promptProperties);
             String template = new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
             return template
                     .replace("{{input}}", input);
@@ -65,12 +87,15 @@ public class GptServiceImpl implements GptService {
         }
     }
 
-    private String buildSummarizeMoodPrompt(String input) throws IOException {
+    private String buildPrompt(PythonResponseDto.VideoResultDto dto, String promptProperties, String region) throws IOException {
         try {
-            Resource resource = new FileSystemResource(promptProperties.getSummarizeInput());
+            Resource resource = new FileSystemResource(promptProperties);
             String template = new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
             return template
-                    .replace("{{input}}", input);
+                    .replace("{{region}}", region)
+                    .replace("{{title}}", dto.getTitle())
+                    .replace("{{description}}", dto.getDescription())
+                    .replace("{{place-list}}", String.join(", ", dto.getPlaceList()));
         } catch (IOException e) {
             throw new IOException("Failed to read prompt text", e);
         }

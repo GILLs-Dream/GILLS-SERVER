@@ -20,7 +20,7 @@ public class PlanResponseDto {
             Long planId
     ) {}
 
-    public record YoutubeResultDto (
+    public record VideoResultDto (
             @Schema(description = "여행 id", example = "1")
             Long planId,
             @Schema(description = "추천 여행 장소 리스트")

@@ -12,4 +12,5 @@ import org.springframework.stereotype.Component;
 public class PromptProperties {
     private String selectMood;
     private String summarizeInput;
+    private String filterPlace;
 }
