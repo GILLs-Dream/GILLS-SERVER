@@ -26,4 +26,8 @@ public class PlanResponseDto {
             @Schema(description = "추천 여행 장소 리스트")
             List<String> recommendedList
     ) {}
+
+    public record GenerateResultDto (
+
+    ) {}
 }

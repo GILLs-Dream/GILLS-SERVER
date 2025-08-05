@@ -75,9 +75,8 @@ public class Plan extends BaseEntity {
     @Column(name = "category_type")
     private List<CategoryType> categories = new ArrayList<>();
 
-    @ManyToMany
-    @JoinTable(name = "plan_place", joinColumns = @JoinColumn(name = "plan_id"), inverseJoinColumns = @JoinColumn(name = "place_id"))
-    private List<Place> places = new ArrayList<>();
+    @OneToMany(mappedBy = "plan", cascade = CascadeType.ALL)
+    private List<PlanPlace> planPlaces = new ArrayList<>();
 
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "plan_mood", joinColumns = @JoinColumn(name = "plan_id"))
