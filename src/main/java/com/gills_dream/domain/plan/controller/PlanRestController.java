@@ -50,7 +50,7 @@ public class PlanRestController {
         return ApiResponse.onSuccess(planService.savStyle(userDetails, planId, request));
     }
 
-    @PatchMapping("/{planId}/destination")
+    @PostMapping("/{planId}/destination")
     @Operation(summary = "'어디로?'에 해당하는 부분 저장")
     public ApiResponse<PlanResponseDto.TemplateResultDto> saveDestination (@AuthenticationPrincipal CustomUserDetails userDetails,
                                                                            @PathVariable("planId") Long planId,
@@ -58,11 +58,18 @@ public class PlanRestController {
         return ApiResponse.onSuccess(planService.saveDestination(userDetails, planId, request));
     }
 
-    @PostMapping("/{planId}/videos")
+    @PatchMapping("/{planId}/videos")
     @Operation(summary = "여행 장소 추천 위한 유튜브 링크 받음 (지역 선택 포함)")
     public ApiResponse<PlanResponseDto.VideoResultDto> saveVideo (@AuthenticationPrincipal CustomUserDetails userDetails,
                                                                       @PathVariable("planId") Long planId,
                                                                       @Valid @RequestBody PlanRequestDto.VideoUrlDto request) {
         return ApiResponse.onSuccess(planService.saveVideo(userDetails, planId, request));
+    }
+
+    @PostMapping("/{planId}/generate")
+    @Operation(summary = "템플릿 정보 기반 여행 생성")
+    public ApiResponse<PlanResponseDto.GenerateResultDto> generate (@AuthenticationPrincipal CustomUserDetails userDetails,
+                                                                    @PathVariable("planId") Long planId) {
+        return ApiResponse.onSuccess(planService.generate(userDetails, planId));
     }
 }

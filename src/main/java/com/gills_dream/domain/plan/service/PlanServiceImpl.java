@@ -121,6 +121,12 @@ public class PlanServiceImpl implements PlanService {
         return new PlanResponseDto.VideoResultDto(plan.getId(), filteredPlaceList);
     }
 
+    @Override
+    @Transactional
+    public PlanResponseDto.GenerateResultDto generate(CustomUserDetails userDetails, Long planId) {
+        return null;
+    }
+
     private Plan checkMemberAndPlan(CustomUserDetails userDetails, Long planId) {
         Member member = memberRepository.findById(userDetails.getId())
                 .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
