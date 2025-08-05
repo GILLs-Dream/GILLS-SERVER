@@ -2,6 +2,7 @@ package com.gills_dream.domain.place.service;
 
 import com.gills_dream.domain.place.entity.Place;
 import com.gills_dream.domain.place.enumerate.PlaceType;
+import com.gills_dream.domain.place.record.PlacePair;
 import com.gills_dream.domain.place.repository.PlaceRepository;
 import com.gills_dream.domain.place.vo.PlacePeriod;
 import com.gills_dream.domain.plan.dto.PlanRequestDto;
@@ -32,16 +33,16 @@ public class PlaceServiceImpl implements PlaceService {
         List<PlanPlace> planPlaceList = new ArrayList<>();
 
         for (PlanRequestDto.StayPlaceDto dto : stayPlaceDtoList) {
-            Place place = placeRepository.findByNameAndAddress(dto.placeName(), dto.address())
-                    .orElseGet(() -> createPlace(dto.placeName(), dto.address(), dto.description(), dto.img(), PlaceType.ACCOMMODATION));
+            Place place = placeRepository.findByNameAndLocXAndLocY(dto.placeName(), dto.locX(), dto.locY())
+                    .orElseGet(() -> createPlace(dto.placeName(), dto.locX(), dto.locY(), dto.description(), dto.img(), PlaceType.ACCOMMODATION));
             PlanPlace planPlace = createPlanPlace(plan, place, createPeriod(dto.startDate(), dto.endDate()));
             placeList.add(place);
             planPlaceList.add(planPlace);
         }
 
         for (PlanRequestDto.TravelPlaceDto dto : travelPlaceDtoList) {
-            Place place = placeRepository.findByNameAndAddress(dto.placeName(), dto.address())
-                    .orElseGet(() -> createPlace(dto.placeName(), dto.address(), dto.description(), dto.img(), PlaceType.TRAVEL_DESTINATION));
+            Place place = placeRepository.findByNameAndLocXAndLocY(dto.placeName(), dto.locX(), dto.locY())
+                    .orElseGet(() -> createPlace(dto.placeName(), dto.locX(), dto.locY(), dto.description(), dto.img(), PlaceType.TRAVEL_DESTINATION));
             PlanPlace planPlace = createPlanPlace(plan, place, createPeriod(dto.date(), null));
             placeList.add(place);
             planPlaceList.add(planPlace);
@@ -53,10 +54,24 @@ public class PlaceServiceImpl implements PlaceService {
         return planPlaceList;
     }
 
-    private Place createPlace(String name, String address, String desc, String img, PlaceType type) {
+    @Override
+    @Transactional
+    public List<PlanPlace> createList(Plan plan, PlacePair placePair) {
+        List<Place> placeList = new ArrayList<>();
+        List<PlanPlace> planPlaceList = new ArrayList<>();
+
+        // 장소 검색 -> 장소 이름, locX, locY 추출
+        // 이미 등록된 장소인지 확인 후 없으면 새로 생성
+        // planPlaceList 반환
+
+        return List.of();
+    }
+
+    private Place createPlace(String name, double locX, double locY, String desc, String img, PlaceType type) {
         Place place = Place.builder()
                 .name(name)
-                .address(address)
+                .locX(locX)
+                .locY(locY)
                 .description(desc)
                 .placeType(type)
                 .build();

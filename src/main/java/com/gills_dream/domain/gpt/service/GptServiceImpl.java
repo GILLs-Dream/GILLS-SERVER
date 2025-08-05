@@ -2,6 +2,7 @@ package com.gills_dream.domain.gpt.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gills_dream.domain.place.record.PlacePair;
 import com.gills_dream.domain.plan.enumerate.MoodType;
 import com.gills_dream.domain.python.dto.PythonResponseDto;
 import com.gills_dream.global.common.properties.PromptProperties;
@@ -57,23 +58,21 @@ public class GptServiceImpl implements GptService {
     }
 
     @Override
-    public List<String> filterPlace(PythonResponseDto.ProcessResultDto processDto, String region) {
-        List<String> filteredPlaceList = new ArrayList<>();
+    public PlacePair filterPlace(PythonResponseDto.ProcessResultDto processDto, String region) {
+        PlacePair placePair = new PlacePair(new ArrayList<>(), new ArrayList<>());
         try {
             for (PythonResponseDto.VideoResultDto dto: processDto.getVideoResultDtoList()) {
-                List<String> newPlaceList;
                 String prompt = buildPrompt(dto, promptProperties.getFilterPlace(), region);
                 String response = getResponse(prompt);
                 System.out.println(response);
-                newPlaceList = objectMapper.readValue(response, new TypeReference<>() {});
-                filteredPlaceList.addAll(newPlaceList);
+                placePair = objectMapper.readValue(response, new TypeReference<PlacePair>() {});
             }
 
         } catch (IOException e) {
             throw new RuntimeException("Failed to process GPT response", e);
         }
 
-        return filteredPlaceList;
+        return placePair;
     }
 
     private String buildPrompt(String input, String promptProperties) throws IOException {

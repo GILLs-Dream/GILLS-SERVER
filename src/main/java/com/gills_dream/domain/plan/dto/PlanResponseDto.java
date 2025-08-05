@@ -28,6 +28,40 @@ public class PlanResponseDto {
     ) {}
 
     public record GenerateResultDto (
+            @Schema(description = "여행 id", example = "1")
+            Long planId,
+            @Schema(description = "여행 총 일수", example = "3")
+            Long duration,
+            @Schema(description = "하루별 여행지 추천 리스트")
+            List<PlanPerDayDto> planPerDayDtoList,
+            @Schema(description = "여행 전체 요약", example = "이 여행은 아주 흥미롭군요...")
+            String summary
+    ) {}
 
+    public record PlanPerDayDto (
+            @Schema(description = "n일차", example = "1")
+            Long dayNum,
+            @Schema(description = "장소와 거리 정보 리스트")
+            List<RouteDto> routeDtoList
+    ) {}
+
+    public record RouteDto (
+            @Schema(description = "from 장소 정보")
+            PlaceDto from,
+            @Schema(description = "to 장소 정보")
+            PlaceDto to,
+            @Schema(description = "거리 km", example = "3.1")
+            Double distance,
+            @Schema(description = "소요 시간 min", example = "30")
+            Long time
+    ) {}
+
+    public record PlaceDto (
+            @Schema(description = "장소 id", example = "1")
+            Long placeId,
+            @Schema(description = "장소 이름", example = "동궁과월지")
+            String name,
+            @Schema(description = "장소 대표 이미지", example = "https://...")
+            String mainImg
     ) {}
 }

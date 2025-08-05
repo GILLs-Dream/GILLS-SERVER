@@ -5,6 +5,7 @@ import com.gills_dream.domain.member.entity.Member;
 import com.gills_dream.domain.member.repository.MemberRepository;
 import com.gills_dream.domain.place.entity.Place;
 import com.gills_dream.domain.place.enumerate.Region;
+import com.gills_dream.domain.place.record.PlacePair;
 import com.gills_dream.domain.place.service.PlaceService;
 import com.gills_dream.domain.plan.dto.PlanRequestDto;
 import com.gills_dream.domain.plan.dto.PlanResponseDto;
@@ -115,15 +116,17 @@ public class PlanServiceImpl implements PlanService {
 
         PythonResponseDto.ProcessResultDto processDto = pythonService.processVideo(request);
         plan.getYoutubeIds().addAll(processDto.getVideoResultDtoList().stream().map(PythonResponseDto.VideoResultDto::getVideoId).toList());
-        List<String> filteredPlaceList = gptService.filterPlace(processDto, request.getRegion());
-        plan.getCandidates().addAll(filteredPlaceList);
+        PlacePair placePair = gptService.filterPlace(processDto, request.getRegion());
+        List<PlanPlace> createdPlanPlaceList = placeService.createList(plan, placePair);
+        plan.getPlanPlaces().addAll(createdPlanPlaceList);
 
-        return new PlanResponseDto.VideoResultDto(plan.getId(), filteredPlaceList);
+        return new PlanResponseDto.VideoResultDto(plan.getId(), createdPlanPlaceList.stream().map(i -> i.getPlace().getName()).toList());
     }
 
     @Override
     @Transactional
     public PlanResponseDto.GenerateResultDto generate(CustomUserDetails userDetails, Long planId) {
+        Plan plan = checkMemberAndPlan(userDetails, planId);
         return null;
     }
 

@@ -29,7 +29,10 @@ public class Place {
     private String description;
 
     @Column(columnDefinition = "TEXT")
-    private String address;
+    private double locX;
+
+    @Column(columnDefinition = "TEXT")
+    private double locY;
 
     @Column
     @Enumerated(EnumType.STRING)
@@ -44,10 +47,11 @@ public class Place {
     private List<String> images = new ArrayList<>();
 
     @Builder
-    public Place(String name, String description, String address, PlaceType placeType, List<String> images) {
+    public Place(String name, String description, double locX, double locY, PlaceType placeType, List<String> images) {
         this.name = name;
         this.description = description;
-        this.address = address;
+        this.locX = locX;
+        this.locY = locY;
         this.placeType = placeType;
         this.images = images != null ? images : new ArrayList<>();
     }

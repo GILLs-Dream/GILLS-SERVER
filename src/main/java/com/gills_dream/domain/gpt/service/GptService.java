@@ -1,5 +1,6 @@
 package com.gills_dream.domain.gpt.service;
 
+import com.gills_dream.domain.place.record.PlacePair;
 import com.gills_dream.domain.plan.enumerate.MoodType;
 import com.gills_dream.domain.python.dto.PythonResponseDto;
 
@@ -8,5 +9,5 @@ import java.util.List;
 public interface GptService {
     List<MoodType> selectMood(String input);
     String summarizeInput(String input);
-    List<String> filterPlace(PythonResponseDto.ProcessResultDto processDto, String region);
+    PlacePair filterPlace(PythonResponseDto.ProcessResultDto processDto, String region);
 }
