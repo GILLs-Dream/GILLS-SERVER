@@ -1,6 +1,9 @@
 package com.gills_dream.domain.place.entity;
 
+import com.gills_dream.domain.place.enumerate.PlaceType;
 import com.gills_dream.domain.place.enumerate.Region;
+import com.gills_dream.domain.place.vo.PlacePeriod;
+import com.gills_dream.domain.plan.entity.PlanPlace;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -14,7 +17,6 @@ import java.util.List;
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Place {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(columnDefinition = "bigint", nullable = false)
@@ -31,7 +33,10 @@ public class Place {
 
     @Column
     @Enumerated(EnumType.STRING)
-    private Region region;
+    private PlaceType placeType;
+
+    @OneToMany(mappedBy = "place")
+    private List<PlanPlace> planPlaces = new ArrayList<>();
 
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "place_image", joinColumns = @JoinColumn(name = "place_id"))
@@ -39,11 +44,11 @@ public class Place {
     private List<String> images = new ArrayList<>();
 
     @Builder
-    public Place(String name, String description, String address, Region region, List<String> images) {
+    public Place(String name, String description, String address, PlaceType placeType, List<String> images) {
         this.name = name;
         this.description = description;
         this.address = address;
-        this.region = region;
+        this.placeType = placeType;
         this.images = images != null ? images : new ArrayList<>();
     }
 

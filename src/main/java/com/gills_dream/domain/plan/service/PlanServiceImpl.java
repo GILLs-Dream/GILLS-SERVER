@@ -3,10 +3,13 @@ package com.gills_dream.domain.plan.service;
 import com.gills_dream.domain.gpt.service.GptService;
 import com.gills_dream.domain.member.entity.Member;
 import com.gills_dream.domain.member.repository.MemberRepository;
+import com.gills_dream.domain.place.entity.Place;
 import com.gills_dream.domain.place.enumerate.Region;
+import com.gills_dream.domain.place.service.PlaceService;
 import com.gills_dream.domain.plan.dto.PlanRequestDto;
 import com.gills_dream.domain.plan.dto.PlanResponseDto;
 import com.gills_dream.domain.plan.entity.Plan;
+import com.gills_dream.domain.plan.entity.PlanPlace;
 import com.gills_dream.domain.plan.enumerate.CategoryType;
 import com.gills_dream.domain.plan.enumerate.MoodType;
 import com.gills_dream.domain.plan.repository.PlanRepository;
@@ -32,6 +35,7 @@ public class PlanServiceImpl implements PlanService {
     private final PlanRepository planRepository;
     private final MemberRepository memberRepository;
     private final PythonService pythonService;
+    private final PlaceService placeService;
 
     @Override
     @Transactional
@@ -84,7 +88,8 @@ public class PlanServiceImpl implements PlanService {
     public PlanResponseDto.TemplateResultDto saveDestination(CustomUserDetails userDetails, Long planId, PlanRequestDto.DestinationDto request) {
         Plan plan = checkMemberAndPlan(userDetails, planId);
 
-        // Todo: 세부사항 논의 후 구현
+        List<PlanPlace> planPlaceList = placeService.createList(plan, request.stayPlaceDtoList(), request.travelPlaceDtoList());
+        plan.getPlanPlaces().addAll(planPlaceList);
 
         return new PlanResponseDto.TemplateResultDto(plan.getId());
     }
