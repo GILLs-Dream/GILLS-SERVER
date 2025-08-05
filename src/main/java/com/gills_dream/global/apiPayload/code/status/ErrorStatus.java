@@ -32,8 +32,9 @@ public enum ErrorStatus implements BaseCode {
     // 플랜 관련 에러 응답
     PLAN_NOT_FOUND(HttpStatus.NOT_FOUND, "PLAN NOT FOUND", "계획을 찾을 수 없습니다."),
 
-    // 카테고리 관련 에러 응답
+    // Enum 관련 에러 응답
     NO_SUCH_CATEGORY(HttpStatus.NOT_FOUND, "NO SUCH CATEGORY", "해당 카테고리가 존재하지 않습니다."),
+    NO_SUCH_REGION(HttpStatus.NOT_FOUND, "NO SUCH REGION", "해당 지역이 존재하지 않습니다."),
 
     // 파이썬 서버 관련 에러 응답
     PYTHON_SERVER_CONNECTION_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "PYTHON SERVER CONNECTION ERROR", "파이썬 서버에 연결할 수 없습니다."),

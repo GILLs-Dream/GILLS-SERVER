@@ -2,6 +2,7 @@ package com.gills_dream.domain.plan.entity;
 
 import com.gills_dream.domain.member.entity.Member;
 import com.gills_dream.domain.place.entity.Place;
+import com.gills_dream.domain.place.enumerate.Region;
 import com.gills_dream.domain.plan.enumerate.CategoryType;
 import com.gills_dream.domain.plan.enumerate.MoodType;
 import com.gills_dream.domain.plan.enumerate.TransportType;
@@ -52,6 +53,10 @@ public class Plan extends BaseEntity {
     @Column(columnDefinition = "TEXT")
     private String mooodSummary;
 
+    @Column
+    @Enumerated(EnumType.STRING)
+    private Region region;
+
     @Embedded
     private PlanPeriod period;
 
@@ -93,7 +98,7 @@ public class Plan extends BaseEntity {
     private List<String> candidates = new ArrayList<>();
 
     @Builder
-    public Plan(Member member, Team team, PlanSummary summary, PlanPeriod period, String moodSummary, String teamName,
+    public Plan(Member member, Team team, PlanSummary summary, PlanPeriod period, String moodSummary, String teamName, Region region,
                 Boolean isPinned, Long party, List<TransportType> transports, List<CategoryType> categories, List<MoodType> moods, List<String> youtubeIds, List<String> candidates) {
         this.member = member;
         this.team = team;
@@ -101,6 +106,7 @@ public class Plan extends BaseEntity {
         this.mooodSummary = moodSummary;
         this.teamName = teamName;
         this.period = period;
+        this.region = region;
         this.isPinned = isPinned;
         this.party = party;
         this.transports = transports != null ? new ArrayList<>(transports) : new ArrayList<>();
@@ -117,5 +123,9 @@ public class Plan extends BaseEntity {
     public void updateCompanion(String companion, Long party) {
         this.teamName = companion;
         this.party = party;
+    }
+
+    public void updateRegion(Region region) {
+        this.region = region;
     }
 }

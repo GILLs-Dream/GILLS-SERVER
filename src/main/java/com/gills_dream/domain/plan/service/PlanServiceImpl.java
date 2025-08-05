@@ -3,6 +3,7 @@ package com.gills_dream.domain.plan.service;
 import com.gills_dream.domain.gpt.service.GptService;
 import com.gills_dream.domain.member.entity.Member;
 import com.gills_dream.domain.member.repository.MemberRepository;
+import com.gills_dream.domain.place.enumerate.Region;
 import com.gills_dream.domain.plan.dto.PlanRequestDto;
 import com.gills_dream.domain.plan.dto.PlanResponseDto;
 import com.gills_dream.domain.plan.entity.Plan;
@@ -105,6 +106,8 @@ public class PlanServiceImpl implements PlanService {
     @Transactional
     public PlanResponseDto.VideoResultDto saveVideo(CustomUserDetails userDetails, Long planId, PlanRequestDto.VideoUrlDto request) {
         Plan plan = checkMemberAndPlan(userDetails, planId);
+
+        plan.updateRegion(Region.fromDescription(request.getRegion()));
 
         PythonResponseDto.ProcessResultDto processDto = pythonService.processVideo(request);
         plan.getYoutubeIds().addAll(processDto.getVideoResultDtoList().stream().map(PythonResponseDto.VideoResultDto::getVideoId).toList());
