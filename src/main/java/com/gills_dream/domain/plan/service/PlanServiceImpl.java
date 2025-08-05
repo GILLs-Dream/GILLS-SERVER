@@ -85,7 +85,6 @@ public class PlanServiceImpl implements PlanService {
         Plan plan = checkMemberAndPlan(userDetails, planId);
 
         // Todo: 세부사항 논의 후 구현
-        // 지역 선택 포함
 
         return new PlanResponseDto.TemplateResultDto(plan.getId());
     }

@@ -59,7 +59,7 @@ public class PlanRestController {
     }
 
     @PostMapping("/{planId}/videos")
-    @Operation(summary = "여행 장소 추천 위한 유튜브 링크 받음")
+    @Operation(summary = "여행 장소 추천 위한 유튜브 링크 받음 (지역 선택 포함)")
     public ApiResponse<PlanResponseDto.VideoResultDto> saveVideo (@AuthenticationPrincipal CustomUserDetails userDetails,
                                                                       @PathVariable("planId") Long planId,
                                                                       @Valid @RequestBody PlanRequestDto.VideoUrlDto request) {
