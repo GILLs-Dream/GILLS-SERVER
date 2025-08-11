@@ -26,12 +26,13 @@ public class Place {
     private String name;
 
     @Column(columnDefinition = "TEXT")
+    @Lob
     private String description;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "DOUBLE/DECIMAL")
     private double locX;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "DOUBLE/DECIMAL")
     private double locY;
 
     @Column

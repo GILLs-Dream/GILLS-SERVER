@@ -41,13 +41,15 @@ public class PlanResponseDto {
     public record PlanPerDayDto (
             @Schema(description = "n일차", example = "1")
             Long dayNum,
+            @Schema(description = "시작 장소")
+            PlaceDto from,
             @Schema(description = "장소와 거리 정보 리스트")
             List<RouteDto> routeDtoList
     ) {}
 
     public record RouteDto (
-            @Schema(description = "from 장소 정보")
-            PlaceDto from,
+            @Schema(description = "순서", example = "1")
+            Long cnt,
             @Schema(description = "to 장소 정보")
             PlaceDto to,
             @Schema(description = "거리 km", example = "3.1")

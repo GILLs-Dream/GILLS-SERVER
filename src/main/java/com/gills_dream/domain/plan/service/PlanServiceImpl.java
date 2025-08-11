@@ -13,6 +13,7 @@ import com.gills_dream.domain.plan.entity.Plan;
 import com.gills_dream.domain.plan.entity.PlanPlace;
 import com.gills_dream.domain.plan.enumerate.CategoryType;
 import com.gills_dream.domain.plan.enumerate.MoodType;
+import com.gills_dream.domain.plan.enumerate.TransportType;
 import com.gills_dream.domain.plan.repository.PlanRepository;
 import com.gills_dream.domain.plan.vo.PlanPeriod;
 import com.gills_dream.domain.python.dto.PythonResponseDto;
@@ -24,6 +25,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 import static com.gills_dream.domain.plan.enumerate.TransportType.TRANSPORT_MAP;
@@ -127,8 +131,30 @@ public class PlanServiceImpl implements PlanService {
     @Transactional
     public PlanResponseDto.GenerateResultDto generate(CustomUserDetails userDetails, Long planId) {
         Plan plan = checkMemberAndPlan(userDetails, planId);
+
+        if (plan.getTransports().getFirst() == TransportType.WALK) generateWalk(plan);
+        else if (new HashSet<>(plan.getTransports()).containsAll(Arrays.asList(TransportType.BUS, TransportType.SUBWAY))) generateTransit(plan);
+        else if (plan.getTransports().getFirst() == TransportType.BICYCLE) generateBicycle(plan);
+        else if (plan.getTransports().getFirst() == TransportType.CAR) generateCar(plan);
+        else throw new GeneralException(ErrorStatus.TRANSPORT_NOT_FOUND);
+
         return null;
     }
+
+    private void generateWalk(Plan plan) {
+
+    }
+
+    private void generateCar(Plan plan) {
+    }
+
+    private void generateBicycle(Plan plan) {
+    }
+
+    private void generateTransit(Plan plan) {
+    }
+
+
 
     private Plan checkMemberAndPlan(CustomUserDetails userDetails, Long planId) {
         Member member = memberRepository.findById(userDetails.getId())

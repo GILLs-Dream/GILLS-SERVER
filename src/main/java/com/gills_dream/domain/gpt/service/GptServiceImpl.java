@@ -3,6 +3,8 @@ package com.gills_dream.domain.gpt.service;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gills_dream.domain.place.record.PlacePair;
+import com.gills_dream.domain.plan.dto.PlanResponseDto;
+import com.gills_dream.domain.plan.entity.Plan;
 import com.gills_dream.domain.plan.enumerate.MoodType;
 import com.gills_dream.domain.python.dto.PythonResponseDto;
 import com.gills_dream.global.common.properties.PromptProperties;
@@ -73,6 +75,11 @@ public class GptServiceImpl implements GptService {
         }
 
         return placePair;
+    }
+
+    @Override
+    public String summarizePlan(Long duration, List<PlanResponseDto.PlanPerDayDto> planPerDayList) {
+        return "";
     }
 
     private String buildPrompt(String input, String promptProperties) throws IOException {
