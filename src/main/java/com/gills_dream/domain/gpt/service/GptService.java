@@ -13,4 +13,5 @@ public interface GptService {
     String summarizeInput(String input);
     PlacePair filterPlace(PythonResponseDto.ProcessResultDto processDto, String region);
     String summarizePlan(Long duration, List<PlanResponseDto.PlanPerDayDto> planPerDayList);
+    PlanResponseDto.PlanDraftDto generatePlan(Plan plan);
 }

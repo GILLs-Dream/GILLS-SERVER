@@ -132,26 +132,28 @@ public class PlanServiceImpl implements PlanService {
     public PlanResponseDto.GenerateResultDto generate(CustomUserDetails userDetails, Long planId) {
         Plan plan = checkMemberAndPlan(userDetails, planId);
 
-        if (plan.getTransports().getFirst() == TransportType.WALK) generateWalk(plan);
-        else if (new HashSet<>(plan.getTransports()).containsAll(Arrays.asList(TransportType.BUS, TransportType.SUBWAY))) generateTransit(plan);
-        else if (plan.getTransports().getFirst() == TransportType.BICYCLE) generateBicycle(plan);
-        else if (plan.getTransports().getFirst() == TransportType.CAR) generateCar(plan);
-        else throw new GeneralException(ErrorStatus.TRANSPORT_NOT_FOUND);
+        PlanResponseDto.PlanDraftDto dto = gptService.generatePlan(plan);
+
+        if (plan.getTransports().isEmpty()) throw new GeneralException(ErrorStatus.TRANSPORT_NOT_FOUND);
+        if (plan.getTransports().getFirst() == TransportType.WALK) generateWalk(plan, dto);
+        else if (new HashSet<>(plan.getTransports()).containsAll(Arrays.asList(TransportType.BUS, TransportType.SUBWAY))) generateTransit(plan, dto);
+        else if (plan.getTransports().getFirst() == TransportType.BICYCLE) generateBicycle(plan, dto);
+        else if (plan.getTransports().getFirst() == TransportType.CAR) generateCar(plan, dto);
 
         return null;
     }
 
-    private void generateWalk(Plan plan) {
+    private void generateWalk(Plan plan, PlanResponseDto.PlanDraftDto dto) {
 
     }
 
-    private void generateCar(Plan plan) {
+    private void generateCar(Plan plan, PlanResponseDto.PlanDraftDto dto) {
     }
 
-    private void generateBicycle(Plan plan) {
+    private void generateBicycle(Plan plan, PlanResponseDto.PlanDraftDto dto) {
     }
 
-    private void generateTransit(Plan plan) {
+    private void generateTransit(Plan plan, PlanResponseDto.PlanDraftDto dto) {
     }
 
 

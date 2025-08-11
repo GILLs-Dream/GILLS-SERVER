@@ -13,4 +13,6 @@ public class PromptProperties {
     private String selectMood;
     private String summarizeInput;
     private String filterPlace;
+    private String generatePlan;
+    private String summarizePlan;
 }

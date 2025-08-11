@@ -27,6 +27,31 @@ public class PlanResponseDto {
             List<String> recommendedList
     ) {}
 
+    public record PlanDraftDto (
+            @Schema(description = "여행 총 일수", example = "3")
+            Long duration,
+            @Schema(description = "하루 추천 일정")
+            List<DayDraftDto> draftDtoList
+    ) {}
+
+    public record DayDraftDto (
+            @Schema(description = "숙박 리스트")
+            List<PlaceDraftDto> accommodationList,
+            @Schema(description = "여행지 리스트")
+            List<PlaceDraftDto> travelDestList,
+            @Schema(description = "식당 리스트")
+            List<PlaceDraftDto> restaurantList,
+            @Schema(description = "카페 리스트")
+            List<PlaceDraftDto> cafeList
+    ) {}
+
+    public record PlaceDraftDto (
+            @Schema(description = "장소 이름")
+            String name,
+            @Schema(description = "방문일")
+            String visitAt
+    ) {}
+
     public record GenerateResultDto (
             @Schema(description = "여행 id", example = "1")
             Long planId,
