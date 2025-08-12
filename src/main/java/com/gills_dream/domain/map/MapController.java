@@ -80,6 +80,15 @@ public class MapController {
     ) {
         return kakaoMapClient.searchByKeyword(keyword);
     }
+
+    @Operation(summary = "KAKAO 주소로 좌표 검색", description = "주소를 입력하여 KAKAO의 좌표 데이터를 검색합니다.")
+    @GetMapping("/search/kakao/address")
+    public KeywordSearchRes searchKakaoByAddress(
+            @Parameter(description = "검색 주소", example = "서울특별시 종로구 세종로 1-68") @RequestParam String address
+    ) {
+        return kakaoMapClient.searchByAddress(address);
+    }
+
     @GetMapping("/tour-api/search")
     public List<TourKeywordSearchRes> searchTourPlaces(
             @RequestParam String keyword,
