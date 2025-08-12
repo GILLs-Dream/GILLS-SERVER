@@ -133,6 +133,7 @@ public class PlanServiceImpl implements PlanService {
         Plan plan = checkMemberAndPlan(userDetails, planId);
 
         PlanResponseDto.PlanDraftDto dto = gptService.generatePlan(plan);
+        placeService.addList(plan, dto);
 
         if (plan.getTransports().isEmpty()) throw new GeneralException(ErrorStatus.TRANSPORT_NOT_FOUND);
         if (plan.getTransports().getFirst() == TransportType.WALK) generateWalk(plan, dto);

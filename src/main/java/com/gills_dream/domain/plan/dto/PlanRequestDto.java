@@ -47,9 +47,9 @@ public class PlanRequestDto {
             @Schema(description = "여행 장소 썸네일 이미지", example = "https://...")
             String img,
             @Schema(description = "여행 장소 경도", example = "126.9236549")
-            double locX,
+            String locX,
             @Schema(description = "여행 장소 위도", example = "126.9236549")
-            double locY,
+            String locY,
             @Schema(description = "장소 설명", example = "이곳은 아주 예쁜 동궁과월지입니당")
             String description
     ) {}
@@ -64,9 +64,9 @@ public class PlanRequestDto {
             @Schema(description = "숙박 끝 날짜 (nullable)", example = "2025-07-25")
             LocalDate endDate,
             @Schema(description = "숙박 장소 경도", example = "126.9236549")
-            double locX,
+            String locX,
             @Schema(description = "숙박 장소 위도", example = "126.9236549")
-            double locY,
+            String locY,
             @Schema(description = "장소 설명", example = "이곳은 아주 예쁜 호텔입니당")
             String description
     ) {}

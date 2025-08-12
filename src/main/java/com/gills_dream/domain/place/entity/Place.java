@@ -29,11 +29,11 @@ public class Place {
     @Lob
     private String description;
 
-    @Column(columnDefinition = "DOUBLE/DECIMAL")
-    private double locX;
+    @Column(columnDefinition = "TEXT")
+    private String locX;
 
-    @Column(columnDefinition = "DOUBLE/DECIMAL")
-    private double locY;
+    @Column(columnDefinition = "TEXT")
+    private String locY;
 
     @Column
     @Enumerated(EnumType.STRING)
@@ -48,7 +48,7 @@ public class Place {
     private List<String> images = new ArrayList<>();
 
     @Builder
-    public Place(String name, String description, double locX, double locY, PlaceType placeType, List<String> images) {
+    public Place(String name, String description, String locX, String locY, PlaceType placeType, List<String> images) {
         this.name = name;
         this.description = description;
         this.locX = locX;
