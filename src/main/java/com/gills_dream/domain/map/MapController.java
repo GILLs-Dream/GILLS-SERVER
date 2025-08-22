@@ -34,6 +34,7 @@ public class MapController {
     private final TmapRouteClient tmapRouteClient;
     private final TmapPoiSearchClient tmapPoiSearchClient;
     private final ORSRouteClient orsRouteClient;
+    private final MapService mapService;
 
     //Todo: 메소드 연동 후 삭제
     @Operation(summary = "카카오 다중 경유지 길찾기 요청", description = "카카오 API를 사용하여 다중 경유지 길찾기 요청을 보냅니다.")
@@ -75,7 +76,7 @@ public class MapController {
 
     @Operation(summary = "KAKAO 키워드 장소 검색", description = "키워드로 KAKAO의 장소 데이터를 검색합니다.")
     @GetMapping("/search/kakao/keyword")
-    public KeywordSearchRes searchKakaoByKeyword(
+    public List<MapSearchRes>  searchKakaoByKeyword(
             @Parameter(description = "검색 키워드", example = "경복궁") @RequestParam String keyword
     ) {
         return kakaoMapClient.searchByKeyword(keyword);
@@ -83,14 +84,24 @@ public class MapController {
 
     @Operation(summary = "KAKAO 주소로 좌표 검색", description = "주소를 입력하여 KAKAO의 좌표 데이터를 검색합니다.")
     @GetMapping("/search/kakao/address")
-    public KeywordSearchRes searchKakaoByAddress(
+    public List<MapSearchRes> searchKakaoByAddress(
             @Parameter(description = "검색 주소", example = "서울특별시 종로구 세종로 1-68") @RequestParam String address
     ) {
         return kakaoMapClient.searchByAddress(address);
     }
 
+    @Operation(summary = "장소로 관광지 검색", description = "Tour API, KAKAO API를 사용하여 장소로 관광지를 검색합니다.")
+    @GetMapping("/search/place")
+    public List<MapSearchRes> searchTourPlacesByLocation(
+            @Parameter(description = "검색 키워드", example = "경복궁") @RequestParam String keyword,
+            @Parameter(description = "페이지 번호", example = "1") @RequestParam(defaultValue = "1") int pageNo,
+            @Parameter(description = "한 페이지당 결과 개수", example = "10") @RequestParam(defaultValue = "10") int numOfRows
+    ) {
+        return mapService.searchByKeyword(keyword, pageNo, numOfRows);
+    }
+
     @GetMapping("/tour-api/search")
-    public List<TourKeywordSearchRes> searchTourPlaces(
+    public List<MapSearchRes> searchTourPlaces(
             @RequestParam String keyword,
             @RequestParam(defaultValue = "12") String category,
             @RequestParam(defaultValue = "1") int pageNo,
