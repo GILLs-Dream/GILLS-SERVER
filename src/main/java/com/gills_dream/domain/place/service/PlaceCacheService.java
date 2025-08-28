@@ -1,6 +1,6 @@
 package com.gills_dream.domain.place.service;
 
-import com.gills_dream.domain.place.PlaceCache;
+import com.gills_dream.domain.place.vo.PlaceCache;
 import com.gills_dream.domain.place.dto.PlaceSearchRes;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.HashOperations;

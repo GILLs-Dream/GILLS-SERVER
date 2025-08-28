@@ -34,7 +34,7 @@ public class PlaceLike {
         this.place = place;
         this.isLiked = isLiked != null ? isLiked : false;
         this.id = PlaceLikeId.builder()
-                .memberId(member.getMemberId())
+                .memberId(member.getId())
                 .placeId(place.getId())
                 .build();
     }

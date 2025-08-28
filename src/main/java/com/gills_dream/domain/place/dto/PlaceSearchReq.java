@@ -8,9 +8,9 @@ public record PlaceSearchReq(
         Long planId,
         @Schema(description = "contentId", example = "2773715")
         String contentId,
-        @Schema(description = "플랫폼", example = "TOURAPI")
+        @Schema(description = "플랫폼", example = "KAKAO")
         String platform,
-        @Schema(description = "장소 타입" , example = "TOUR")
+        @Schema(description = "장소 타입" , example = "TRAVEL_DESTINATION")
         String placeType,
         @Schema(description = "장소명", example = "경복궁 하남미사점")
         String name,

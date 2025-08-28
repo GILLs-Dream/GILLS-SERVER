@@ -1,0 +1,52 @@
+name: Gildong CI
+
+on:
+  pull_request:
+    branches:
+      - develop
+
+permissions: write-all
+
+jobs:
+  build:
+    # ubuntu 버전 지정
+    runs-on: ubuntu-latest
+    steps:
+      # 소스 코드 체크아웃
+      - uses: actions/checkout@v4
+
+      # Build를 위한 JDK 설치
+      - name: Set up JDK 21
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      # Gradle 캐싱
+      - name: Cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      # Gradle 권한 부여
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      # application.yml 생성
+      - name: Make application-secret.yml
+        run: |
+          cd ./src/main
+          [ ! -d "resources" ] && mkdir resources
+          cd ./resources
+          touch ./application.yml
+          echo "${{ secrets.APPLICATION_SECRET_YML}}" > ./application.yml
+        shell: bash
+
+      # Gradle clean bootJar
+      - name: Build Gradle
+        run: ./gradlew clean bootJar

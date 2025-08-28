@@ -1,4 +1,4 @@
-package com.gills_dream.domain.place;
+package com.gills_dream.domain.place.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
