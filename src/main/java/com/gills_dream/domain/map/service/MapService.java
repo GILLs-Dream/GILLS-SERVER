@@ -1,5 +1,6 @@
-package com.gills_dream.domain.map;
+package com.gills_dream.domain.map.service;
 
+import com.gills_dream.domain.map.dto.MapSearchRes;
 import com.gills_dream.domain.place.service.PlaceCacheService;
 import com.gills_dream.global.map.kakao.KakaoMapClient;
 import com.gills_dream.global.map.tourapi.TourApiClient;

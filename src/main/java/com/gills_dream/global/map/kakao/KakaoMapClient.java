@@ -1,6 +1,6 @@
 package com.gills_dream.global.map.kakao;
 
-import com.gills_dream.domain.map.MapSearchRes;
+import com.gills_dream.domain.map.dto.MapSearchRes;
 import com.gills_dream.global.map.kakao.dto.KeywordSearchRes;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;

@@ -1,5 +1,7 @@
-package com.gills_dream.domain.map;
+package com.gills_dream.domain.map.controller;
 
+import com.gills_dream.domain.map.dto.MapSearchRes;
+import com.gills_dream.domain.map.service.MapService;
 import com.gills_dream.global.map.kakao.KakaoMapClient;
 import com.gills_dream.global.map.kakao.KakaoMobilityClient;
 import com.gills_dream.global.map.kakao.dto.MobilityRouteReq;
