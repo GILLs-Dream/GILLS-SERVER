@@ -2,7 +2,6 @@ package com.gills_dream.domain.map;
 
 import com.gills_dream.global.map.kakao.KakaoMapClient;
 import com.gills_dream.global.map.kakao.KakaoMobilityClient;
-import com.gills_dream.global.map.kakao.dto.KeywordSearchRes;
 import com.gills_dream.global.map.kakao.dto.MobilityRouteReq;
 import com.gills_dream.global.map.kakao.dto.MobilityRouteRes;
 import com.gills_dream.global.map.openRouteService.ORSRouteClient;
@@ -18,8 +17,6 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import com.gills_dream.global.map.tourapi.TourKeywordSearchRes;
-
 import java.util.List;
 
 @RestController
@@ -89,10 +86,13 @@ public class MapController {
     ) {
         return kakaoMapClient.searchByAddress(address);
     }
-
-    @Operation(summary = "장소로 관광지 검색", description = "Tour API, KAKAO API를 사용하여 장소로 관광지를 검색합니다.")
+    @Operation(
+            summary = "관광지 검색",
+            description = "Tour API, KAKAO API를 사용하여 장소를 검색합니다. "
+                    + "planId가 없으면 일반 검색, 있으면 해당 플랜과 연동된 검색 결과를 캐싱합니다."
+    )
     @GetMapping("/search/place")
-    public List<MapSearchRes> searchTourPlacesByLocation(
+    public List<MapSearchRes> searchTourPlaces(
             @Parameter(description = "검색 키워드", example = "경복궁") @RequestParam String keyword,
             @Parameter(description = "페이지 번호", example = "1") @RequestParam(defaultValue = "1") int pageNo,
             @Parameter(description = "한 페이지당 결과 개수", example = "10") @RequestParam(defaultValue = "10") int numOfRows

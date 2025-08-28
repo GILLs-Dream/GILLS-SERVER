@@ -1,5 +1,6 @@
 package com.gills_dream.domain.map;
 
+import com.gills_dream.domain.place.service.PlaceCacheService;
 import com.gills_dream.global.map.kakao.KakaoMapClient;
 import com.gills_dream.global.map.tourapi.TourApiClient;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,7 @@ import java.util.Optional;
 public class MapService {
     private final TourApiClient tourApiClient;
     private final KakaoMapClient kakaoMapClient;
+    private final PlaceCacheService placeCacheService;
 
     /**
      * 키워드로 관광지 검색
