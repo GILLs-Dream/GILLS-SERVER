@@ -1,11 +1,12 @@
-package com.gills_dream.domain.map.provider;
+package com.gills_dream.global.map.provider;
 
 import com.gills_dream.domain.map.dto.MapRouteReq;
 import com.gills_dream.domain.map.dto.MapRouteRes;
 import com.gills_dream.domain.plan.enumerate.TransportType;
-import com.gills_dream.global.map.tmap.TmapRouteClient;
-import com.gills_dream.global.map.tmap.dto.PedestrianRouteReq;
-import com.gills_dream.global.map.tmap.dto.PedestrianRouteRes;
+import com.gills_dream.global.map.openRouteService.ORSRouteClient;
+import com.gills_dream.global.map.openRouteService.dto.ORSRouteReq;
+import com.gills_dream.global.map.openRouteService.dto.ORSRouteRes;
+import com.gills_dream.global.map.util.RouteUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -14,14 +15,14 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class WalkRouteProvider implements RouteProvider {
+public class BicycleRouteProvider implements RouteProvider {
 
-    private final TmapRouteClient tmap;
+    private final ORSRouteClient ors;
 
-    @Override public TransportType supports() { return TransportType.WALK; }
+    @Override public TransportType supports() { return TransportType.BICYCLE; }
 
     /**
-     * 도보 경로 조회
+     * 자전거 경로 조회
      * @param req
      * @return MapRouteRes
      */
@@ -29,26 +30,25 @@ public class WalkRouteProvider implements RouteProvider {
     public MapRouteRes route(MapRouteReq req) {
         if (RouteUtils.invalid(req)) return RouteUtils.empty();
 
-        double totalDist = 0, totalTime = 0;
+        double totalDist = 0d, totalTime = 0d;
         List<MapRouteRes.Leg> legs = new ArrayList<>();
 
+        // 위치 쌍마다 경로 조회
         for (int[] p : RouteUtils.segmentPairs(req)) {
             var from = req.locations().get(p[0]);
             var to   = req.locations().get(p[1]);
 
-            PedestrianRouteReq segReq = PedestrianRouteReq.of(
-                    from.lng(), from.lat(), from.name(),
-                    to.lng(),   to.lat(),   to.name()
-            );
-            PedestrianRouteRes segRes = tmap.findPedestrianRoute(segReq);
+            ORSRouteReq segReq = new ORSRouteReq(from.lng(), from.lat(), to.lng(), to.lat());
+            ORSRouteRes segRes = ors.findBicycleRoute(segReq);
             if (segRes == null || segRes.features() == null || segRes.features().isEmpty()) continue;
 
-            double segDist = 0, segTime = 0;
+            double segDist = 0d, segTime = 0d;
             for (var f : segRes.features()) {
-                var prop = f.properties();
-                if (prop != null) {
-                    if (prop.distance() != null) segDist += prop.distance();
-                    if (prop.time() != null)     segTime += prop.time();
+                if (f.properties() != null && f.properties().segments() != null) {
+                    for (var s : f.properties().segments()) {
+                        segDist += s.distance();
+                        segTime += s.duration();
+                    }
                 }
             }
 
@@ -56,7 +56,7 @@ public class WalkRouteProvider implements RouteProvider {
             legs.add(RouteUtils.leg(
                     from.name(), from.lat(), from.lng(),
                     to.name(),   to.lat(),   to.lng(),
-                    "WALK", segDist, segTime
+                    "BICYCLE", segDist, segTime
             ));
         }
 

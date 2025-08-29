@@ -1,4 +1,4 @@
-package com.gills_dream.domain.map.provider;
+package com.gills_dream.global.map.provider;
 
 import com.gills_dream.domain.map.dto.MapRouteReq;
 import com.gills_dream.domain.map.dto.MapRouteRes;
@@ -6,6 +6,7 @@ import com.gills_dream.domain.plan.enumerate.TransportType;
 import com.gills_dream.global.map.tmap.TmapRouteClient;
 import com.gills_dream.global.map.tmap.dto.TransitRouteReq;
 import com.gills_dream.global.map.tmap.dto.TransitRawRes;
+import com.gills_dream.global.map.util.RouteUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

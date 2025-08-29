@@ -2,10 +2,10 @@ package com.gills_dream.domain.map.service;
 
 import com.gills_dream.domain.map.dto.MapRouteReq;
 import com.gills_dream.domain.map.dto.MapRouteRes;
-import com.gills_dream.domain.map.provider.BicycleRouteProvider;
-import com.gills_dream.domain.map.provider.CarRouteProvider;
-import com.gills_dream.domain.map.provider.TransitRouteProvider;
-import com.gills_dream.domain.map.provider.WalkRouteProvider;
+import com.gills_dream.global.map.provider.BicycleRouteProvider;
+import com.gills_dream.global.map.provider.CarRouteProvider;
+import com.gills_dream.global.map.provider.TransitRouteProvider;
+import com.gills_dream.global.map.provider.WalkRouteProvider;
 import com.gills_dream.domain.plan.enumerate.TransportType;
 import com.gills_dream.global.apiPayload.code.status.ErrorStatus;
 import com.gills_dream.global.apiPayload.exception.GeneralException;

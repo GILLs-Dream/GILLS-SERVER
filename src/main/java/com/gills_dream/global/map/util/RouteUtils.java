@@ -1,4 +1,4 @@
-package com.gills_dream.domain.map.provider;
+package com.gills_dream.global.map.util;
 
 import com.gills_dream.domain.map.dto.MapRouteReq;
 import com.gills_dream.domain.map.dto.MapRouteRes;
