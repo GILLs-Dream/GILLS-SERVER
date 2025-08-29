@@ -2,6 +2,8 @@ package com.gills_dream.domain.map.service;
 
 import com.gills_dream.domain.map.dto.MapRouteReq;
 import com.gills_dream.domain.map.dto.MapRouteRes;
+import com.gills_dream.domain.place.service.PlaceCacheService;
+import com.gills_dream.domain.place.vo.PlaceCache;
 import com.gills_dream.global.map.provider.BicycleRouteProvider;
 import com.gills_dream.global.map.provider.CarRouteProvider;
 import com.gills_dream.global.map.provider.TransitRouteProvider;
@@ -10,8 +12,12 @@ import com.gills_dream.domain.plan.enumerate.TransportType;
 import com.gills_dream.global.apiPayload.code.status.ErrorStatus;
 import com.gills_dream.global.apiPayload.exception.GeneralException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RouteService {
@@ -20,18 +26,32 @@ public class RouteService {
     private final WalkRouteProvider walkRouteProvider;
     private final BicycleRouteProvider bicycleRouteProvider;
     private final TransitRouteProvider transitRouteProvider;
+    private final PlaceCacheService placeCacheService;
 
     /**
      * 경로 조회
      * @param transportation
-     * @param routeReq
+     * @param planId
      * @return MapRouteRes
      * @throws GeneralException
      */
-    public MapRouteRes getRoute(TransportType transportation, MapRouteReq routeReq) throws GeneralException {
-        if (routeReq == null || routeReq.locations() == null || routeReq.locations().size() < 2) {
+    public MapRouteRes getRoute(Long planId, TransportType transportation) throws GeneralException {
+        List<PlaceCache> placeList = placeCacheService.getByPlanId(planId);
+
+        if (placeList == null || placeList.size() < 2) {
             throw new GeneralException(ErrorStatus.INVALID_ROUTE_REQUEST);
         }
+
+        // PlaceCache → MapRouteReq.Location 변환
+        List<MapRouteReq.Location> locations = placeList.stream()
+                .map(p -> MapRouteReq.Location.of(
+                        Double.parseDouble(p.lat()),
+                        Double.parseDouble(p.lng()),
+                        p.name()
+                ))
+                .toList();
+
+        MapRouteReq routeReq = MapRouteReq.of(locations);
 
         return switch (transportation) {
             case CAR -> carRouteProvider.route(routeReq);
