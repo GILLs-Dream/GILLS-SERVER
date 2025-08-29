@@ -1,7 +1,6 @@
 package com.gills_dream.domain.map.service;
 
 import com.gills_dream.domain.map.dto.MapSearchRes;
-import com.gills_dream.domain.place.service.PlaceCacheService;
 import com.gills_dream.global.map.kakao.KakaoMapClient;
 import com.gills_dream.global.map.tourapi.TourApiClient;
 import lombok.RequiredArgsConstructor;
@@ -11,13 +10,13 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class MapService {
     private final TourApiClient tourApiClient;
     private final KakaoMapClient kakaoMapClient;
-    private final PlaceCacheService placeCacheService;
 
     /**
      * 키워드로 관광지 검색
