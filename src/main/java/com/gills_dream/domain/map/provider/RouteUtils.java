@@ -62,10 +62,29 @@ final class RouteUtils {
                                String endName,   Double endLat,   Double endLng,
                                String mode, double distance, double duration) {
         return MapRouteRes.Leg.builder()
-                .startName(startName).startLat(startLat).startLng(startLng)
-                .endName(endName).endLat(endLat).endLng(endLng)
-                .mode(mode).distance(distance).duration(duration)
+                .startName(startName)
+                .startLat(startLat == null ? 0.0 : startLat)
+                .startLng(startLng == null ? 0.0 : startLng)
+                .endName(endName)
+                .endLat(endLat == null ? 0.0 : endLat)
+                .endLng(endLng == null ? 0.0 : endLng)
+                .mode(normalizeMode(mode))
+                .distance(distance)
+                .duration(duration)
                 .build();
+    }
+
+    /**
+     * 이동 수단 표준화 (BUS, SUBWAY → TRANSIT)
+     * @param raw
+     * @return String
+     */
+    static String normalizeMode(String raw) {
+        if (raw == null) return null;
+        return switch (raw.toUpperCase()) {
+            case "BUS", "SUBWAY" -> "TRANSIT";
+            default -> raw.toUpperCase();
+        };
     }
 
     /**

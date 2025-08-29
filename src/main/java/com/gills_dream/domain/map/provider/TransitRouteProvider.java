@@ -61,9 +61,12 @@ public class TransitRouteProvider implements RouteProvider {
                     segTime += l.sectionTime();
 
                     legs.add(RouteUtils.leg(
-                            l.startName() != null ? l.startName() : from.name(), null, null,
-                            l.endName()   != null ? l.endName()   : to.name(),   null, null,
-                            l.mode(), l.distance(), l.sectionTime()
+                            l.startName() != null ? l.startName() : from.name(),
+                            from.lat(), from.lng(),
+                            l.endName()   != null ? l.endName()   : to.name(),
+                            to.lat(), to.lng(),
+                            RouteUtils.normalizeMode(l.mode()),  // BUS/SUBWAY → TRANSIT 매핑도 같이
+                            l.distance(), l.sectionTime()
                     ));
                 }
             }
