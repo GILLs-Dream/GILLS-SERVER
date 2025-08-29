@@ -1,5 +1,6 @@
 package com.gills_dream.domain.map.service;
 
+import com.gills_dream.domain.gpt.service.GptService;
 import com.gills_dream.domain.map.dto.MapRouteReq;
 import com.gills_dream.domain.map.dto.MapRouteRes;
 import com.gills_dream.domain.place.service.PlaceCacheService;
@@ -27,6 +28,7 @@ public class RouteService {
     private final BicycleRouteProvider bicycleRouteProvider;
     private final TransitRouteProvider transitRouteProvider;
     private final PlaceCacheService placeCacheService;
+    private final GptService gptService;
 
     /**
      * 경로 조회
@@ -51,7 +53,12 @@ public class RouteService {
                 ))
                 .toList();
 
-        MapRouteReq routeReq = MapRouteReq.of(locations);
+
+        MapRouteReq route = MapRouteReq.of(locations);
+        Long count = route.locations().stream()
+                .filter(l -> l.lat() != 0 && l.lng() != 0)
+                .count();
+        MapRouteReq routeReq = gptService.createRouteRequest(route, TransportType.toCategory(transportation), count);
 
         return switch (transportation) {
             case CAR -> carRouteProvider.route(routeReq);
