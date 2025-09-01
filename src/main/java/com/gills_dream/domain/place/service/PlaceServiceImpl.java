@@ -1,8 +1,11 @@
 package com.gills_dream.domain.place.service;
 
+import com.gills_dream.domain.place.dto.PlaceSearchReq;
+import com.gills_dream.domain.place.dto.PlaceSearchRes;
 import com.gills_dream.domain.place.entity.Place;
 import com.gills_dream.domain.place.enumerate.PlaceType;
 import com.gills_dream.domain.place.repository.PlaceRepository;
+import com.gills_dream.domain.place.vo.PlaceCache;
 import com.gills_dream.domain.place.vo.PlacePeriod;
 import com.gills_dream.domain.plan.dto.PlanRequestDto;
 import com.gills_dream.domain.plan.entity.Plan;
@@ -23,7 +26,7 @@ import java.util.List;
 public class PlaceServiceImpl implements PlaceService {
     private final PlaceRepository placeRepository;
     private final PlanPlaceRepository planPlaceRepository;
-
+    private final PlaceCacheService placeCacheService;
 
     @Override
     @Transactional
@@ -81,5 +84,25 @@ public class PlaceServiceImpl implements PlaceService {
                 .build();
         place.getPlanPlaces().add(planPlace);
         return planPlace;
+    }
+
+    @Override
+    public PlaceSearchRes choosePlace(PlaceSearchReq req) {
+        return placeCacheService.save(
+                String.valueOf(req.platform()),
+                req.contentId(),
+                req.planId(),
+                PlaceCache.builder()
+                        .name(req.name())
+                        .lat(req.lat())
+                        .lng(req.lng())
+                        .imageUrl(req.imageUrl())
+                        .detailUrl(req.detailUrl())
+                        .period(req.period() == null ? null : PlaceCache.Period.builder()
+                                .nights(req.period().nights())
+                                .dayOrder(req.period().dayOrder())
+                                .build())
+                        .build()
+        );
     }
 }
