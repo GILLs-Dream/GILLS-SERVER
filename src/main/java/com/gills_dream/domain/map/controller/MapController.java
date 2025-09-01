@@ -7,7 +7,6 @@ import com.gills_dream.domain.map.service.RouteService;
 import com.gills_dream.domain.plan.enumerate.TransportType;
 import com.gills_dream.global.map.kakao.KakaoMapClient;
 import com.gills_dream.global.map.tmap.TmapPoiSearchClient;
-import com.gills_dream.global.map.tmap.dto.*;
 import com.gills_dream.global.map.tourapi.TourApiClient;
 import com.gills_dream.global.map.tourapi.TourPlaceDetailRes;
 import io.swagger.v3.oas.annotations.Operation;
@@ -25,27 +24,16 @@ public class MapController {
 
     private final TourApiClient tourApiClient;
     private final KakaoMapClient kakaoMapClient;
-    private final TmapPoiSearchClient tmapPoiSearchClient;
     private final MapService mapService;
     private final RouteService routeService;
 
-    @Operation(summary = "경로 탐색 통합", description = "다양한 지도 API를 사용하여 경로 탐색을 통합적으로 처리합니다.")
-    @PostMapping("/route")
-    public Object unifiedRouteRequest(
-            @Parameter(description = "교통수단", example = "CAR") @RequestParam TransportType transportation,
-            @RequestBody MapRouteReq routeReq
+    @Operation(summary = "경로탐색 요청", description = "출발지와 도착지 간의 경로를 탐색합니다.")
+    @GetMapping("/route")
+    public Object requestRoute(
+            @Parameter(description = "플랜아이디", example = "1") @RequestParam(required = false) Long planId,
+            @Parameter(description = "교통수단", example = "CAR") @RequestParam TransportType transportation
     ) {
-        return routeService.getRoute(transportation, routeReq);
-    }
-
-    //Todo: 메소드 연동 후 삭제
-    @Operation(summary = "Tmap POI 장소 검색", description = "장소명(키워드)으로 Tmap의 POI 데이터를 검색합니다.")
-    @GetMapping("/search/tmap/poi")
-    public List<PoiSearchRes.Poi> searchPoiByKeyword(
-            @Parameter(description = "검색 키워드", example = "경복궁") @RequestParam String keyword,
-            @Parameter(description = "검색 결과 개수", example = "5") @RequestParam(defaultValue = "5") int count
-    ) {
-        return tmapPoiSearchClient.searchPois(keyword, count);
+        return routeService.getRoute(planId, transportation);
     }
 
     @Operation(summary = "KAKAO 키워드 장소 검색", description = "키워드로 KAKAO의 장소 데이터를 검색합니다.")
@@ -93,4 +81,23 @@ public class MapController {
     ) {
         return tourApiClient.getPlaceDetail(contentId);
     }
+
+    /*
+    @Operation(summary = "경로 탐색 통합", description = "다양한 지도 API를 사용하여 경로 탐색을 통합적으로 처리합니다.")
+    @PostMapping("/route")
+    public Object unifiedRouteRequest(
+            @Parameter(description = "교통수단", example = "CAR") @RequestParam TransportType transportation,
+            @RequestBody MapRouteReq routeReq
+    ) {
+        return routeService.getRoute(transportation, routeReq);
+    }
+
+    @Operation(summary = "Tmap POI 장소 검색", description = "장소명(키워드)으로 Tmap의 POI 데이터를 검색합니다.")
+    @GetMapping("/search/tmap/poi")
+    public List<PoiSearchRes.Poi> searchPoiByKeyword(
+            @Parameter(description = "검색 키워드", example = "경복궁") @RequestParam String keyword,
+            @Parameter(description = "검색 결과 개수", example = "5") @RequestParam(defaultValue = "5") int count
+    ) {
+        return tmapPoiSearchClient.searchPois(keyword, count);
+    }*/
 }

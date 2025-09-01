@@ -2,9 +2,6 @@ package com.gills_dream.domain.plan.enumerate;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.rsocket.server.RSocketServer;
-
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -23,4 +20,11 @@ public enum TransportType {
             "자전거", List.of(TransportType.BICYCLE),
             "자동차", List.of(TransportType.CAR)
     );
+
+    public static String toCategory(TransportType type) {
+        return switch (type) {
+            case BUS, SUBWAY -> "대중교통";
+            default -> type.getDescription();
+        };
+    }
 }
