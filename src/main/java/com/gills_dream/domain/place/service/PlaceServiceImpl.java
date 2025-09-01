@@ -1,5 +1,6 @@
 package com.gills_dream.domain.place.service;
 
+import com.gills_dream.domain.map.enumerate.ContentType;
 import com.gills_dream.domain.place.dto.PlaceResponseDto;
 import com.gills_dream.domain.place.entity.Place;
 import com.gills_dream.domain.place.enumerate.PlaceType;
@@ -41,22 +42,26 @@ public class PlaceServiceImpl implements PlaceService {
     @Override
     @Transactional
     public List<PlanPlace> createList(Plan plan, List<PlanRequestDto.StayPlaceDto> stayPlaceDtoList, List<PlanRequestDto.TravelPlaceDto> travelPlaceDtoList) {
-        List<Place> placeList = new ArrayList<>();
-        List<PlanPlace> planPlaceList = new ArrayList<>();
-
-        for (PlanRequestDto.StayPlaceDto dto : stayPlaceDtoList) {
-            Place place = findOrCreatePlace(dto.placeName(), Double.parseDouble(dto.locX()), Double.parseDouble(dto.locY()), dto.description(), dto.img(), PlaceType.ACCOMMODATION, placeList);
-            ensureLink(plan, place, createPeriod(dto.startDate(), dto.endDate()), planPlaceList);
-        }
-
-        for (PlanRequestDto.TravelPlaceDto dto : travelPlaceDtoList) {
-            Place place = findOrCreatePlace(dto.placeName(), Double.parseDouble(dto.locX()), Double.parseDouble(dto.locY()), dto.description(), dto.img(), PlaceType.TRAVEL_DESTINATION, placeList);
-            ensureLink(plan, place, createPeriod(dto.date(), null), planPlaceList);
-        }
-
-        if (!placeList.isEmpty()) placeRepository.saveAll(placeList);
-        if (!planPlaceList.isEmpty()) planPlaceRepository.saveAll(planPlaceList);
-        return planPlaceList;
+//        List<Place> placeList = new ArrayList<>();
+//        List<PlanPlace> planPlaceList = new ArrayList<>();
+//
+//        // redis에 key값(api 플랫폼 타입, 컨텐트 id, plan id)으로 value값(장소 이름, 좌표, 이미지 url, 설명글, period) 가져와서 repo에 저장
+//        // redis에 key값이 없으면 에러처리
+//
+//        for (PlanRequestDto.StayPlaceDto dto : stayPlaceDtoList) {
+//            Place place = findOrCreatePlace(dto.placeName(), Double.parseDouble(dto.locX()), Double.parseDouble(dto.locY()), dto.description(), dto.img(), PlaceType.ACCOMMODATION, placeList);
+//            ensureLink(plan, place, createPeriod(dto.startDate(), dto.endDate()), planPlaceList);
+//        }
+//
+//        for (PlanRequestDto.TravelPlaceDto dto : travelPlaceDtoList) {
+//            Place place = findOrCreatePlace(dto.placeName(), Double.parseDouble(dto.locX()), Double.parseDouble(dto.locY()), dto.description(), dto.img(), PlaceType.TRAVEL_DESTINATION, placeList);
+//            ensureLink(plan, place, createPeriod(dto.date(), null), planPlaceList);
+//        }
+//
+//        if (!placeList.isEmpty()) placeRepository.saveAll(placeList);
+//        if (!planPlaceList.isEmpty()) planPlaceRepository.saveAll(planPlaceList);
+//        return planPlaceList;
+        return null;
     }
 
     @Override
@@ -146,6 +151,10 @@ public class PlaceServiceImpl implements PlaceService {
         placeRepository.saveAll(placeList);
         planPlaceRepository.saveAll(planPlaceList);
     }
+
+//    @Override
+//    public void addToRedis(ContentType contentType, Plan plan, PlacePair placePair) {
+//    }
 
     private PlaceResponseDto.TourApiResultDto getPlaceDetail(PoiSearchRes.Poi poi) {
         List<TourKeywordSearchRes> resultList = tourApiClient.searchByKeyword(poi.name(), "", 1, 10);

@@ -1,6 +1,7 @@
 package com.gills_dream.domain.plan.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.gills_dream.domain.map.enumerate.ContentType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -40,35 +41,23 @@ public class PlanRequestDto {
     ) {}
 
     public record TravelPlaceDto (
-            @Schema(description = "여행 장소 이름", example = "동궁과 월지")
-            String placeName,
+            @Schema(description = "맵 타입", example = "MapType.TOUR_API")
+            ContentType mapType,
+            @Schema(description = "장소 id", example = "1234")
+            Long placeId,
             @Schema(description = "방문 날짜 (nullable)", example = "2025-07-25")
-            LocalDate date,
-            @Schema(description = "여행 장소 썸네일 이미지", example = "https://...")
-            String img,
-            @Schema(description = "여행 장소 경도", example = "126.9236549")
-            String locX,
-            @Schema(description = "여행 장소 위도", example = "126.9236549")
-            String locY,
-            @Schema(description = "장소 설명", example = "이곳은 아주 예쁜 동궁과월지입니당")
-            String description
+            LocalDate date
     ) {}
 
     public record StayPlaceDto (
-            @Schema(description = "숙박 장소 이름", example = "길쑨스테이")
-            String placeName,
-            @Schema(description = "숙박 장소 썸네일 이미지", example = "https://...")
-            String img,
+            @Schema(description = "맵 타입", example = "MapType.TOUR_API")
+            ContentType mapType,
+            @Schema(description = "장소 id", example = "1234")
+            Long placeId,
             @Schema(description = "숙박 시작 날짜 (nullable)", example = "2025-07-25")
             LocalDate startDate,
             @Schema(description = "숙박 끝 날짜 (nullable)", example = "2025-07-25")
-            LocalDate endDate,
-            @Schema(description = "숙박 장소 경도", example = "126.9236549")
-            String locX,
-            @Schema(description = "숙박 장소 위도", example = "126.9236549")
-            String locY,
-            @Schema(description = "장소 설명", example = "이곳은 아주 예쁜 호텔입니당")
-            String description
+            LocalDate endDate
     ) {}
 
     public record StyleDto (

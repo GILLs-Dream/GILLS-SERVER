@@ -37,6 +37,7 @@ public enum ErrorStatus implements BaseCode {
     NO_SUCH_REGION(HttpStatus.NOT_FOUND, "NO SUCH REGION", "해당 지역이 존재하지 않습니다."),
     NO_SUCH_PLACE_TYPE(HttpStatus.NOT_FOUND, "NO SUCH PLACE TYPE", "해당 장소 타입이 존재하지 않습니다." ),
     TRANSPORT_NOT_FOUND(HttpStatus.NOT_FOUND, "TRANSPORT NOT FOUND", "교통수단이 선택되지 않았습니다." ),
+    NO_SUCH_MAP(HttpStatus.NOT_FOUND, "NO SUCH MAP", "해당 맵이 존재하지 않습니다."),
 
     // 파이썬 서버 관련 에러 응답
     PYTHON_SERVER_CONNECTION_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "PYTHON SERVER CONNECTION ERROR", "파이썬 서버에 연결할 수 없습니다."),

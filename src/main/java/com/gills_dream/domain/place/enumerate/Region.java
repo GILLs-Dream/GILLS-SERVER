@@ -28,7 +28,8 @@ public enum Region {
     JEONNAM("전남"),
     GYEONGBUK("경북"),
     GYEONGNAM("경남"),
-    JEJU("제주");
+    JEJU("제주"),
+    GYEONGJU("경주");
 
     private final String description;
 
