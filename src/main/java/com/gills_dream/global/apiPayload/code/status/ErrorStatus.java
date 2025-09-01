@@ -31,6 +31,8 @@ public enum ErrorStatus implements BaseCode {
 
     // 플랜 관련 에러 응답
     PLAN_NOT_FOUND(HttpStatus.NOT_FOUND, "PLAN NOT FOUND", "계획을 찾을 수 없습니다."),
+    TRANSPORT_TYPE_NOT_FOUND(HttpStatus.NOT_FOUND, "TRANSPORT TYPE NOT FOUND", "해당 교통수단이 존재하지 않습니다."),
+    INVALID_ROUTE_REQUEST(HttpStatus.BAD_REQUEST, "INVALID ROUTE REQUEST", "잘못된 경로 요청입니다."),
 
     // Enum 관련 에러 응답
     NO_SUCH_CATEGORY(HttpStatus.NOT_FOUND, "NO SUCH CATEGORY", "해당 카테고리가 존재하지 않습니다."),

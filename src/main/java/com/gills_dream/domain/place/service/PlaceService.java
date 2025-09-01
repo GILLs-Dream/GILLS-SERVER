@@ -1,5 +1,7 @@
 package com.gills_dream.domain.place.service;
 
+import com.gills_dream.domain.place.dto.PlaceSearchReq;
+import com.gills_dream.domain.place.dto.PlaceSearchRes;
 import com.gills_dream.domain.map.enumerate.ContentType;
 import com.gills_dream.domain.place.entity.Place;
 import com.gills_dream.domain.place.record.PlacePair;
@@ -12,6 +14,7 @@ import java.util.List;
 
 public interface PlaceService {
     List<PlanPlace> createList(Plan plan, List<PlanRequestDto.StayPlaceDto> stayPlaceDtoList, List<PlanRequestDto.TravelPlaceDto> travelPlaceDtoList);
+    PlaceSearchRes choosePlace(PlaceSearchReq req);
     List<PlanPlace> createList(Plan plan, PlacePair placePair);
     void addList(Plan plan, PlanResponseDto.PlanDraftDto dto);
 //    void addToRedis(ContentType contentType, Plan plan, PlacePair placePair);

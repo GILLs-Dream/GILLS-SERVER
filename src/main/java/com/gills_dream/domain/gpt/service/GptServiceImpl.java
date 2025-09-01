@@ -9,6 +9,7 @@ import com.gills_dream.domain.place.entity.Place;
 import com.gills_dream.domain.place.record.PlacePair;
 import com.gills_dream.domain.plan.dto.PlanResponseDto;
 import com.gills_dream.domain.plan.entity.Plan;
+import com.gills_dream.domain.map.dto.MapRouteReq;
 import com.gills_dream.domain.plan.enumerate.MoodType;
 import com.gills_dream.domain.python.dto.PythonResponseDto;
 import com.gills_dream.global.common.properties.PromptProperties;
@@ -73,6 +74,7 @@ public class GptServiceImpl implements GptService {
         PlacePair placePair = new PlacePair(new ArrayList<>(), new ArrayList<>());
         try {
             for (PythonResponseDto.VideoResultDto dto: processDto.getVideoResultDtoList()) {
+                List<String> newPlaceList;
                 String prompt = buildPrompt(dto, promptProperties.getFilterPlace(), region);
                 String response = getResponse(prompt);
                 System.out.println(response);
@@ -124,12 +126,49 @@ public class GptServiceImpl implements GptService {
         }
     }
 
+    @Override
+    public MapRouteReq createRouteRequest(MapRouteReq routeReq, String transportType, Long count) {
+        try {
+            // 1) 입력을 JSON 문자열로 직렬화
+            String inputJson = objectMapper.writeValueAsString(routeReq);
+
+            // 2) 프롬프트 템플릿 파일 읽고 {{input}} 치환
+            String prompt = buildPrompt(inputJson, transportType, promptProperties.getCreateRoute());
+
+            // 3) GPT 호출 → JSON 문자열만 오도록 getResponse에서 정제
+            String response = getResponse(prompt);
+
+            // 4) 응답 JSON → MapRouteReq 로 역직렬화
+            MapRouteReq reordered = objectMapper.readValue(response, new TypeReference<MapRouteReq>() {});
+
+            // 5) 방어 코드: 실패/이상 시 원본 반환
+            if (reordered == null || reordered.locations() == null || reordered.locations().size() < 2) {
+                return routeReq;
+            }
+
+            return reordered;
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to create route request from GPT response", e);
+        }
+    }
+
     private String buildPrompt(String input, String promptProperties) throws IOException {
         try {
             Resource resource = new FileSystemResource(promptProperties);
             String template = new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
             return template
                     .replace("{{input}}", input);
+        } catch (IOException e) {
+            throw new IOException("Failed to read prompt text", e);
+        }
+    }
+    private String buildPrompt(String input, String transportType, String promptProperties) throws IOException {
+        try {
+            Resource resource = new FileSystemResource(promptProperties);
+            String template = new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+            return template
+                    .replace("{{input}}", input)
+                    .replace("{{transportation}}", transportType);
         } catch (IOException e) {
             throw new IOException("Failed to read prompt text", e);
         }

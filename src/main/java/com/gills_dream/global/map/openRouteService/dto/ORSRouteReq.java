@@ -1,7 +1,9 @@
 package com.gills_dream.global.map.openRouteService.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Builder;
 
+@Builder
 @Schema(description = "OpenRouteService 자전거 경로 요청 DTO")
 public record ORSRouteReq(
 

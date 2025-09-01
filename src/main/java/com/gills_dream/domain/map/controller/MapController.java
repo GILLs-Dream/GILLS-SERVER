@@ -1,16 +1,12 @@
 package com.gills_dream.domain.map.controller;
 
+import com.gills_dream.domain.map.dto.MapRouteReq;
+import com.gills_dream.domain.map.dto.MapSearchRes;
+import com.gills_dream.domain.map.service.MapService;
+import com.gills_dream.domain.map.service.RouteService;
+import com.gills_dream.domain.plan.enumerate.TransportType;
 import com.gills_dream.global.map.kakao.KakaoMapClient;
-import com.gills_dream.global.map.kakao.KakaoMobilityClient;
-import com.gills_dream.global.map.kakao.dto.KeywordSearchRes;
-import com.gills_dream.global.map.kakao.dto.MobilityRouteReq;
-import com.gills_dream.global.map.kakao.dto.MobilityRouteRes;
-import com.gills_dream.global.map.openRouteService.ORSRouteClient;
-import com.gills_dream.global.map.openRouteService.dto.ORSRouteReq;
-import com.gills_dream.global.map.openRouteService.dto.ORSRouteRes;
 import com.gills_dream.global.map.tmap.TmapPoiSearchClient;
-import com.gills_dream.global.map.tmap.TmapRouteClient;
-import com.gills_dream.global.map.tmap.dto.*;
 import com.gills_dream.global.map.tourapi.TourApiClient;
 import com.gills_dream.global.map.tourapi.TourPlaceDetailRes;
 import io.swagger.v3.oas.annotations.Operation;
@@ -18,8 +14,6 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import com.gills_dream.global.map.tourapi.TourKeywordSearchRes;
-
 import java.util.List;
 
 @RestController
@@ -29,59 +23,50 @@ import java.util.List;
 public class MapController {
 
     private final TourApiClient tourApiClient;
-    private final KakaoMobilityClient kakaoMobilityClient;
     private final KakaoMapClient kakaoMapClient;
-    private final TmapRouteClient tmapRouteClient;
-    private final TmapPoiSearchClient tmapPoiSearchClient;
-    private final ORSRouteClient orsRouteClient;
+    private final MapService mapService;
+    private final RouteService routeService;
 
-    //Todo: 메소드 연동 후 삭제
-    @Operation(summary = "카카오 다중 경유지 길찾기 요청", description = "카카오 API를 사용하여 다중 경유지 길찾기 요청을 보냅니다.")
-    @PostMapping("/route/mobility")
-    public MobilityRouteRes kakaoMobilityRouteRequest(@RequestBody MobilityRouteReq mobilityRouteReq) {
-        return kakaoMobilityClient.findMultiRoute(mobilityRouteReq);
-    }
-
-    //Todo: 메소드 연동 후 삭제
-    @Operation(summary = "Tmap 보행자 경로 안내 요청", description = "Tmap API를 사용하여 보행자 경로 안내 요청을 보냅니다.")
-    @PostMapping("/route/pedestrian")
-    public PedestrianRouteRes tmapPedestrianRouteRequest(@RequestBody PedestrianRouteReq routeReq) {
-        return tmapRouteClient.findPedestrianRoute(routeReq);
-    }
-
-    //Todo: 메소드 연동 후 삭제
-    @Operation(summary = "TMAP 대중교통 경로 요청", description = "TMAP API로 대중교통 경로를 요청합니다.")
-    @PostMapping("/route/transit")
-    public TransitRawRes tmapTransitRouteRequest(@RequestBody TransitRouteReq req) {
-        return tmapRouteClient.findTransitRoute(req);
-    }
-
-    //Todo: 메소드 연동 후 삭제
-    @Operation(summary = "ORS 자전거 경로 요청", description = "OpenRouteService API를 사용하여 자전거 경로를 요청합니다.")
-    @PostMapping("/route/bicycle")
-    public ORSRouteRes orsBicycleRouteRequest(@RequestBody ORSRouteReq req) {
-        return orsRouteClient.findBicycleRoute(req);
-    }
-
-    //Todo: 메소드 연동 후 삭제
-    @Operation(summary = "Tmap POI 장소 검색", description = "장소명(키워드)으로 Tmap의 POI 데이터를 검색합니다.")
-    @GetMapping("/search/tmap/poi")
-    public List<PoiSearchRes.Poi> searchPoiByKeyword(
-            @Parameter(description = "검색 키워드", example = "경복궁") @RequestParam String keyword,
-            @Parameter(description = "검색 결과 개수", example = "5") @RequestParam(defaultValue = "5") int count
+    @Operation(summary = "경로탐색 요청", description = "출발지와 도착지 간의 경로를 탐색합니다.")
+    @GetMapping("/route")
+    public Object requestRoute(
+            @Parameter(description = "플랜아이디", example = "1") @RequestParam(required = false) Long planId,
+            @Parameter(description = "교통수단", example = "CAR") @RequestParam TransportType transportation
     ) {
-        return tmapPoiSearchClient.searchPois(keyword, count);
+        return routeService.getRoute(planId, transportation);
     }
 
     @Operation(summary = "KAKAO 키워드 장소 검색", description = "키워드로 KAKAO의 장소 데이터를 검색합니다.")
     @GetMapping("/search/kakao/keyword")
-    public KeywordSearchRes searchKakaoByKeyword(
+    public List<MapSearchRes>  searchKakaoByKeyword(
             @Parameter(description = "검색 키워드", example = "경복궁") @RequestParam String keyword
     ) {
         return kakaoMapClient.searchByKeyword(keyword);
     }
+
+    @Operation(summary = "KAKAO 주소로 좌표 검색", description = "주소를 입력하여 KAKAO의 좌표 데이터를 검색합니다.")
+    @GetMapping("/search/kakao/address")
+    public List<MapSearchRes> searchKakaoByAddress(
+            @Parameter(description = "검색 주소", example = "서울특별시 종로구 세종로 1-68") @RequestParam String address
+    ) {
+        return kakaoMapClient.searchByAddress(address);
+    }
+    @Operation(
+            summary = "관광지 검색",
+            description = "Tour API, KAKAO API를 사용하여 장소를 검색합니다. "
+                    + "planId가 없으면 일반 검색, 있으면 해당 플랜과 연동된 검색 결과를 캐싱합니다."
+    )
+    @GetMapping("/search/place")
+    public List<MapSearchRes> searchTourPlaces(
+            @Parameter(description = "검색 키워드", example = "경복궁") @RequestParam String keyword,
+            @Parameter(description = "페이지 번호", example = "1") @RequestParam(defaultValue = "1") int pageNo,
+            @Parameter(description = "한 페이지당 결과 개수", example = "10") @RequestParam(defaultValue = "10") int numOfRows
+    ) {
+        return mapService.searchByKeyword(keyword, pageNo, numOfRows);
+    }
+
     @GetMapping("/tour-api/search")
-    public List<TourKeywordSearchRes> searchTourPlaces(
+    public List<MapSearchRes> searchTourPlaces(
             @RequestParam String keyword,
             @RequestParam(defaultValue = "12") String category,
             @RequestParam(defaultValue = "1") int pageNo,
@@ -96,4 +81,23 @@ public class MapController {
     ) {
         return tourApiClient.getPlaceDetail(contentId);
     }
+
+    /*
+    @Operation(summary = "경로 탐색 통합", description = "다양한 지도 API를 사용하여 경로 탐색을 통합적으로 처리합니다.")
+    @PostMapping("/route")
+    public Object unifiedRouteRequest(
+            @Parameter(description = "교통수단", example = "CAR") @RequestParam TransportType transportation,
+            @RequestBody MapRouteReq routeReq
+    ) {
+        return routeService.getRoute(transportation, routeReq);
+    }
+
+    @Operation(summary = "Tmap POI 장소 검색", description = "장소명(키워드)으로 Tmap의 POI 데이터를 검색합니다.")
+    @GetMapping("/search/tmap/poi")
+    public List<PoiSearchRes.Poi> searchPoiByKeyword(
+            @Parameter(description = "검색 키워드", example = "경복궁") @RequestParam String keyword,
+            @Parameter(description = "검색 결과 개수", example = "5") @RequestParam(defaultValue = "5") int count
+    ) {
+        return tmapPoiSearchClient.searchPois(keyword, count);
+    }*/
 }

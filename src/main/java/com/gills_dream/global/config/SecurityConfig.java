@@ -26,6 +26,7 @@ public class SecurityConfig {
             "/member/reissue",
             "/login",
             "/v1/map/**",
+            "/v1/place/**",
             "/swagger-ui/**",
             "/swagger-resources/**",
             "/v3/api-docs/**",

@@ -15,4 +15,5 @@ public class PromptProperties {
     private String filterPlace;
     private String generatePlan;
     private String summarizePlan;
+    private String createRoute;
 }

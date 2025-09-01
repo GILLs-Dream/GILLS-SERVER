@@ -1,5 +1,6 @@
 package com.gills_dream.domain.gpt.service;
 
+import com.gills_dream.domain.map.dto.MapRouteReq;
 import com.gills_dream.domain.place.record.PlacePair;
 import com.gills_dream.domain.plan.dto.PlanResponseDto;
 import com.gills_dream.domain.plan.entity.Plan;
@@ -11,7 +12,8 @@ import java.util.List;
 public interface GptService {
     List<MoodType> selectMood(String input);
     String summarizeInput(String input);
-    PlacePair filterPlace(PythonResponseDto.ProcessResultDto processDto, String region);
     String summarizePlan(Long duration, List<PlanResponseDto.PlanPerDayDto> planPerDayList);
     PlanResponseDto.PlanDraftDto generatePlan(Plan plan);
+    List<String> filterPlace(PythonResponseDto.ProcessResultDto processDto, String region);
+    MapRouteReq createRouteRequest(MapRouteReq routeReq, String transportType, Long count);
 }

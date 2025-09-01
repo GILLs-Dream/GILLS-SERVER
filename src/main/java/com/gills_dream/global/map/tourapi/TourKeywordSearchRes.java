@@ -6,6 +6,7 @@ public record TourKeywordSearchRes (
         String addr1,
         String mapx,
         String mapy,
-        String firstimage
+        String firstimage,
+        String category
 ){
 }
