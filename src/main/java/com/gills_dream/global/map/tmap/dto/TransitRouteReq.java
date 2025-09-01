@@ -1,7 +1,9 @@
 package com.gills_dream.global.map.tmap.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Builder;
 
+@Builder
 @Schema(description = "TMAP 대중교통 경로 요청 DTO")
 public record TransitRouteReq(
         @Schema(description = "출발지 X좌표", example = "127.02479803562213")
