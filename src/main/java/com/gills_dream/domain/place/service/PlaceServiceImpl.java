@@ -1,11 +1,11 @@
 package com.gills_dream.domain.place.service;
 
-import com.gills_dream.domain.map.enumerate.ContentType;
 import com.gills_dream.domain.place.dto.PlaceResponseDto;
 import com.gills_dream.domain.place.dto.PlaceSearchReq;
 import com.gills_dream.domain.place.dto.PlaceSearchRes;
 import com.gills_dream.domain.place.entity.Place;
 import com.gills_dream.domain.place.enumerate.PlaceType;
+import com.gills_dream.domain.place.enumerate.Platform;
 import com.gills_dream.domain.place.record.PlacePair;
 import com.gills_dream.domain.place.repository.PlaceRepository;
 import com.gills_dream.domain.place.vo.PlaceCache;
@@ -15,6 +15,9 @@ import com.gills_dream.domain.plan.dto.PlanResponseDto;
 import com.gills_dream.domain.plan.entity.Plan;
 import com.gills_dream.domain.plan.entity.PlanPlace;
 import com.gills_dream.domain.plan.repository.PlanPlaceRepository;
+import com.gills_dream.domain.plan.repository.PlanRepository;
+import com.gills_dream.global.apiPayload.code.status.ErrorStatus;
+import com.gills_dream.global.apiPayload.exception.GeneralException;
 import com.gills_dream.global.map.tmap.TmapPoiSearchClient;
 import com.gills_dream.global.map.tmap.dto.PoiSearchRes;
 import com.gills_dream.global.map.tourapi.TourApiClient;
@@ -39,33 +42,110 @@ public class PlaceServiceImpl implements PlaceService {
     private final PlanPlaceRepository planPlaceRepository;
     private final TmapPoiSearchClient tmapPoiSearchClient;
     private final TourApiClient tourApiClient;
+    private final PlanRepository planRepository;
+
     private record PoiWithDetail(PoiSearchRes.Poi poi, PlaceResponseDto.TourApiResultDto detail) {}
 
     private final PlaceCacheService placeCacheService;
 
     @Override
     @Transactional
-    public List<PlanPlace> createList(Plan plan, List<PlanRequestDto.StayPlaceDto> stayPlaceDtoList, List<PlanRequestDto.TravelPlaceDto> travelPlaceDtoList) {
-//        List<Place> placeList = new ArrayList<>();
-//        List<PlanPlace> planPlaceList = new ArrayList<>();
-//
-//        // redis에 key값(api 플랫폼 타입, 컨텐트 id, plan id)으로 value값(장소 이름, 좌표, 이미지 url, 설명글, period) 가져와서 repo에 저장
-//        // redis에 key값이 없으면 에러처리
-//
-//        for (PlanRequestDto.StayPlaceDto dto : stayPlaceDtoList) {
-//            Place place = findOrCreatePlace(dto.placeName(), Double.parseDouble(dto.locX()), Double.parseDouble(dto.locY()), dto.description(), dto.img(), PlaceType.ACCOMMODATION, placeList);
-//            ensureLink(plan, place, createPeriod(dto.startDate(), dto.endDate()), planPlaceList);
-//        }
-//
-//        for (PlanRequestDto.TravelPlaceDto dto : travelPlaceDtoList) {
-//            Place place = findOrCreatePlace(dto.placeName(), Double.parseDouble(dto.locX()), Double.parseDouble(dto.locY()), dto.description(), dto.img(), PlaceType.TRAVEL_DESTINATION, placeList);
-//            ensureLink(plan, place, createPeriod(dto.date(), null), planPlaceList);
-//        }
-//
-//        if (!placeList.isEmpty()) placeRepository.saveAll(placeList);
-//        if (!planPlaceList.isEmpty()) planPlaceRepository.saveAll(planPlaceList);
-//        return planPlaceList;
-        return null;
+    public void createList(Plan plan, PlanRequestDto.DestinationDto request) {
+        List<PlanRequestDto.TourPlaceDto> tourDtoList = request.tourDtoList();
+        List<PlanRequestDto.AccommodationDto> accomDtoList = request.accommodationDtoList();
+
+        List<Place> newPlaceList = new ArrayList<>();
+        List<PlanPlace> newPlanPlaceList = new ArrayList<>();
+
+        for (PlanRequestDto.TourPlaceDto tourDto : tourDtoList) {
+            // Redis에서 해당 장소 불러오기
+            PlaceCache placeCache = placeCacheService.getOne(plan.getId(), tourDto.placeCode());
+            if (placeCache == null) throw new GeneralException(ErrorStatus.CANNOT_FIND_PLACE_FROM_REDIS);
+
+            // DB에 저장된 장소인지 확인 & 없으면 DB에 저장
+            Place place = placeRepository.findByNameAndLatAndLngRounded(placeCache.name(), Double.parseDouble(placeCache.lat()), Double.parseDouble(placeCache.lng()))
+                    .orElseGet(() -> {
+                            Place newPlace = Place.builder()
+                                    .name(placeCache.name())
+                                    .lat(placeCache.lat())
+                                    .lng(placeCache.lng())
+                                    .detailUrl(placeCache.detailUrl())
+                                    .code(tourDto.placeCode())
+                                    .platform(Platform.valueOf(placeCache.platform()))
+                                    .placeType(PlaceType.TOUR)
+                                    .build();
+                            newPlace.addImage(placeCache.imageUrl());
+                            newPlaceList.add(newPlace);
+                            return newPlace;
+                        }
+                    );
+
+            // PlanPlace 생성 & Period 저장
+            if (!planPlaceRepository.existsByPlanIdAndPlaceId(plan.getId(), place.getId())) {
+                PlacePeriod period = PlacePeriod.builder()
+                        .startedAt(tourDto.date())
+                        .finishedAt(tourDto.date())
+                        .duration(1)
+                        .build();
+
+                PlanPlace newPlanPlace = PlanPlace.builder()
+                        .plan(plan)
+                        .place(place)
+                        .period(period)
+                        .build();
+
+                newPlanPlaceList.add(newPlanPlace);
+                place.getPlanPlaces().add(newPlanPlace);
+            }
+        }
+
+        for (PlanRequestDto.AccommodationDto accomDto : accomDtoList) {
+            // Redis에서 해당 장소 불러오기
+            PlaceCache placeCache = placeCacheService.getOne(plan.getId(), accomDto.placeCode());
+            if (placeCache == null) throw new GeneralException(ErrorStatus.CANNOT_FIND_PLACE_FROM_REDIS);
+
+            // DB에 저장된 장소인지 확인 & 없으면 DB에 저장
+            Place place = placeRepository.findByNameAndLatAndLngRounded(placeCache.name(), Double.parseDouble(placeCache.lat()), Double.parseDouble(placeCache.lng()))
+                    .orElseGet(() -> {
+                                Place newPlace = Place.builder()
+                                        .name(placeCache.name())
+                                        .lat(placeCache.lat())
+                                        .lng(placeCache.lng())
+                                        .detailUrl(placeCache.detailUrl())
+                                        .code(accomDto.placeCode())
+                                        .platform(Platform.valueOf(placeCache.platform()))
+                                        .placeType(PlaceType.ACCOMMODATION)
+                                        .build();
+                                newPlace.addImage(placeCache.imageUrl());
+                                newPlaceList.add(newPlace);
+                                return newPlace;
+                            }
+                    );
+
+            // PlanPlace 생성 & Period 저장
+            if (!planPlaceRepository.existsByPlanIdAndPlaceId(plan.getId(), place.getId())) {
+                Integer duration = Math.toIntExact((accomDto.startDate() != null && accomDto.endDate() != null) ? ChronoUnit.DAYS.between(accomDto.startDate(), accomDto.endDate()) : 0);
+                PlacePeriod period = PlacePeriod.builder()
+                        .startedAt(accomDto.startDate())
+                        .finishedAt(accomDto.endDate())
+                        .duration(duration)
+                        .build();
+
+                PlanPlace newPlanPlace = PlanPlace.builder()
+                        .plan(plan)
+                        .place(place)
+                        .period(period)
+                        .build();
+
+                newPlanPlaceList.add(newPlanPlace);
+                place.getPlanPlaces().add(newPlanPlace);
+            }
+        }
+
+        if (!newPlaceList.isEmpty()) placeRepository.saveAll(newPlaceList);
+        if (!newPlanPlaceList.isEmpty()) planPlaceRepository.saveAll(newPlanPlaceList);
+
+        plan.getPlanPlaces().addAll(newPlanPlaceList);
     }
 
     @Override

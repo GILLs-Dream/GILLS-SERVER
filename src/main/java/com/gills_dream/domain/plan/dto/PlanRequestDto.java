@@ -1,7 +1,7 @@
 package com.gills_dream.domain.plan.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.gills_dream.domain.map.enumerate.ContentType;
+import com.gills_dream.domain.place.enumerate.Platform;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -35,25 +35,25 @@ public class PlanRequestDto {
 
     public record DestinationDto (
             @Schema(description = "여행 장소 리스트")
-            List<TravelPlaceDto> travelPlaceDtoList,
+            List<TourPlaceDto> tourDtoList,
             @Schema(description = "숙박 장소 리스트")
-            List<StayPlaceDto> stayPlaceDtoList
+            List<AccommodationDto> accommodationDtoList
     ) {}
 
-    public record TravelPlaceDto (
-            @Schema(description = "맵 타입", example = "MapType.TOUR_API")
-            ContentType mapType,
-            @Schema(description = "장소 id", example = "1234")
-            Long placeId,
+    public record TourPlaceDto (
+            @Schema(description = "플랫폼 타입 [TOUR_API, KAKAO, VIDEO]", example = "MapType.TOUR_API")
+            Platform platform,
+            @Schema(description = "해당 플랫폼에서 장소 code(id)", example = "1234")
+            String placeCode,
             @Schema(description = "방문 날짜 (nullable)", example = "2025-07-25")
             LocalDate date
     ) {}
 
-    public record StayPlaceDto (
-            @Schema(description = "맵 타입", example = "MapType.TOUR_API")
-            ContentType mapType,
-            @Schema(description = "장소 id", example = "1234")
-            Long placeId,
+    public record AccommodationDto(
+            @Schema(description = "플랫폼 타입 [TOUR_API, KAKAO, VIDEO]", example = "MapType.TOUR_API")
+            Platform platform,
+            @Schema(description = "해당 플랫폼에서 장소 code(id)", example = "1234")
+            String placeCode,
             @Schema(description = "숙박 시작 날짜 (nullable)", example = "2025-07-25")
             LocalDate startDate,
             @Schema(description = "숙박 끝 날짜 (nullable)", example = "2025-07-25")

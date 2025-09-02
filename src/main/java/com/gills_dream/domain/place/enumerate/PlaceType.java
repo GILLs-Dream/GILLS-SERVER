@@ -11,7 +11,7 @@ import java.util.Arrays;
 @RequiredArgsConstructor
 public enum PlaceType {
     // Todo: 여행지, 식당, 카페, 숙소로 세분화할지 의논
-    TRAVEL_DESTINATION("여행지"),
+    TOUR("여행지"),
     ACCOMMODATION("숙소"),
     RESTAURANT("식당"),
     CAFE("카페");

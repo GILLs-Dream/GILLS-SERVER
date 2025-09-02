@@ -1,6 +1,7 @@
 package com.gills_dream.domain.place.entity;
 
 import com.gills_dream.domain.place.enumerate.PlaceType;
+import com.gills_dream.domain.place.enumerate.Platform;
 import com.gills_dream.domain.place.enumerate.Region;
 import com.gills_dream.domain.place.vo.PlacePeriod;
 import com.gills_dream.domain.plan.entity.PlanPlace;
@@ -22,18 +23,25 @@ public class Place {
     @Column(columnDefinition = "bigint", nullable = false)
     private Long id;
 
+    @Column(columnDefinition = "TEXT")
+    private String code;
+
+    @Column
+    @Enumerated(EnumType.STRING)
+    private Platform platform;
+
     @Column(columnDefinition = "varchar(100)", nullable = false)
     private String name;
 
     @Column(columnDefinition = "TEXT")
     @Lob
-    private String description;
+    private String detailUrl;
 
     @Column(columnDefinition = "TEXT")
-    private String locX;
+    private String lat;
 
     @Column(columnDefinition = "TEXT")
-    private String locY;
+    private String lng;
 
     @Column
     @Enumerated(EnumType.STRING)
@@ -48,11 +56,13 @@ public class Place {
     private List<String> images = new ArrayList<>();
 
     @Builder
-    public Place(String name, String description, String locX, String locY, PlaceType placeType, List<String> images) {
+    public Place(String name, String code, Platform platform, String detailUrl, String lat, String lng, PlaceType placeType, List<String> images) {
         this.name = name;
-        this.description = description;
-        this.locX = locX;
-        this.locY = locY;
+        this.code = code;
+        this.platform = platform;
+        this.detailUrl = detailUrl;
+        this.lat = lat;
+        this.lng = lng;
         this.placeType = placeType;
         this.images = images != null ? images : new ArrayList<>();
     }

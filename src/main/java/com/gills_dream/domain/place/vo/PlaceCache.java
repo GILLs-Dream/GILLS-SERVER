@@ -1,7 +1,10 @@
 package com.gills_dream.domain.place.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.Column;
 import lombok.Builder;
+
+import java.time.LocalDate;
 
 @Builder
 public record PlaceCache(
@@ -31,10 +34,13 @@ public record PlaceCache(
 ) {
         @Builder
         public record Period(
-                @Schema(description = "숙박 일수 (n박)", example = "2")
-                String nights,
+                @Column(columnDefinition = "DATE")
+                LocalDate startedAt,
 
-                @Schema(description = "여행 며칠째 (Day 순서)", example = "1")
-                String dayOrder
+                @Column(columnDefinition = "DATE")
+                LocalDate finishedAt,
+
+                @Column(columnDefinition = "bigint")
+                Integer duration
         ) {}
 }

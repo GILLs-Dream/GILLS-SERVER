@@ -8,6 +8,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.time.LocalDate;
 import java.util.*;
 
 @Service
@@ -40,8 +41,9 @@ public class PlaceCacheService {
                 "imageUrl", nz(m.imageUrl()),
                 "detailUrl", nz(m.detailUrl()),
                 "placeType", nz(m.placeType()),
-                "period.nights", nz(m.period() == null ? "" : m.period().nights()),
-                "period.dayOrder", nz(m.period() == null ? "" : m.period().dayOrder())
+                "period.startedAt", nz(m.period() == null ? "" : String.valueOf(m.period().startedAt())),
+                "period.finishedAt", nz(m.period() == null ? "" : String.valueOf(m.period().finishedAt())),
+                "period.duration", nz(m.period() == null ? "" : String.valueOf(m.period().duration()))
         ));
 
         // TTL
@@ -80,8 +82,9 @@ public class PlaceCacheService {
                     .detailUrl(m.getOrDefault("detailUrl", ""))
                     .placeType(m.getOrDefault("placeType", ""))
                     .period(PlaceCache.Period.builder()
-                            .nights(m.getOrDefault("period.nights", ""))
-                            .dayOrder(m.getOrDefault("period.dayOrder", ""))
+                            .startedAt(LocalDate.parse(m.getOrDefault("period.startedAt", "")))
+                            .finishedAt(LocalDate.parse(m.getOrDefault("period.finishedAt", "")))
+                            .duration(Integer.valueOf(m.getOrDefault("period.duration", "")))
                             .build())
                     .build());
         }
@@ -102,8 +105,9 @@ public class PlaceCacheService {
                 .detailUrl(m.getOrDefault("detailUrl", ""))
                 .placeType(m.getOrDefault("placeType", ""))
                 .period(PlaceCache.Period.builder()
-                        .nights(m.getOrDefault("period.nights", ""))
-                        .dayOrder(m.getOrDefault("period.dayOrder", ""))
+                        .startedAt(LocalDate.parse(m.getOrDefault("period.startedAt", "")))
+                        .finishedAt(LocalDate.parse(m.getOrDefault("period.finishedAt", "")))
+                        .duration(Integer.valueOf(m.getOrDefault("period.duration", "")))
                         .build())
                 .build();
     }

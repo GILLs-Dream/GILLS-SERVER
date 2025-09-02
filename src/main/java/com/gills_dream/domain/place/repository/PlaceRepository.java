@@ -12,11 +12,11 @@ import java.util.Optional;
 public interface PlaceRepository extends JpaRepository<Place, Long> {
     @Query("SELECT p FROM Place p " +
             "WHERE p.name = :name " +
-            "AND ROUND(cast(p.locX as double), 2) = ROUND(:locX, 2) " +
-            "AND ROUND(cast(p.locY as double), 2) = ROUND(:locY, 2)")
-    Optional<Place> findByNameAndLocXAndLocYRounded(@Param("name") String name,
-                                                    @Param("locX") double locX,
-                                                    @Param("locY") double locY);
+            "AND ROUND(cast(p.lng as double), 2) = ROUND(:lng, 2) " +
+            "AND ROUND(cast(p.lat as double), 2) = ROUND(:lat, 2)")
+    Optional<Place> findByNameAndLatAndLngRounded(@Param("name") String name,
+                                                    @Param("lat") double lat,
+                                                    @Param("lng") double lng);
 
     @Query("SELECT p FROM Place p LEFT JOIN p.planPlaces pp WHERE pp.plan.id = :planId")
     List<Place> findAllByPlanId(@Param("planId") Long planId);

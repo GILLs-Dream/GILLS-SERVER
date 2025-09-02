@@ -1,7 +1,7 @@
 package com.gills_dream.domain.plan.service;
 
 import com.gills_dream.domain.gpt.service.GptService;
-import com.gills_dream.domain.map.enumerate.ContentType;
+import com.gills_dream.domain.map.service.MapService;
 import com.gills_dream.domain.member.entity.Member;
 import com.gills_dream.domain.member.repository.MemberRepository;
 import com.gills_dream.domain.place.entity.Place;
@@ -42,6 +42,7 @@ public class PlanServiceImpl implements PlanService {
     private final PythonService pythonService;
     private final PlaceService placeService;
     private final PlaceRepository placeRepository;
+    private final MapService mapService;
 
     @Override
     @Transactional
@@ -94,8 +95,7 @@ public class PlanServiceImpl implements PlanService {
     public PlanResponseDto.TemplateResultDto saveDestination(CustomUserDetails userDetails, Long planId, PlanRequestDto.DestinationDto request) {
         Plan plan = checkMemberAndPlan(userDetails, planId);
 
-        List<PlanPlace> planPlaceList = placeService.createList(plan, request.stayPlaceDtoList(), request.travelPlaceDtoList());
-        plan.getPlanPlaces().addAll(planPlaceList);
+        placeService.createList(plan, request);
 
         return new PlanResponseDto.TemplateResultDto(plan.getId());
     }
@@ -126,7 +126,10 @@ public class PlanServiceImpl implements PlanService {
         // 비디오에서 추출된 장소 필터링
         PlacePair placePair = gptService.filterPlace(processDto, request.getRegion());
 
-        // 비디오에서 추출된 장소를 tour&kakao api에서 검색 및 redis에 업로드
+        // 비디오에서 추출된 장소를 tour&kakao api에서 검색
+        mapService.searchByKeyword()
+
+        // 검색 내용 바탕으로 redis에 업로드
 //        placeService.addToRedis(ContentType.VIDEO, plan, placePair);
 
         return new PlanResponseDto.VideoResultDto(plan.getId(), Stream.concat(

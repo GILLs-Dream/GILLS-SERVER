@@ -74,7 +74,6 @@ public class GptServiceImpl implements GptService {
         PlacePair placePair = new PlacePair(new ArrayList<>(), new ArrayList<>());
         try {
             for (PythonResponseDto.VideoResultDto dto: processDto.getVideoResultDtoList()) {
-                List<String> newPlaceList;
                 String prompt = buildPrompt(dto, promptProperties.getFilterPlace(), region);
                 String response = getResponse(prompt);
                 System.out.println(response);

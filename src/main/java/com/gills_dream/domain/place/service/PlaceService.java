@@ -2,7 +2,6 @@ package com.gills_dream.domain.place.service;
 
 import com.gills_dream.domain.place.dto.PlaceSearchReq;
 import com.gills_dream.domain.place.dto.PlaceSearchRes;
-import com.gills_dream.domain.map.enumerate.ContentType;
 import com.gills_dream.domain.place.entity.Place;
 import com.gills_dream.domain.place.record.PlacePair;
 import com.gills_dream.domain.plan.dto.PlanRequestDto;
@@ -13,7 +12,7 @@ import com.gills_dream.domain.plan.entity.PlanPlace;
 import java.util.List;
 
 public interface PlaceService {
-    List<PlanPlace> createList(Plan plan, List<PlanRequestDto.StayPlaceDto> stayPlaceDtoList, List<PlanRequestDto.TravelPlaceDto> travelPlaceDtoList);
+    void createList(Plan plan, PlanRequestDto.DestinationDto destinationDtoList);
     PlaceSearchRes choosePlace(PlaceSearchReq req);
     List<PlanPlace> createList(Plan plan, PlacePair placePair);
     void addList(Plan plan, PlanResponseDto.PlanDraftDto dto);

@@ -20,10 +20,10 @@ public class PlacePeriod {
     private LocalDate finishedAt;
 
     @Column(columnDefinition = "bigint")
-    private Long duration;
+    private Integer duration;
 
     @Builder
-    public PlacePeriod(LocalDate startedAt, LocalDate finishedAt, Long duration) {
+    public PlacePeriod(LocalDate startedAt, LocalDate finishedAt, Integer duration) {
         this.startedAt = startedAt;
         this.finishedAt = finishedAt;
         this.duration = duration;
