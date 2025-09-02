@@ -24,7 +24,7 @@ public class Place {
     private Long id;
 
     @Column(columnDefinition = "TEXT")
-    private String code;
+    private String contentId;
 
     @Column
     @Enumerated(EnumType.STRING)
@@ -56,9 +56,9 @@ public class Place {
     private List<String> images = new ArrayList<>();
 
     @Builder
-    public Place(String name, String code, Platform platform, String detailUrl, String lat, String lng, PlaceType placeType, List<String> images) {
+    public Place(String name, String contentId, Platform platform, String detailUrl, String lat, String lng, PlaceType placeType, List<String> images) {
         this.name = name;
-        this.code = code;
+        this.contentId = contentId;
         this.platform = platform;
         this.detailUrl = detailUrl;
         this.lat = lat;

@@ -5,5 +5,5 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
 public record PlacePair(
-        @JsonProperty("travel") List<String> travelDestList,
-        @JsonProperty("accommodation") List<String> accomList) {}
+        @JsonProperty("tour") List<String> tourList,
+        @JsonProperty("accommodation") List<String> accommodationList) {}

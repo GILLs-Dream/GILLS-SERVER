@@ -41,23 +41,23 @@ public class PlanRequestDto {
     ) {}
 
     public record TourPlaceDto (
-            @Schema(description = "플랫폼 타입 [TOUR_API, KAKAO, VIDEO]", example = "MapType.TOUR_API")
+            @Schema(description = "플랫폼 타입 [TOUR, KAKAO, VIDEO]", example = "TOUR")
             Platform platform,
-            @Schema(description = "해당 플랫폼에서 장소 code(id)", example = "1234")
-            String placeCode,
+            @Schema(description = "content Id", example = "1234")
+            String contentId,
             @Schema(description = "방문 날짜 (nullable)", example = "2025-07-25")
-            LocalDate date
+            String date
     ) {}
 
     public record AccommodationDto(
-            @Schema(description = "플랫폼 타입 [TOUR_API, KAKAO, VIDEO]", example = "MapType.TOUR_API")
+            @Schema(description = "플랫폼 타입 [TOUR, KAKAO, VIDEO]", example = "TOUR")
             Platform platform,
-            @Schema(description = "해당 플랫폼에서 장소 code(id)", example = "1234")
-            String placeCode,
+            @Schema(description = "content Id", example = "1234")
+            String contentId,
             @Schema(description = "숙박 시작 날짜 (nullable)", example = "2025-07-25")
-            LocalDate startDate,
+            String startDate,
             @Schema(description = "숙박 끝 날짜 (nullable)", example = "2025-07-25")
-            LocalDate endDate
+            String endDate
     ) {}
 
     public record StyleDto (

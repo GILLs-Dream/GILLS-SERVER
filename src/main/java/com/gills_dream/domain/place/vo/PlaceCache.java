@@ -35,10 +35,10 @@ public record PlaceCache(
         @Builder
         public record Period(
                 @Column(columnDefinition = "DATE")
-                LocalDate startedAt,
+                String startedAt,
 
                 @Column(columnDefinition = "DATE")
-                LocalDate finishedAt,
+                String finishedAt,
 
                 @Column(columnDefinition = "bigint")
                 Integer duration

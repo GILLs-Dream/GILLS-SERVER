@@ -1,5 +1,6 @@
 package com.gills_dream.domain.plan.dto;
 
+import com.gills_dream.domain.place.dto.PlaceAddedDto;
 import com.gills_dream.domain.plan.enumerate.MoodType;
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -23,8 +24,8 @@ public class PlanResponseDto {
     public record VideoResultDto (
             @Schema(description = "여행 id", example = "1")
             Long planId,
-            @Schema(description = "추천 여행 장소 리스트")
-            List<String> recommendedList
+            @Schema(description = "redis에 추가된 장소 리스트")
+            List<PlaceAddedDto> placeList
     ) {}
 
     public record PlanDraftDto (

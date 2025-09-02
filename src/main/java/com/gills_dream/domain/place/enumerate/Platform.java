@@ -11,7 +11,7 @@ import java.util.Arrays;
 @RequiredArgsConstructor
 public enum Platform {
     KAKAO("카카오"),
-    TOUR_API("투어"),
+    TOUR("투어 API"),
     VIDEO("영상");
 
     private final String description;

@@ -82,8 +82,8 @@ public class PlaceCacheService {
                     .detailUrl(m.getOrDefault("detailUrl", ""))
                     .placeType(m.getOrDefault("placeType", ""))
                     .period(PlaceCache.Period.builder()
-                            .startedAt(LocalDate.parse(m.getOrDefault("period.startedAt", "")))
-                            .finishedAt(LocalDate.parse(m.getOrDefault("period.finishedAt", "")))
+                            .startedAt(m.getOrDefault("period.startedAt", ""))
+                            .finishedAt(m.getOrDefault("period.finishedAt", ""))
                             .duration(Integer.valueOf(m.getOrDefault("period.duration", "")))
                             .build())
                     .build());
@@ -105,8 +105,8 @@ public class PlaceCacheService {
                 .detailUrl(m.getOrDefault("detailUrl", ""))
                 .placeType(m.getOrDefault("placeType", ""))
                 .period(PlaceCache.Period.builder()
-                        .startedAt(LocalDate.parse(m.getOrDefault("period.startedAt", "")))
-                        .finishedAt(LocalDate.parse(m.getOrDefault("period.finishedAt", "")))
+                        .startedAt(m.getOrDefault("period.startedAt", ""))
+                        .finishedAt(m.getOrDefault("period.finishedAt", ""))
                         .duration(Integer.valueOf(m.getOrDefault("period.duration", "")))
                         .build())
                 .build();

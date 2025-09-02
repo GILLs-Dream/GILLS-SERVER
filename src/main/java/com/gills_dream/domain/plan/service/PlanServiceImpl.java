@@ -1,9 +1,10 @@
 package com.gills_dream.domain.plan.service;
 
 import com.gills_dream.domain.gpt.service.GptService;
-import com.gills_dream.domain.map.service.MapService;
 import com.gills_dream.domain.member.entity.Member;
 import com.gills_dream.domain.member.repository.MemberRepository;
+import com.gills_dream.domain.place.dto.PlaceAddedDto;
+import com.gills_dream.domain.place.dto.PlaceCacheWithContentId;
 import com.gills_dream.domain.place.entity.Place;
 import com.gills_dream.domain.place.enumerate.Region;
 import com.gills_dream.domain.place.record.PlacePair;
@@ -12,7 +13,6 @@ import com.gills_dream.domain.place.service.PlaceService;
 import com.gills_dream.domain.plan.dto.PlanRequestDto;
 import com.gills_dream.domain.plan.dto.PlanResponseDto;
 import com.gills_dream.domain.plan.entity.Plan;
-import com.gills_dream.domain.plan.entity.PlanPlace;
 import com.gills_dream.domain.plan.enumerate.CategoryType;
 import com.gills_dream.domain.plan.enumerate.MoodType;
 import com.gills_dream.domain.plan.enumerate.TransportType;
@@ -42,7 +42,6 @@ public class PlanServiceImpl implements PlanService {
     private final PythonService pythonService;
     private final PlaceService placeService;
     private final PlaceRepository placeRepository;
-    private final MapService mapService;
 
     @Override
     @Transactional
@@ -127,52 +126,30 @@ public class PlanServiceImpl implements PlanService {
         PlacePair placePair = gptService.filterPlace(processDto, request.getRegion());
 
         // 비디오에서 추출된 장소를 tour&kakao api에서 검색
-        mapService.searchByKeyword()
+        List<PlaceCacheWithContentId> placeCacheList = placeService.searchPlaces(plan, placePair);
 
         // 검색 내용 바탕으로 redis에 업로드
-//        placeService.addToRedis(ContentType.VIDEO, plan, placePair);
+        List<PlaceAddedDto> placeAddedDtoList = placeService.addToRedis(plan, placeCacheList);
+        plan.getContentIds().addAll(placeAddedDtoList.stream().map(PlaceAddedDto::contentId).toList());
 
-        return new PlanResponseDto.VideoResultDto(plan.getId(), Stream.concat(
-                placePair.travelDestList().stream(),
-                placePair.accomList().stream()
-        ).toList());
+        return new PlanResponseDto.VideoResultDto(plan.getId(), placeAddedDtoList);
     }
 
-    @Override
-    @Transactional
-    public PlanResponseDto.GenerateResultDto generate(CustomUserDetails userDetails, Long planId) {
-        Plan plan = checkMemberAndPlan(userDetails, planId);
-
-        // candidate1: '어디로?'에서 받아서 db에 저장한 장소 정보 -> 필수로 계획에 포함
-        // candidate2: 비디오에서 추출한 장소 정보
-        // candidate3: 숙소 리스트 (순위 or 하드 코딩)
-        List<Place> candidate1 = placeRepository.findAllByPlanId(plan.getId());
-//        List<>
-
-        PlanResponseDto.PlanDraftDto dto = gptService.generatePlan(plan);
-        placeService.addList(plan, dto);
-
-        if (plan.getTransports().isEmpty()) throw new GeneralException(ErrorStatus.TRANSPORT_NOT_FOUND);
-        if (plan.getTransports().getFirst() == TransportType.WALK) generateWalk(plan, dto);
-        else if (new HashSet<>(plan.getTransports()).containsAll(Arrays.asList(TransportType.BUS, TransportType.SUBWAY))) generateTransit(plan, dto);
-        else if (plan.getTransports().getFirst() == TransportType.BICYCLE) generateBicycle(plan, dto);
-        else if (plan.getTransports().getFirst() == TransportType.CAR) generateCar(plan, dto);
-
-        return null;
-    }
-
-    private void generateWalk(Plan plan, PlanResponseDto.PlanDraftDto dto) {
-    }
-
-    private void generateCar(Plan plan, PlanResponseDto.PlanDraftDto dto) {
-    }
-
-    private void generateBicycle(Plan plan, PlanResponseDto.PlanDraftDto dto) {
-    }
-
-    private void generateTransit(Plan plan, PlanResponseDto.PlanDraftDto dto) {
-    }
-
+//    @Override
+//    @Transactional
+//    public PlanResponseDto.GenerateResultDto generate(CustomUserDetails userDetails, Long planId) {
+//        Plan plan = checkMemberAndPlan(userDetails, planId);
+//
+//        // candidate1: '어디로?'에서 받아서 db에 저장한 장소 정보 -> 필수로 계획에 포함
+//        // candidate2: 비디오에서 추출한 장소 정보
+//        // candidate3: 숙소 리스트 (순위 or 하드 코딩)
+//        List<Place> candidate1 = placeRepository.findAllByPlanId(plan.getId());
+//
+//        PlanResponseDto.PlanDraftDto dto = gptService.generatePlan(plan);
+//        placeService.addList(plan, dto);
+//
+//        return null;
+//    }
 
 
     private Plan checkMemberAndPlan(CustomUserDetails userDetails, Long planId) {

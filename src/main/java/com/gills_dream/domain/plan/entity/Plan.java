@@ -90,9 +90,15 @@ public class Plan extends BaseEntity {
     @Column(name = "video_url")
     private List<String> videoIds = new ArrayList<>();
 
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "plan_content_id", joinColumns = @JoinColumn(name = "plan_id"))
+    @Enumerated(EnumType.STRING)
+    @Column(name = "content_id")
+    private List<String> contentIds = new ArrayList<>();
+
     @Builder
     public Plan(Member member, Team team, PlanSummary summary, PlanPeriod period, String moodSummary, String teamName, Region region,
-                Boolean isPinned, Long party, List<TransportType> transports, List<CategoryType> categories, List<MoodType> moods, List<String> videoIds) {
+                Boolean isPinned, Long party, List<TransportType> transports, List<CategoryType> categories, List<MoodType> moods, List<String> videoIds, List<String> contentIds) {
         this.member = member;
         this.team = team;
         this.summary = summary;
@@ -106,6 +112,7 @@ public class Plan extends BaseEntity {
         this.categories = categories != null ? new ArrayList<>(categories) : new ArrayList<>();
         this.moods = moods != null ? new ArrayList<>(moods) : new ArrayList<>();
         this.videoIds = videoIds != null ? new ArrayList<>(videoIds) : new ArrayList<>();
+        this.contentIds = contentIds != null ? new ArrayList<>(contentIds) : new ArrayList<>();
     }
 
     public void updatePeriod(PlanPeriod period) {
