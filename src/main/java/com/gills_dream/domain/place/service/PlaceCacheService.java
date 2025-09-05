@@ -8,7 +8,6 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
-import java.time.LocalDate;
 import java.util.*;
 
 @Service
@@ -40,7 +39,7 @@ public class PlaceCacheService {
                 "lng",  String.valueOf(m.lng()),
                 "imageUrl", nz(m.imageUrl()),
                 "detailUrl", nz(m.detailUrl()),
-                "placeType", nz(m.placeType()),
+                "placeType", nz(String.valueOf(m.placeType())),
                 "period.startedAt", nz(m.period() == null ? "" : String.valueOf(m.period().startedAt())),
                 "period.finishedAt", nz(m.period() == null ? "" : String.valueOf(m.period().finishedAt())),
                 "period.duration", nz(m.period() == null ? "" : String.valueOf(m.period().duration()))
