@@ -1,7 +1,11 @@
 package com.gills_dream.domain.place.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.Column;
 import lombok.Builder;
+
+import java.time.LocalDate;
+
 @Builder
 public record PlaceSearchReq(
         @Schema(description = "여행 계획 ID", example = "1")
@@ -26,20 +30,18 @@ public record PlaceSearchReq(
         String detailUrl,
         @Schema(description = "이미지 URL", example = "http://tong.visitkorea.or.kr/cms/resource/12/2773812_image2_1.jpeg")
         String imageUrl,
-        @Schema(description = "숙박 정보 (숙박이 아닌 경우 null)", example = """
-                {
-                  "nights": "2",
-                  "dayOrder": "1"
-                }
-                """)
+        @Schema(description = "날짜 정보")
         Period period
 ) {
     public record Period(
-            @Schema(description = "숙박 일수 (n박)", example = "2")
-            String nights,
+            @Column(columnDefinition = "DATE")
+            String startedAt,
 
-            @Schema(description = "여행 며칠째 (Day 순서)", example = "1")
-            String dayOrder
+            @Column(columnDefinition = "DATE")
+            String finishedAt,
+
+            @Column(columnDefinition = "bigint")
+            Integer duration
     ) {}
 }
 

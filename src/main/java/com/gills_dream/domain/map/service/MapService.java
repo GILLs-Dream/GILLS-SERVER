@@ -1,6 +1,8 @@
 package com.gills_dream.domain.map.service;
 
 import com.gills_dream.domain.map.dto.MapSearchRes;
+import com.gills_dream.domain.map.dto.MapSearchResWithPlatform;
+import com.gills_dream.domain.place.enumerate.Platform;
 import com.gills_dream.global.map.kakao.KakaoMapClient;
 import com.gills_dream.global.map.tourapi.TourApiClient;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +25,7 @@ public class MapService {
      * @param keyword 검색어
      * @return 검색 결과 리스트
      */
-    public List<MapSearchRes> searchByKeyword(String keyword, int pageNo, int numOfRows) {
+    public MapSearchResWithPlatform searchByKeyword(String keyword, int pageNo, int numOfRows) {
         try {
             log.info("Searching for keyword: {}, pageNo: {}, numOfRows: {}", keyword, pageNo, numOfRows);
 
@@ -35,7 +37,10 @@ public class MapService {
             // 2. 관광지 API 결과가 없으면 카카오 API로 검색
             log.info("Tour search result size: {}", tour.size());
             if (!tour.isEmpty()) {
-                return tour;  // 관광지 API에서 결과가 있으면 반환
+                return MapSearchResWithPlatform.builder()
+                        .platform(Platform.TOUR)
+                        .mapSearchResList(tour)
+                        .build();  // 관광지 API에서 결과가 있으면 반환
             }
 
             // 3. 관광지 API 결과가 없으면 카카오 API로 검색
@@ -46,14 +51,23 @@ public class MapService {
                         .ofNullable(kakaoMapClient.searchByKeyword(keyword))
                         .orElse(List.of());
                 log.info("Kakao search result size: {}", kakao.size());
-                return kakao;  // 카카오 API 결과 반환
+                return MapSearchResWithPlatform.builder()
+                        .platform(Platform.KAKAO)
+                        .mapSearchResList(kakao)
+                        .build();  // 카카오 API 결과 반환
             } catch (Exception e) {
                 log.warn("Kakao fallback failed: {}", e.getMessage());
-                return List.of();  // 카카오 API도 실패하면 빈 리스트 반환
+                return MapSearchResWithPlatform.builder()
+                        .platform(null)
+                        .mapSearchResList(List.of())
+                        .build();  // 카카오 API도 실패하면 빈 리스트 반환
             }
         } catch (Exception e) {
             log.error("Error searching by keyword: {}, pageNo: {}, numOfRows: {}, error: {}", keyword, pageNo, numOfRows, e.getMessage());
-            return List.of();  // 예외 발생 시 빈 리스트 반환
+            return MapSearchResWithPlatform.builder()
+                    .platform(null)
+                    .mapSearchResList(List.of())
+                    .build();  // 예외 발생 시 빈 리스트 반환
         }
     }
 }

@@ -4,10 +4,12 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
+@Getter
 @Embeddable
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PlacePeriod {
@@ -18,10 +20,10 @@ public class PlacePeriod {
     private LocalDate finishedAt;
 
     @Column(columnDefinition = "bigint")
-    private Long duration;
+    private Integer duration;
 
     @Builder
-    public PlacePeriod(LocalDate startedAt, LocalDate finishedAt, Long duration) {
+    public PlacePeriod(LocalDate startedAt, LocalDate finishedAt, Integer duration) {
         this.startedAt = startedAt;
         this.finishedAt = finishedAt;
         this.duration = duration;

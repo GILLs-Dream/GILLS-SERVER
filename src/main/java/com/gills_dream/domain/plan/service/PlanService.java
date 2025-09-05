@@ -11,5 +11,5 @@ public interface PlanService {
     PlanResponseDto.TemplateResultDto saveDestination(CustomUserDetails userDetails, Long planId, PlanRequestDto.DestinationDto request);
     PlanResponseDto.TemplateResultDto savStyle(CustomUserDetails userDetails, Long planId, PlanRequestDto.StyleDto request);
     PlanResponseDto.VideoResultDto saveVideo(CustomUserDetails userDetails, Long planId, PlanRequestDto.VideoUrlDto request);
-    PlanResponseDto.GenerateResultDto generate(CustomUserDetails userDetails, Long planId);
+//    PlanResponseDto.GenerateResultDto generate(CustomUserDetails userDetails, Long planId);
 }

@@ -3,15 +3,19 @@ package com.gills_dream.domain.plan.service;
 import com.gills_dream.domain.gpt.service.GptService;
 import com.gills_dream.domain.member.entity.Member;
 import com.gills_dream.domain.member.repository.MemberRepository;
+import com.gills_dream.domain.place.dto.PlaceAddedDto;
+import com.gills_dream.domain.place.dto.PlaceCacheWithContentId;
 import com.gills_dream.domain.place.entity.Place;
 import com.gills_dream.domain.place.enumerate.Region;
+import com.gills_dream.domain.place.record.PlacePair;
+import com.gills_dream.domain.place.repository.PlaceRepository;
 import com.gills_dream.domain.place.service.PlaceService;
 import com.gills_dream.domain.plan.dto.PlanRequestDto;
 import com.gills_dream.domain.plan.dto.PlanResponseDto;
 import com.gills_dream.domain.plan.entity.Plan;
-import com.gills_dream.domain.plan.entity.PlanPlace;
 import com.gills_dream.domain.plan.enumerate.CategoryType;
 import com.gills_dream.domain.plan.enumerate.MoodType;
+import com.gills_dream.domain.plan.enumerate.TransportType;
 import com.gills_dream.domain.plan.repository.PlanRepository;
 import com.gills_dream.domain.plan.vo.PlanPeriod;
 import com.gills_dream.domain.python.dto.PythonResponseDto;
@@ -23,7 +27,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import java.util.*;
+import java.util.stream.Stream;
 
 import static com.gills_dream.domain.plan.enumerate.TransportType.TRANSPORT_MAP;
 
@@ -36,6 +41,7 @@ public class PlanServiceImpl implements PlanService {
     private final MemberRepository memberRepository;
     private final PythonService pythonService;
     private final PlaceService placeService;
+    private final PlaceRepository placeRepository;
 
     @Override
     @Transactional
@@ -88,8 +94,7 @@ public class PlanServiceImpl implements PlanService {
     public PlanResponseDto.TemplateResultDto saveDestination(CustomUserDetails userDetails, Long planId, PlanRequestDto.DestinationDto request) {
         Plan plan = checkMemberAndPlan(userDetails, planId);
 
-        List<PlanPlace> planPlaceList = placeService.createList(plan, request.stayPlaceDtoList(), request.travelPlaceDtoList());
-        plan.getPlanPlaces().addAll(planPlaceList);
+        placeService.createList(plan, request);
 
         return new PlanResponseDto.TemplateResultDto(plan.getId());
     }
@@ -113,19 +118,39 @@ public class PlanServiceImpl implements PlanService {
 
         plan.updateRegion(Region.fromDescription(request.getRegion()));
 
+        // 비디오에서 장소 추출
         PythonResponseDto.ProcessResultDto processDto = pythonService.processVideo(request);
-        plan.getYoutubeIds().addAll(processDto.getVideoResultDtoList().stream().map(PythonResponseDto.VideoResultDto::getVideoId).toList());
-        List<String> filteredPlaceList = gptService.filterPlace(processDto, request.getRegion());
-        plan.getCandidates().addAll(filteredPlaceList);
+        plan.getVideoIds().addAll(processDto.getVideoResultDtoList().stream().map(PythonResponseDto.VideoResultDto::getVideoId).toList());
 
-        return new PlanResponseDto.VideoResultDto(plan.getId(), filteredPlaceList);
+        // 비디오에서 추출된 장소 필터링
+        PlacePair placePair = gptService.filterPlace(processDto, request.getRegion());
+
+        // 비디오에서 추출된 장소를 tour&kakao api에서 검색
+        List<PlaceCacheWithContentId> placeCacheList = placeService.searchPlaces(plan, placePair);
+
+        // 검색 내용 바탕으로 redis에 업로드
+        List<PlaceAddedDto> placeAddedDtoList = placeService.addToRedis(plan, placeCacheList);
+        plan.getContentIds().addAll(placeAddedDtoList.stream().map(PlaceAddedDto::contentId).toList());
+
+        return new PlanResponseDto.VideoResultDto(plan.getId(), placeAddedDtoList);
     }
 
-    @Override
-    @Transactional
-    public PlanResponseDto.GenerateResultDto generate(CustomUserDetails userDetails, Long planId) {
-        return null;
-    }
+//    @Override
+//    @Transactional
+//    public PlanResponseDto.GenerateResultDto generate(CustomUserDetails userDetails, Long planId) {
+//        Plan plan = checkMemberAndPlan(userDetails, planId);
+//
+//        // candidate1: '어디로?'에서 받아서 db에 저장한 장소 정보 -> 필수로 계획에 포함
+//        // candidate2: 비디오에서 추출한 장소 정보
+//        // candidate3: 숙소 리스트 (순위 or 하드 코딩)
+//        List<Place> candidate1 = placeRepository.findAllByPlanId(plan.getId());
+//
+//        PlanResponseDto.PlanDraftDto dto = gptService.generatePlan(plan);
+//        placeService.addList(plan, dto);
+//
+//        return null;
+//    }
+
 
     private Plan checkMemberAndPlan(CustomUserDetails userDetails, Long planId) {
         Member member = memberRepository.findById(userDetails.getId())

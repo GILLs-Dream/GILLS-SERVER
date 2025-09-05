@@ -2,6 +2,7 @@ package com.gills_dream.domain.map.controller;
 
 import com.gills_dream.domain.map.dto.MapRouteReq;
 import com.gills_dream.domain.map.dto.MapSearchRes;
+import com.gills_dream.domain.map.dto.MapSearchResWithPlatform;
 import com.gills_dream.domain.map.service.MapService;
 import com.gills_dream.domain.map.service.RouteService;
 import com.gills_dream.domain.plan.enumerate.TransportType;
@@ -57,22 +58,12 @@ public class MapController {
                     + "planId가 없으면 일반 검색, 있으면 해당 플랜과 연동된 검색 결과를 캐싱합니다."
     )
     @GetMapping("/search/place")
-    public List<MapSearchRes> searchTourPlaces(
+    public MapSearchResWithPlatform searchTourPlaces(
             @Parameter(description = "검색 키워드", example = "경복궁") @RequestParam String keyword,
             @Parameter(description = "페이지 번호", example = "1") @RequestParam(defaultValue = "1") int pageNo,
             @Parameter(description = "한 페이지당 결과 개수", example = "10") @RequestParam(defaultValue = "10") int numOfRows
     ) {
         return mapService.searchByKeyword(keyword, pageNo, numOfRows);
-    }
-
-    @GetMapping("/tour-api/search")
-    public List<MapSearchRes> searchTourPlaces(
-            @RequestParam String keyword,
-            @RequestParam(defaultValue = "12") String category,
-            @RequestParam(defaultValue = "1") int pageNo,
-            @RequestParam(defaultValue = "10") int numOfRows
-    ) {
-        return tourApiClient.searchByKeyword(keyword, category, pageNo, numOfRows);
     }
 
     @GetMapping("/detail")
