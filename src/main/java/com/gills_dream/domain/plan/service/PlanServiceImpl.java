@@ -6,10 +6,13 @@ import com.gills_dream.domain.member.repository.MemberRepository;
 import com.gills_dream.domain.place.dto.PlaceAddedDto;
 import com.gills_dream.domain.place.dto.PlaceCacheWithContentId;
 import com.gills_dream.domain.place.entity.Place;
+import com.gills_dream.domain.place.enumerate.PlaceType;
 import com.gills_dream.domain.place.enumerate.Region;
 import com.gills_dream.domain.place.record.PlacePair;
 import com.gills_dream.domain.place.repository.PlaceRepository;
+import com.gills_dream.domain.place.service.PlaceCacheService;
 import com.gills_dream.domain.place.service.PlaceService;
+import com.gills_dream.domain.place.vo.PlaceCache;
 import com.gills_dream.domain.plan.dto.PlanRequestDto;
 import com.gills_dream.domain.plan.dto.PlanResponseDto;
 import com.gills_dream.domain.plan.entity.Plan;
@@ -42,6 +45,7 @@ public class PlanServiceImpl implements PlanService {
     private final PythonService pythonService;
     private final PlaceService placeService;
     private final PlaceRepository placeRepository;
+    private final PlaceCacheService placeCacheService;
 
     @Override
     @Transactional
@@ -142,8 +146,12 @@ public class PlanServiceImpl implements PlanService {
 //
 //        // candidate1: '어디로?'에서 받아서 db에 저장한 장소 정보 -> 필수로 계획에 포함
 //        // candidate2: 비디오에서 추출한 장소 정보
-//        // candidate3: 숙소 리스트 (순위 or 하드 코딩)
-//        List<Place> candidate1 = placeRepository.findAllByPlanId(plan.getId());
+//        // candidate3: 숙소 없는 경우만 gpt한테 숙소 한곳 추천해달라고 하기
+//        List<Place> candidate1 = placeRepository.findAllByPlanId(planId);
+//        List<PlaceCache> candidate2 = placeCacheService.getByPlanId(planId);
+//        if (candidate1.stream().noneMatch(v -> v.getPlaceType() == PlaceType.ACCOMMODATION) || candidate2.stream().noneMatch(v -> PlaceType.valueOf(v.placeType()) == PlaceType.ACCOMMODATION)) {
+//
+//        }
 //
 //        PlanResponseDto.PlanDraftDto dto = gptService.generatePlan(plan);
 //        placeService.addList(plan, dto);
