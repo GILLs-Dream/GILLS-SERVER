@@ -72,4 +72,18 @@ public class PlanRestController {
 //                                                                    @PathVariable("planId") Long planId) {
 //        return ApiResponse.onSuccess(planService.generate(userDetails, planId));
 //    }
+
+    @GetMapping("/{planId}/plan")
+    @Operation(summary = "생성된 여행 조회")
+    public ApiResponse<PlanResponseDto> viewPlan (@AuthenticationPrincipal CustomUserDetails userDetails,
+                                                  @PathVariable("planId") Long planId) {
+        return null;
+    }
+
+    @GetMapping("/{planId}/plan-summary")
+    @Operation(summary = "생성된 여행의 요약 조회")
+    public ApiResponse<PlanResponseDto> viewPlanSummary (@AuthenticationPrincipal CustomUserDetails userDetails,
+                                                         @PathVariable("planId") Long planId) {
+        return null;
+    }
 }
