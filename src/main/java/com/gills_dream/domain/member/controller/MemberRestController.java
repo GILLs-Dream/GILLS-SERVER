@@ -31,8 +31,8 @@ public class MemberRestController {
 
     @PostMapping("/oauth/kakao/login")
     @Operation(summary = "카카오 로그인, 회원가입", description = "백엔드에서 카카오 로그인/회원가입 처리")
-    public ResponseEntity<ApiResponse<MemberResponseDto.LoginResultDto>> kakaoLogin() {
-        TokenPair tokenPair= memberService.kakaoLogin();
+    public ResponseEntity<ApiResponse<MemberResponseDto.LoginResultDto>> kakaoLogin(@RequestParam("code") String code) {
+        TokenPair tokenPair= memberService.kakaoLogin(code);
         ResponsePair responsePair = customTokenService.buildLoginResponse(tokenPair, new HttpHeaders());
 
         return ResponseEntity.ok().headers(responsePair.headers()).body(responsePair.body());
