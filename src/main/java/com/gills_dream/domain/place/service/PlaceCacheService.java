@@ -42,7 +42,7 @@ public class PlaceCacheService {
                 "placeType", nz(String.valueOf(m.placeType())),
                 "period.startedAt", nz(m.period() == null ? "" : String.valueOf(m.period().startedAt())),
                 "period.finishedAt", nz(m.period() == null ? "" : String.valueOf(m.period().finishedAt())),
-                "period.duration", nz(m.period() == null ? "" : String.valueOf(m.period().duration()))
+                "period.duration", nz(m.period() == null ? "1" : String.valueOf(m.period().duration()))
         ));
 
         // TTL
@@ -83,7 +83,7 @@ public class PlaceCacheService {
                     .period(PlaceCache.Period.builder()
                             .startedAt(m.getOrDefault("period.startedAt", ""))
                             .finishedAt(m.getOrDefault("period.finishedAt", ""))
-                            .duration(Integer.valueOf(m.getOrDefault("period.duration", "")))
+                            .duration(Integer.valueOf(m.getOrDefault("period.duration", "1")))
                             .build())
                     .build());
         }
@@ -106,7 +106,7 @@ public class PlaceCacheService {
                 .period(PlaceCache.Period.builder()
                         .startedAt(m.getOrDefault("period.startedAt", ""))
                         .finishedAt(m.getOrDefault("period.finishedAt", ""))
-                        .duration(Integer.valueOf(m.getOrDefault("period.duration", "")))
+                        .duration(Integer.valueOf(m.getOrDefault("period.duration", "1")))
                         .build())
                 .build();
     }

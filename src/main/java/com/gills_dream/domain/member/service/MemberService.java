@@ -7,7 +7,7 @@ import com.gills_dream.global.common.record.TokenPair;
 import com.gills_dream.global.jwt.CustomUserDetails;
 
 public interface MemberService {
-    TokenPair kakaoLogin(String code);
+    TokenPair kakaoLogin();
     void kakaoLogout(String accessToken, Member member);
     MemberResponseDto.ProfileResultDto setProfile(Member member, MemberRequestDto.ProfileDto request);
 }

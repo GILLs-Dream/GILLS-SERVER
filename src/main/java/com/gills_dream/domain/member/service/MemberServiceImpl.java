@@ -33,7 +33,8 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     @Transactional
-    public TokenPair kakaoLogin(String code) {
+    public TokenPair kakaoLogin() {
+
         // 카카오에 엑세스 토큰 요청
         String kakaoAccessToken = kakaoService.getAccessToken(code);
 
