@@ -94,6 +94,7 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
+    @Transactional
     public PlanResponseDto.TemplateResultDto saveCompanion(CustomUserDetails userDetails, Long planId, PlanRequestDto.CompanionDto request) {
         Plan plan = checkMemberAndPlan(userDetails, planId);
 
@@ -142,7 +143,6 @@ public class PlanServiceImpl implements PlanService {
 
         // 검색 내용 바탕으로 redis에 업로드
         List<PlaceAddedDto> placeAddedDtoList = placeService.addToRedis(plan, placeCacheList);
-        plan.getContentIds().addAll(placeAddedDtoList.stream().map(PlaceAddedDto::contentId).toList());
 
         return new PlanResponseDto.VideoResultDto(plan.getId(), placeAddedDtoList);
     }
