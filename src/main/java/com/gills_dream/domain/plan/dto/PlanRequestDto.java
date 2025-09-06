@@ -46,7 +46,9 @@ public class PlanRequestDto {
             @Schema(description = "content Id", example = "1234")
             String contentId,
             @Schema(description = "방문 날짜 (nullable)", example = "2025-07-25")
-            String date
+            String date,
+            @Schema(description = "(날짜가 미정인 경우) 여행 몇일차에 갈지", example = "3")
+            Integer dayOrder
     ) {}
 
     public record AccommodationDto(
@@ -57,7 +59,9 @@ public class PlanRequestDto {
             @Schema(description = "숙박 시작 날짜 (nullable)", example = "2025-07-25")
             String startDate,
             @Schema(description = "숙박 끝 날짜 (nullable)", example = "2025-07-25")
-            String endDate
+            String endDate,
+            @Schema(description = "(날짜가 미정인 경우) 여행 몇일차에 갈지", example = "3")
+            Integer dayOrder
     ) {}
 
     public record StyleDto (

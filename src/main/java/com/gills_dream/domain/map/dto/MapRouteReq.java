@@ -48,13 +48,17 @@ public record MapRouteReq(
             String finishedAt,
 
             @Schema(description = "체류 일수", example = "2")
-            Integer duration
+            Integer duration,
+
+            @Schema(description = "(날짜가 미정인 경우) 여행 몇일차에 갈지", example = "3")
+            Integer dayOrder
     ) {
-        public static Period of(String startedAt, String finishedAt, Integer duration) {
+        public static Period of(String startedAt, String finishedAt, Integer duration, Integer dayOrder) {
             return Period.builder()
                     .startedAt(startedAt)
                     .finishedAt(finishedAt)
                     .duration(duration)
+                    .dayOrder(dayOrder)
                     .build();
         }
     }

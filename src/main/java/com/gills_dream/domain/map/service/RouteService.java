@@ -68,7 +68,7 @@ public class RouteService {
 
         // 4) GPT로 날짜/인덱스별 재정렬 결과 받기
         MapRouteByDayRes byDay = gptService.createRouteRequest(
-                route, TransportType.toCategory(transportation), count
+                route, transportation.getDescription(), count
         );
 
         // 5) Provider 실행기 선택
@@ -76,7 +76,7 @@ public class RouteService {
             case CAR     -> carRouteProvider::route;
             case WALK    -> walkRouteProvider::route;
             case BICYCLE -> bicycleRouteProvider::route;
-            case BUS, SUBWAY -> transitRouteProvider::route;
+            case TRANSPORT -> transitRouteProvider::route; // 대중교통
             default -> throw new GeneralException(ErrorStatus.TRANSPORT_TYPE_NOT_FOUND);
         };
 

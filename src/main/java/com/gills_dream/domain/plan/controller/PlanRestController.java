@@ -66,10 +66,10 @@ public class PlanRestController {
         return ApiResponse.onSuccess(planService.saveVideo(userDetails, planId, request));
     }
 
-//    @PostMapping("/{planId}/generate")
-//    @Operation(summary = "템플릿 정보 기반 여행 생성")
-//    public ApiResponse<PlanResponseDto.GenerateResultDto> generate (@AuthenticationPrincipal CustomUserDetails userDetails,
-//                                                                    @PathVariable("planId") Long planId) {
-//        return ApiResponse.onSuccess(planService.generate(userDetails, planId));
-//    }
+    @PostMapping("/{planId}/generate")
+    @Operation(summary = "템플릿 정보 기반 여행 생성")
+    public ApiResponse<PlanResponseDto.TemplateResultDto> generate (@AuthenticationPrincipal CustomUserDetails userDetails,
+                                                                    @PathVariable("planId") Long planId) {
+        return ApiResponse.onSuccess(planService.generate(userDetails, planId));
+    }
 }

@@ -49,7 +49,8 @@ public enum ErrorStatus implements BaseCode {
     CANNOT_PROCESS_VIDEO(HttpStatus.BAD_REQUEST, "CANNOT PROCESS VIDEO", "비디오 프로세스중 에러가 발생했습니다."),
 
     // 장소 관련 에러 응답
-    CANNOT_FIND_PLACE_FROM_REDIS(HttpStatus.NOT_FOUND, "CANNOT FIND PLACE FROM REDIS", "레디스에서 해당 장소를 찾을 수 없습니다.");
+    CANNOT_FIND_PLACE_FROM_REDIS(HttpStatus.NOT_FOUND, "CANNOT FIND PLACE FROM REDIS", "레디스에서 해당 장소를 찾을 수 없습니다."),
+    CANNOT_FIND_PLACE_FROM_DB(HttpStatus.NOT_FOUND, "CANNOT FIND PLACE FROM DB", "디비에서 해당 장소를 찾을 수 없습니다.");
 
     private final HttpStatus httpStatus;
     private final String code;

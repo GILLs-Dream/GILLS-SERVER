@@ -1,5 +1,7 @@
 package com.gills_dream.domain.place.service;
 
+import com.gills_dream.domain.map.dto.MapRouteByDayRes;
+import com.gills_dream.domain.map.dto.MapRouteReq;
 import com.gills_dream.domain.map.dto.MapSearchRes;
 import com.gills_dream.domain.map.dto.MapSearchResWithPlatform;
 import com.gills_dream.domain.map.service.MapService;
@@ -18,6 +20,7 @@ import com.gills_dream.domain.plan.dto.PlanRequestDto;
 import com.gills_dream.domain.plan.entity.Plan;
 import com.gills_dream.domain.plan.entity.PlanPlace;
 import com.gills_dream.domain.plan.repository.PlanPlaceRepository;
+import com.gills_dream.domain.plan.vo.PlanPeriod;
 import com.gills_dream.global.apiPayload.code.status.ErrorStatus;
 import com.gills_dream.global.apiPayload.exception.GeneralException;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +31,7 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -76,6 +80,7 @@ public class PlaceServiceImpl implements PlaceService {
                         .startedAt(LocalDate.parse(tourDto.date()))
                         .finishedAt(LocalDate.parse(tourDto.date()))
                         .duration(1)
+                        .dayOrder(tourDto.dayOrder())
                         .build();
 
                 PlanPlace newPlanPlace = PlanPlace.builder()
@@ -119,6 +124,7 @@ public class PlaceServiceImpl implements PlaceService {
                         .startedAt(LocalDate.parse(accomDto.startDate()))
                         .finishedAt(LocalDate.parse(accomDto.endDate()))
                         .duration(duration)
+                        .dayOrder(accomDto.dayOrder())
                         .build();
 
                 PlanPlace newPlanPlace = PlanPlace.builder()
@@ -193,6 +199,27 @@ public class PlaceServiceImpl implements PlaceService {
         }
 
         return placeAddedList;
+    }
+
+    @Override
+    public void updatePlaces(Plan plan, MapRouteByDayRes generated) {
+        List<PlanPlace> planPlaceList = plan.getPlanPlaces();
+        for (PlanPlace planPlace : planPlaceList) {
+            PlacePeriod placePeriod = planPlace.getPeriod();
+            MapRouteReq.Location location = generated.days().stream()
+                    .flatMap(day -> day.locations().stream())
+                    .filter(loc -> loc.name().equals(planPlace.getPlace().getName()))
+                    .findFirst().orElseThrow(() -> new GeneralException(ErrorStatus.CANNOT_FIND_PLACE_FROM_DB));
+            if (generated.mode() == MapRouteByDayRes.Mode.DATED) {
+                if (!placePeriod.getStartedAt().toString().equals(location.period().startedAt()) || !placePeriod.getFinishedAt().toString().equals(location.period().finishedAt())) {
+                    placePeriod.updateDate(location.period());
+                }
+            } else if (generated.mode() == MapRouteByDayRes.Mode.INDEXED) {
+                if (!placePeriod.getDayOrder().equals(location.period().dayOrder())) {
+                    placePeriod.updateDate(location.period());
+                }
+            }
+        }
     }
 
     @Override
