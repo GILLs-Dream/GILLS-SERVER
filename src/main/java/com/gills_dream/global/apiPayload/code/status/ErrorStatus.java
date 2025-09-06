@@ -28,11 +28,14 @@ public enum ErrorStatus implements BaseCode {
     MEMBER_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "USER ALREADY EXISTS", "유저가 이미 존재합니다."),
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "USER NOT FOUND", "유저를 찾을 수 없습니다."),
     NICKNAME_IS_NECESSARY(HttpStatus.BAD_REQUEST, "NICKNAME IS NECESSARY", "닉네임은 필수입니다."),
+    DATE_INDEX_MISMATCH(HttpStatus.BAD_REQUEST, "DATE INDEX MISMATCH", "날짜와 인덱스 모드가 일치하지 않습니다."),
 
     // 플랜 관련 에러 응답
     PLAN_NOT_FOUND(HttpStatus.NOT_FOUND, "PLAN NOT FOUND", "계획을 찾을 수 없습니다."),
     TRANSPORT_TYPE_NOT_FOUND(HttpStatus.NOT_FOUND, "TRANSPORT TYPE NOT FOUND", "해당 교통수단이 존재하지 않습니다."),
     INVALID_ROUTE_REQUEST(HttpStatus.BAD_REQUEST, "INVALID ROUTE REQUEST", "잘못된 경로 요청입니다."),
+    PLACE_COUNT_MISMATCH(HttpStatus.BAD_REQUEST, "PLACE COUNT MISMATCH", "유효한 장소의 개수가 부족합니다."),
+    PLACE_CONTENT_MISMATCH(HttpStatus.BAD_REQUEST, "PLAN CONTENT MISMATCH", "플랜의 내용이 올바르지 않습니다."),
 
     // Enum 관련 에러 응답
     NO_SUCH_CATEGORY(HttpStatus.NOT_FOUND, "NO SUCH CATEGORY", "해당 카테고리가 존재하지 않습니다."),
