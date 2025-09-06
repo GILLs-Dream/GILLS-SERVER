@@ -15,6 +15,7 @@ import com.gills_dream.domain.place.repository.PlaceRepository;
 import com.gills_dream.domain.place.service.PlaceCacheService;
 import com.gills_dream.domain.place.service.PlaceService;
 import com.gills_dream.domain.place.vo.PlaceCache;
+import com.gills_dream.domain.place.vo.PlacePeriod;
 import com.gills_dream.domain.plan.dto.PlanRequestDto;
 import com.gills_dream.domain.plan.dto.PlanResponseDto;
 import com.gills_dream.domain.plan.entity.Plan;
@@ -29,15 +30,16 @@ import com.gills_dream.domain.python.service.PythonService;
 import com.gills_dream.global.apiPayload.code.status.ErrorStatus;
 import com.gills_dream.global.apiPayload.exception.GeneralException;
 import com.gills_dream.global.jwt.CustomUserDetails;
+import com.gills_dream.global.map.tourapi.TourApiClient;
+import com.gills_dream.global.map.tourapi.TourPlaceDetailRes;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.*;
-import java.util.stream.Stream;
 
-import static com.gills_dream.domain.plan.enumerate.TransportType.TRANSPORT_MAP;
-import static com.gills_dream.domain.plan.enumerate.TransportType.fromDescription;
+import static com.gills_dream.domain.place.enumerate.Platform.TOUR;
 
 @Service
 @Transactional(readOnly = true)
@@ -113,7 +115,7 @@ public class PlanServiceImpl implements PlanService {
     public PlanResponseDto.TemplateResultDto savStyle(CustomUserDetails userDetails, Long planId, PlanRequestDto.StyleDto request) {
         Plan plan = checkMemberAndPlan(userDetails, planId);
 
-        plan.updateTransportType(fromDescription(request.transport()));
+        plan.updateTransportType(TransportType.fromDescription(request.transport()));
         plan.getCategories().addAll(request.categoryTypeList().stream().map(CategoryType::fromDescription).toList());
 
         return new PlanResponseDto.TemplateResultDto(plan.getId());

@@ -19,129 +19,96 @@ import com.gills_dream.domain.place.vo.PlacePeriod;
 import com.gills_dream.domain.plan.dto.PlanRequestDto;
 import com.gills_dream.domain.plan.entity.Plan;
 import com.gills_dream.domain.plan.entity.PlanPlace;
-import com.gills_dream.domain.plan.repository.PlanPlaceRepository;
-import com.gills_dream.domain.plan.vo.PlanPeriod;
 import com.gills_dream.global.apiPayload.code.status.ErrorStatus;
 import com.gills_dream.global.apiPayload.exception.GeneralException;
+import com.gills_dream.global.map.tourapi.TourApiClient;
+import com.gills_dream.global.map.tourapi.TourPlaceDetailRes;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+
+import static com.gills_dream.domain.place.enumerate.Platform.TOUR;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class PlaceServiceImpl implements PlaceService {
     private final PlaceRepository placeRepository;
-    private final PlanPlaceRepository planPlaceRepository;
     private final MapService mapService;
     private final PlaceCacheService placeCacheService;
+    private final TourApiClient tourApiClient;
 
     @Override
     @Transactional
     public void createList(Plan plan, PlanRequestDto.DestinationDto request) {
-        List<PlanRequestDto.TourPlaceDto> tourDtoList = request.tourDtoList();
-        List<PlanRequestDto.AccommodationDto> accomDtoList = request.accommodationDtoList();
+        request.tourDtoList().forEach(tourPlaceDto -> {
+            TourPlaceDetailRes detail = tourPlaceDto.platform() == TOUR ?
+                    tourApiClient.getPlaceDetail(tourPlaceDto.contentId()) : null;
+            Place place = Place.builder()
+                    .platform(tourPlaceDto.platform())
+                    .contentId(tourPlaceDto.contentId())
+                    .name(tourPlaceDto.title() != null ? tourPlaceDto.title() : (detail != null ? detail.title() : null))
+                    .detailUrl(tourPlaceDto.detailUrl() != null ? tourPlaceDto.detailUrl() : null)
+                    .lat(tourPlaceDto.lat() != null ? tourPlaceDto.lat() : (detail != null ? detail.mapy() : null))
+                    .lng(tourPlaceDto.lng() != null ? tourPlaceDto.lng() : (detail != null ? detail.mapx() : null))
+                    .placeType(PlaceType.TOUR)
+                    .images(detail != null ? List.of(detail.firstimage()) : List.of())
+                    .build();
+            placeRepository.save(place);
+            PlanPlace planPlace = PlanPlace.builder()
+                    .plan(plan)
+                    .place(place)
+                    .period(PlacePeriod.builder()
+                            .startedAt(tourPlaceDto.date() != null ? LocalDate.parse(tourPlaceDto.date()) : null)
+                            .duration(1)
+                            .dayOrder(tourPlaceDto.dayOrder() != null ? tourPlaceDto.dayOrder() : null)
+                            .build())
+                    .build();
+            plan.getPlanPlaces().add(planPlace);
+            place.getPlanPlaces().add(planPlace);
+        });
 
-        List<Place> newPlaceList = new ArrayList<>();
-        List<PlanPlace> newPlanPlaceList = new ArrayList<>();
+        request.accommodationDtoList().forEach(accommodationDto -> {
+            TourPlaceDetailRes detail = accommodationDto.platform() == TOUR ?
+                    tourApiClient.getPlaceDetail(accommodationDto.contentId()) : null;
+            Place place = Place.builder()
+                    .platform(accommodationDto.platform())
+                    .contentId(accommodationDto.contentId())
+                    .name(accommodationDto.title() != null ? accommodationDto.title() : (detail != null ? detail.title() : null))
+                    .detailUrl(accommodationDto.detailUrl() != null ? accommodationDto.detailUrl() : null)
+                    .lat(accommodationDto.lat() != null ? accommodationDto.lat() : (detail != null ? detail.mapy() : null))
+                    .lng(accommodationDto.lng() != null ? accommodationDto.lng() : (detail != null ? detail.mapx() : null))
+                    .placeType(PlaceType.ACCOMMODATION)
+                    .images(detail != null ? List.of(detail.firstimage()) : List.of())
+                    .build();
+            placeRepository.save(place);
+            PlanPlace planPlace = PlanPlace.builder()
+                    .plan(plan)
+                    .place(place)
+                    .period(
+                            PlacePeriod.builder()
+                                    .startedAt(accommodationDto.startDate() != null ? LocalDate.parse(accommodationDto.startDate()) : null)
+                                    .finishedAt(accommodationDto.endDate() != null ? LocalDate.parse(accommodationDto.endDate()) : null)
+                                    .duration(
+                                            accommodationDto.startDate() != null && accommodationDto.endDate() != null
+                                                    ? Math.toIntExact(
+                                                    LocalDate.parse(accommodationDto.endDate()).toEpochDay()
+                                                            - LocalDate.parse(accommodationDto.startDate()).toEpochDay()
+                                            )
+                                                    : null
+                                    )
+                                    .dayOrder(accommodationDto.dayOrder() != null ? accommodationDto.dayOrder() : null)
+                                    .build()
+                    )
+                    .build();
+            plan.getPlanPlaces().add(planPlace);
+            place.getPlanPlaces().add(planPlace);
+        });
 
-        for (PlanRequestDto.TourPlaceDto tourDto : tourDtoList) {
-            // Redis에서 해당 장소 불러오기
-            PlaceCache placeCache = placeCacheService.getOne(plan.getId(), tourDto.contentId());
-            if (placeCache == null) throw new GeneralException(ErrorStatus.CANNOT_FIND_PLACE_FROM_REDIS);
-
-            // DB에 저장된 장소인지 확인 & 없으면 DB에 저장
-            Place place = placeRepository.findByNameAndLatAndLngRounded(placeCache.name(), Double.parseDouble(placeCache.lat()), Double.parseDouble(placeCache.lng()))
-                    .orElseGet(() -> {
-                            Place newPlace = Place.builder()
-                                    .name(placeCache.name())
-                                    .lat(placeCache.lat())
-                                    .lng(placeCache.lng())
-                                    .detailUrl(placeCache.detailUrl())
-                                    .contentId(tourDto.contentId())
-                                    .platform(Platform.valueOf(placeCache.platform()))
-                                    .placeType(PlaceType.TOUR)
-                                    .build();
-                            newPlace.addImage(placeCache.imageUrl());
-                            newPlaceList.add(newPlace);
-                            return newPlace;
-                        }
-                    );
-
-            // PlanPlace 생성 & Period 저장
-            if (!planPlaceRepository.existsByPlanIdAndPlaceId(plan.getId(), place.getId())) {
-                PlacePeriod period = PlacePeriod.builder()
-                        .startedAt(LocalDate.parse(tourDto.date()))
-                        .finishedAt(LocalDate.parse(tourDto.date()))
-                        .duration(1)
-                        .dayOrder(tourDto.dayOrder())
-                        .build();
-
-                PlanPlace newPlanPlace = PlanPlace.builder()
-                        .plan(plan)
-                        .place(place)
-                        .period(period)
-                        .build();
-
-                newPlanPlaceList.add(newPlanPlace);
-                place.getPlanPlaces().add(newPlanPlace);
-            }
-        }
-
-        for (PlanRequestDto.AccommodationDto accomDto : accomDtoList) {
-            // Redis에서 해당 장소 불러오기
-            PlaceCache placeCache = placeCacheService.getOne(plan.getId(), accomDto.contentId());
-            if (placeCache == null) throw new GeneralException(ErrorStatus.CANNOT_FIND_PLACE_FROM_REDIS);
-
-            // DB에 저장된 장소인지 확인 & 없으면 DB에 저장
-            Place place = placeRepository.findByNameAndLatAndLngRounded(placeCache.name(), Double.parseDouble(placeCache.lat()), Double.parseDouble(placeCache.lng()))
-                    .orElseGet(() -> {
-                                Place newPlace = Place.builder()
-                                        .name(placeCache.name())
-                                        .lat(placeCache.lat())
-                                        .lng(placeCache.lng())
-                                        .detailUrl(placeCache.detailUrl())
-                                        .contentId(accomDto.contentId())
-                                        .platform(Platform.valueOf(placeCache.platform()))
-                                        .placeType(PlaceType.ACCOMMODATION)
-                                        .build();
-                                newPlace.addImage(placeCache.imageUrl());
-                                newPlaceList.add(newPlace);
-                                return newPlace;
-                            }
-                    );
-
-            // PlanPlace 생성 & Period 저장
-            if (!planPlaceRepository.existsByPlanIdAndPlaceId(plan.getId(), place.getId())) {
-                Integer duration = Math.toIntExact((accomDto.startDate() != null && accomDto.endDate() != null) ? ChronoUnit.DAYS.between(LocalDate.parse(accomDto.startDate()), LocalDate.parse(accomDto.endDate())) : 0);
-                PlacePeriod period = PlacePeriod.builder()
-                        .startedAt(LocalDate.parse(accomDto.startDate()))
-                        .finishedAt(LocalDate.parse(accomDto.endDate()))
-                        .duration(duration)
-                        .dayOrder(accomDto.dayOrder())
-                        .build();
-
-                PlanPlace newPlanPlace = PlanPlace.builder()
-                        .plan(plan)
-                        .place(place)
-                        .period(period)
-                        .build();
-
-                newPlanPlaceList.add(newPlanPlace);
-                place.getPlanPlaces().add(newPlanPlace);
-            }
-        }
-
-        if (!newPlaceList.isEmpty()) placeRepository.saveAll(newPlaceList);
-        if (!newPlanPlaceList.isEmpty()) planPlaceRepository.saveAll(newPlanPlaceList);
-
-        plan.getPlanPlaces().addAll(newPlanPlaceList);
     }
 
     @Override
