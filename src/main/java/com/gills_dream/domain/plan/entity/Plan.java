@@ -31,8 +31,8 @@ public class Plan extends BaseEntity {
     @Column(columnDefinition = "bigint", nullable = false)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "member_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id")
     private Member member;
 
     // Todo: Team 구현 후, nullable = false 추가
