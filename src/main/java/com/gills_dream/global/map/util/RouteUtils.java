@@ -29,6 +29,13 @@ public final class RouteUtils {
                 .build();
     }
 
+    public static boolean isEmpty(MapRouteRes res) {
+        return res == null
+                || res.legs() == null
+                || res.legs().isEmpty()
+                || (res.distance() == 0 && res.duration() == 0);
+    }
+
     /**
      * 경로 응답 생성
      * @param totalDist

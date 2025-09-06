@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gills_dream.domain.gpt.dto.GptResponseDto;
+import com.gills_dream.domain.map.dto.MapRouteByDayRes;
 import com.gills_dream.domain.place.entity.Place;
 import com.gills_dream.domain.place.record.PlacePair;
 import com.gills_dream.domain.plan.dto.PlanResponseDto;
@@ -27,6 +28,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
+import static com.gills_dream.global.apiPayload.code.status.ErrorStatus.*;
 
 @Service
 @Transactional(readOnly = true)
@@ -126,7 +129,7 @@ public class GptServiceImpl implements GptService {
     }
 
     @Override
-    public MapRouteReq createRouteRequest(MapRouteReq routeReq, String transportType, Long count) {
+    public MapRouteByDayRes createRouteRequest(MapRouteReq routeReq, String transportType, Long count) {
         try {
             // 1) 입력을 JSON 문자열로 직렬화
             String inputJson = objectMapper.writeValueAsString(routeReq);
@@ -137,18 +140,37 @@ public class GptServiceImpl implements GptService {
             // 3) GPT 호출 → JSON 문자열만 오도록 getResponse에서 정제
             String response = getResponse(prompt);
 
-            // 4) 응답 JSON → MapRouteReq 로 역직렬화
-            MapRouteReq reordered = objectMapper.readValue(response, new TypeReference<MapRouteReq>() {});
+            // 4) 응답 JSON → MapRouteByDayRes 로 역직렬화
+            MapRouteByDayRes byDay = objectMapper.readValue(
+                    response,
+                    new com.fasterxml.jackson.core.type.TypeReference<MapRouteByDayRes>() {}
+            );
 
-            // 5) 방어 코드: 실패/이상 시 원본 반환
-            if (reordered == null || reordered.locations() == null || reordered.locations().size() < 2) {
-                return routeReq;
+            // 5) 방어 코드: 실패/이상 시 원본을 INDEXED 모드 1일치로 감싸서 반환
+            if (byDay == null || byDay.days() == null || byDay.days().isEmpty()) {
+                return fallbackIndexed(routeReq);
             }
 
-            return reordered;
+            return byDay;
+
         } catch (IOException e) {
-            throw new RuntimeException("Failed to create route request from GPT response", e);
+            // 파싱 실패 등도 동일한 폴백 사용
+            return fallbackIndexed(routeReq);
         }
+    }
+
+    /** 원본을 INDEXED 모드 1일치로 감싸는 폴백 */
+    private MapRouteByDayRes fallbackIndexed(MapRouteReq routeReq) {
+        return MapRouteByDayRes.builder()
+                .mode(MapRouteByDayRes.Mode.INDEXED)
+                .days(java.util.List.of(
+                        MapRouteByDayRes.Day.builder()
+                                .index(1)
+                                .date(null)
+                                .locations(routeReq.locations())
+                                .build()
+                ))
+                .build();
     }
 
     private String buildPrompt(String input, String promptProperties) throws IOException {
