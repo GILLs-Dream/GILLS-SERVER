@@ -6,16 +6,19 @@ import com.gills_dream.domain.member.repository.MemberRepository;
 import com.gills_dream.domain.place.dto.PlaceAddedDto;
 import com.gills_dream.domain.place.dto.PlaceCacheWithContentId;
 import com.gills_dream.domain.place.entity.Place;
+import com.gills_dream.domain.place.enumerate.PlaceType;
 import com.gills_dream.domain.place.enumerate.Region;
 import com.gills_dream.domain.place.record.PlacePair;
 import com.gills_dream.domain.place.repository.PlaceRepository;
+import com.gills_dream.domain.place.service.PlaceCacheService;
 import com.gills_dream.domain.place.service.PlaceService;
+import com.gills_dream.domain.place.vo.PlacePeriod;
 import com.gills_dream.domain.plan.dto.PlanRequestDto;
 import com.gills_dream.domain.plan.dto.PlanResponseDto;
 import com.gills_dream.domain.plan.entity.Plan;
+import com.gills_dream.domain.plan.entity.PlanPlace;
 import com.gills_dream.domain.plan.enumerate.CategoryType;
 import com.gills_dream.domain.plan.enumerate.MoodType;
-import com.gills_dream.domain.plan.enumerate.TransportType;
 import com.gills_dream.domain.plan.repository.PlanRepository;
 import com.gills_dream.domain.plan.vo.PlanPeriod;
 import com.gills_dream.domain.python.dto.PythonResponseDto;
@@ -23,13 +26,17 @@ import com.gills_dream.domain.python.service.PythonService;
 import com.gills_dream.global.apiPayload.code.status.ErrorStatus;
 import com.gills_dream.global.apiPayload.exception.GeneralException;
 import com.gills_dream.global.jwt.CustomUserDetails;
+import com.gills_dream.global.map.tourapi.TourApiClient;
+import com.gills_dream.global.map.tourapi.TourPlaceDetailRes;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Stream;
 
+import static com.gills_dream.domain.place.enumerate.Platform.TOUR;
 import static com.gills_dream.domain.plan.enumerate.TransportType.TRANSPORT_MAP;
 
 @Service
@@ -42,6 +49,7 @@ public class PlanServiceImpl implements PlanService {
     private final PythonService pythonService;
     private final PlaceService placeService;
     private final PlaceRepository placeRepository;
+    private final TourApiClient tourApiClient;
 
     @Override
     @Transactional
@@ -94,7 +102,66 @@ public class PlanServiceImpl implements PlanService {
     public PlanResponseDto.TemplateResultDto saveDestination(CustomUserDetails userDetails, Long planId, PlanRequestDto.DestinationDto request) {
         Plan plan = checkMemberAndPlan(userDetails, planId);
 
-        placeService.createList(plan, request);
+        request.tourDtoList().forEach(tourPlaceDto -> {
+            TourPlaceDetailRes detail = tourPlaceDto.platform() == TOUR ?
+                    tourApiClient.getPlaceDetail(tourPlaceDto.contentId()) : null;
+            Place place = Place.builder()
+                    .platform(tourPlaceDto.platform())
+                    .contentId(tourPlaceDto.contentId())
+                    .name(tourPlaceDto.title() != null ? tourPlaceDto.title() : (detail != null ? detail.title() : null))
+                    .detailUrl(tourPlaceDto.detailUrl() != null ? tourPlaceDto.detailUrl() : null)
+                    .lat(tourPlaceDto.lat() != null ? tourPlaceDto.lat() : (detail != null ? detail.mapy() : null))
+                    .lng(tourPlaceDto.lng() != null ? tourPlaceDto.lng() : (detail != null ? detail.mapx() : null))
+                    .placeType(PlaceType.TOUR)
+                    .images(detail != null ? List.of(detail.firstimage()) : List.of())
+                    .build();
+            placeRepository.save(place);
+            PlanPlace planPlace = PlanPlace.builder()
+                    .plan(plan)
+                    .place(place)
+                    .period(PlacePeriod.builder()
+                            .startedAt(tourPlaceDto.date() != null ? LocalDate.parse(tourPlaceDto.date()) : null)
+                            .build())
+                    .build();
+            plan.getPlanPlaces().add(planPlace);
+            place.getPlanPlaces().add(planPlace);
+        });
+
+        request.accommodationDtoList().forEach(accommodationDto -> {
+            TourPlaceDetailRes detail = accommodationDto.platform() == TOUR ?
+                    tourApiClient.getPlaceDetail(accommodationDto.contentId()) : null;
+            Place place = Place.builder()
+                    .platform(accommodationDto.platform())
+                    .contentId(accommodationDto.contentId())
+                    .name(accommodationDto.title() != null ? accommodationDto.title() : (detail != null ? detail.title() : null))
+                    .detailUrl(accommodationDto.detailUrl() != null ? accommodationDto.detailUrl() : null)
+                    .lat(accommodationDto.lat() != null ? accommodationDto.lat() : (detail != null ? detail.mapy() : null))
+                    .lng(accommodationDto.lng() != null ? accommodationDto.lng() : (detail != null ? detail.mapx() : null))
+                    .placeType(PlaceType.ACCOMMODATION)
+                    .images(detail != null ? List.of(detail.firstimage()) : List.of())
+                    .build();
+            placeRepository.save(place);
+            PlanPlace planPlace = PlanPlace.builder()
+                    .plan(plan)
+                    .place(place)
+                    .period(
+                            PlacePeriod.builder()
+                                    .startedAt(accommodationDto.startDate() != null ? LocalDate.parse(accommodationDto.startDate()) : null)
+                                    .finishedAt(accommodationDto.endDate() != null ? LocalDate.parse(accommodationDto.endDate()) : null)
+                                    .duration(
+                                            accommodationDto.startDate() != null && accommodationDto.endDate() != null
+                                                    ? Math.toIntExact(
+                                                    LocalDate.parse(accommodationDto.endDate()).toEpochDay()
+                                                            - LocalDate.parse(accommodationDto.startDate()).toEpochDay()
+                                            )
+                                                    : null
+                                    )
+                                    .build()
+                    )
+                    .build();
+            plan.getPlanPlaces().add(planPlace);
+            place.getPlanPlaces().add(planPlace);
+        });
 
         return new PlanResponseDto.TemplateResultDto(plan.getId());
     }
