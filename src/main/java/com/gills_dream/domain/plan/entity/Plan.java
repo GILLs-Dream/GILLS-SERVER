@@ -1,5 +1,6 @@
 package com.gills_dream.domain.plan.entity;
 
+import com.gills_dream.domain.map.dto.MapRouteByDayRes;
 import com.gills_dream.domain.member.entity.Member;
 import com.gills_dream.domain.place.entity.Place;
 import com.gills_dream.domain.place.enumerate.Region;
@@ -10,6 +11,7 @@ import com.gills_dream.domain.plan.vo.PlanPeriod;
 import com.gills_dream.domain.plan.vo.PlanSummary;
 import com.gills_dream.domain.team.entity.Team;
 import com.gills_dream.global.common.entity.BaseEntity;
+import com.gills_dream.global.config.MapRouteByDayResConverter;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -25,7 +27,6 @@ import java.util.List;
 @SQLDelete(sql = "UPDATE \"plan\" SET deleted_at = NOW() WHERE id = ?")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Plan extends BaseEntity {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(columnDefinition = "bigint", nullable = false)
@@ -67,6 +68,11 @@ public class Plan extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private TransportType transportType;
 
+    @Convert(converter = MapRouteByDayResConverter.class)
+    @Column(columnDefinition = "TEXT")
+    @Lob
+    private MapRouteByDayRes generatedRoute;
+
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "plan_category", joinColumns = @JoinColumn(name = "plan_id"))
     @Enumerated(EnumType.STRING)
@@ -96,7 +102,7 @@ public class Plan extends BaseEntity {
 
     @Builder
     public Plan(Member member, Team team, PlanSummary summary, PlanPeriod period, String moodSummary, String teamName, Region region,
-                Boolean isPinned, Long party, TransportType transportType, List<CategoryType> categories, List<MoodType> moods, List<String> videoIds, List<String> contentIds) {
+                Boolean isPinned, Long party, TransportType transportType, List<CategoryType> categories, List<MoodType> moods, List<String> videoIds, List<String> contentIds, MapRouteByDayRes generatedRoute) {
         this.member = member;
         this.team = team;
         this.summary = summary;
@@ -111,6 +117,7 @@ public class Plan extends BaseEntity {
         this.moods = moods != null ? new ArrayList<>(moods) : new ArrayList<>();
         this.videoIds = videoIds != null ? new ArrayList<>(videoIds) : new ArrayList<>();
         this.contentIds = contentIds != null ? new ArrayList<>(contentIds) : new ArrayList<>();
+        this.generatedRoute = generatedRoute;
     }
 
     public void updatePeriod(PlanPeriod period) {
@@ -128,5 +135,9 @@ public class Plan extends BaseEntity {
 
     public void updateRegion(Region region) {
         this.region = region;
+    }
+
+    public void updateGeneratedRoute(MapRouteByDayRes generatedRoute) {
+        this.generatedRoute = generatedRoute;
     }
 }

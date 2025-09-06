@@ -72,24 +72,18 @@ public class PlanRestController {
                                                                     @PathVariable("planId") Long planId) {
         return ApiResponse.onSuccess(planService.generate(userDetails, planId));
     }
-//    @PostMapping("/{planId}/generate")
-//    @Operation(summary = "템플릿 정보 기반 여행 생성")
-//    public ApiResponse<PlanResponseDto.GenerateResultDto> generate (@AuthenticationPrincipal CustomUserDetails userDetails,
-//                                                                    @PathVariable("planId") Long planId) {
-//        return ApiResponse.onSuccess(planService.generate(userDetails, planId));
-//    }
 
     @GetMapping("/{planId}/plan")
     @Operation(summary = "생성된 여행 조회")
-    public ApiResponse<PlanResponseDto> viewPlan (@AuthenticationPrincipal CustomUserDetails userDetails,
+    public ApiResponse<PlanResponseDto.GenerateResultDto> viewPlan (@AuthenticationPrincipal CustomUserDetails userDetails,
                                                   @PathVariable("planId") Long planId) {
-        return null;
+        return ApiResponse.onSuccess(planService.viewPlan(userDetails, planId));
     }
 
     @GetMapping("/{planId}/plan-summary")
     @Operation(summary = "생성된 여행의 요약 조회")
-    public ApiResponse<PlanResponseDto> viewPlanSummary (@AuthenticationPrincipal CustomUserDetails userDetails,
+    public ApiResponse<PlanResponseDto.SummaryDto> viewPlanSummary (@AuthenticationPrincipal CustomUserDetails userDetails,
                                                          @PathVariable("planId") Long planId) {
-        return null;
+        return ApiResponse.onSuccess(planService.viewPlanSummary(userDetails, planId));
     }
 }

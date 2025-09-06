@@ -73,6 +73,20 @@ public class GptServiceImpl implements GptService {
     }
 
     @Override
+    public String summarizePlan(Plan plan) {
+        String summary;
+        try {
+            String prompt = buildPrompt(plan, promptProperties.getSummarizePlan());
+            String response = getResponse(prompt);
+            System.out.println(response);
+            summary = objectMapper.readValue(response, new TypeReference<>() {});
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to process GPT response", e);
+        }
+        return summary;
+    }
+
+    @Override
     public PlacePair filterPlace(PythonResponseDto.ProcessResultDto processDto, String region) {
         PlacePair placePair = new PlacePair(new ArrayList<>(), new ArrayList<>());
         try {
@@ -90,39 +104,19 @@ public class GptServiceImpl implements GptService {
         return placePair;
     }
 
-    @Override
-    public String summarizePlan(Long duration, List<PlanResponseDto.PlanPerDayDto> planPerDayList) {
-        return "";
-    }
-
-    @Override
-    public PlanResponseDto.PlanDraftDto generatePlan(Plan plan) {
-        PlanResponseDto.PlanDraftDto dto;
-        try {
-            String prompt = buildPrompt(plan, promptProperties.getGeneratePlan());
-            String response = getResponse(prompt);
-            System.out.println(response);
-            dto = objectMapper.readValue(response, new TypeReference<PlanResponseDto.PlanDraftDto>() {});
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to process GPT response", e);
-        }
-
-        return dto;
-    }
-
     private String buildPrompt(Plan plan, String promptProperties) throws IOException {
         try {
             Resource resource = new FileSystemResource(promptProperties);
             String template = new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
             return template
                     .replace("{{region}}", plan.getRegion().getDescription())
-                    .replace("{{startedAt}}", plan.getPeriod().getStartedAt().toString())
-                    .replace("{{finishedAt}}", plan.getPeriod().getFinishedAt().toString())
                     .replace("{{duration}}", plan.getPeriod().getDuration().toString())
                     .replace("{{party}}", plan.getParty().toString())
+                    .replace("{{teamName}}", plan.getTeamName())
                     .replace("{{categories}}", plan.getCategories().toString())
                     .replace("{{moods}}", plan.getMoods().toString())
-                    .replace("{{placeList}}", toPlacesJson(plan));
+                    .replace("{{moodSumary}}", plan.getMooodSummary())
+                    .replace("{{generatedRoute}}", plan.getGeneratedRoute().toString());
         } catch (IOException e) {
             throw new IOException("Failed to read prompt text", e);
         }

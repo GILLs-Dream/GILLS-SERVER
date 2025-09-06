@@ -7,4 +7,5 @@ import java.util.Optional;
 
 public interface PlanRepository extends JpaRepository<Plan, Integer> {
     Optional<Plan> findByIdAndMember(Long planId, Member member);
+    Plan findById(Long planId);
 }

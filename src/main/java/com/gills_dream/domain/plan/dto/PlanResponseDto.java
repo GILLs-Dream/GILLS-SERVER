@@ -54,10 +54,12 @@ public class PlanResponseDto {
     ) {}
 
     public record GenerateResultDto (
+            @Schema(description = "여행 제목", example = "강릉 트로피컬 써머 여행")
+            String title,
             @Schema(description = "여행 id", example = "1")
             Long planId,
             @Schema(description = "여행 총 일수", example = "3")
-            Long duration,
+            Integer duration,
             @Schema(description = "하루별 여행지 추천 리스트")
             List<PlanPerDayDto> planPerDayDtoList
     ) {}
@@ -78,8 +80,8 @@ public class PlanResponseDto {
             PlaceDto to,
             @Schema(description = "거리 km", example = "3.1")
             Double distance,
-            @Schema(description = "소요 시간 min", example = "30")
-            Long time
+            @Schema(description = "소요 시간 (second)", example = "30")
+            double time
     ) {}
 
     public record PlaceDto (
@@ -90,4 +92,12 @@ public class PlanResponseDto {
             @Schema(description = "장소 대표 이미지", example = "https://...")
             String mainImg
     ) {}
+
+    public record SummaryDto (
+            @Schema(description = "여행 제목", example = "강릉 트로피컬 써머 여행")
+            String title,
+
+            @Schema(description = "여행 경로 요약", example = "이 여행은 ... 어쩌고")
+            String summary
+            ) {}
 }

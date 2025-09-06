@@ -2,6 +2,8 @@ package com.gills_dream.domain.plan.service;
 
 import com.gills_dream.domain.gpt.service.GptService;
 import com.gills_dream.domain.map.dto.MapRouteByDayRes;
+import com.gills_dream.domain.map.dto.MapRouteReq;
+import com.gills_dream.domain.map.dto.MapRouteRes;
 import com.gills_dream.domain.map.service.RouteService;
 import com.gills_dream.domain.member.entity.Member;
 import com.gills_dream.domain.member.repository.MemberRepository;
@@ -157,6 +159,77 @@ public class PlanServiceImpl implements PlanService {
         placeService.updatePlaces(plan, generated);
 
         return new PlanResponseDto.TemplateResultDto(planId);
+    }
+
+    @Override
+    public PlanResponseDto.GenerateResultDto viewPlan(CustomUserDetails userDetails, Long planId) {
+        Plan plan = checkMemberAndPlan(userDetails, planId);
+
+        MapRouteByDayRes generatedRoute = plan.getGeneratedRoute();
+
+        List<PlanResponseDto.PlanPerDayDto> planPerDayDtoList = new ArrayList<>();
+        for (int i=1; i<=plan.getPeriod().getDuration(); i++) {
+            MapRouteByDayRes.Day day = generatedRoute.days().get(i);
+
+            // 시작 장소 (첫 번째 location)
+            MapRouteReq.Location fromLocation = day.locations().get(0);
+            Place place = placeRepository.findByNameAndLatAndLngRounded(fromLocation.name(), fromLocation.lat(), fromLocation.lng())
+                    .orElseThrow(() -> new GeneralException(ErrorStatus.CANNOT_FIND_PLACE_FROM_DB));
+            PlanResponseDto.PlaceDto from = new PlanResponseDto.PlaceDto(
+                    place.getId(),
+                    fromLocation.name(),
+                    place.getImages().getFirst()
+            );
+
+            List<PlanResponseDto.RouteDto> routeDtoList = new ArrayList<>();
+            List<MapRouteReq.Location> locations = day.locations();
+            List<MapRouteRes> routes = day.routes();
+
+            for (int j = 0; j < routes.size(); j++) {
+                MapRouteReq.Location toLocation = locations.get(j + 1); // 시작점 다음부터
+                MapRouteRes route = routes.get(j);
+                Place p = placeRepository.findByNameAndLatAndLngRounded(fromLocation.name(), fromLocation.lat(), fromLocation.lng())
+                        .orElseThrow(() -> new GeneralException(ErrorStatus.CANNOT_FIND_PLACE_FROM_DB));
+                PlanResponseDto.PlaceDto to = new PlanResponseDto.PlaceDto(
+                        p.getId(),
+                        toLocation.name(),
+                        p.getImages().getFirst()
+                );
+
+                routeDtoList.add(new PlanResponseDto.RouteDto(
+                        (long) j + 1,
+                        to,
+                        route.distance(),
+                        route.duration()
+                ));
+            }
+
+            planPerDayDtoList.add(new PlanResponseDto.PlanPerDayDto(
+                    (long) i,
+                    from,
+                    routeDtoList
+            ));
+        }
+
+        return new PlanResponseDto.GenerateResultDto(
+                plan.getMooodSummary(),
+                planId,
+                plan.getPeriod().getDuration(),
+                planPerDayDtoList
+        );
+
+    }
+
+    @Override
+    public PlanResponseDto.SummaryDto viewPlanSummary(CustomUserDetails userDetails, Long planId) {
+        Plan plan = checkMemberAndPlan(userDetails, planId);
+
+        String summary = gptService.summarizePlan(plan);
+
+        return new PlanResponseDto.SummaryDto(
+                plan.getMooodSummary(),
+                summary
+        );
     }
 
 

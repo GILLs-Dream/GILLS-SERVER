@@ -6,7 +6,9 @@ import com.gills_dream.domain.map.dto.MapRouteReq;
 import com.gills_dream.domain.map.dto.MapRouteRes;
 import com.gills_dream.domain.place.service.PlaceCacheService;
 import com.gills_dream.domain.place.vo.PlaceCache;
+import com.gills_dream.domain.plan.entity.Plan;
 import com.gills_dream.domain.plan.enumerate.TransportType;
+import com.gills_dream.domain.plan.repository.PlanRepository;
 import com.gills_dream.global.apiPayload.code.status.ErrorStatus;
 import com.gills_dream.global.apiPayload.exception.GeneralException;
 import com.gills_dream.global.map.provider.BicycleRouteProvider;
@@ -33,12 +35,14 @@ public class RouteService {
     private final TransitRouteProvider transitRouteProvider;
     private final PlaceCacheService placeCacheService;
     private final GptService gptService;
+    private final PlanRepository planRepository;
 
     /**
      * 경로 조회 (GPT가 만든 날짜/인덱스별 locations로 provider 호출 → routes만 채워서 반환)
      */
     public MapRouteByDayRes getRoute(Long planId, TransportType transportation) throws GeneralException {
         // 1) planId로 장소 리스트 조회
+        Plan plan = planRepository.findById(planId);
         List<PlaceCache> placeList = placeCacheService.getByPlanId(planId);
         if (placeList == null || placeList.size() < 2) {
             throw new GeneralException(ErrorStatus.INVALID_ROUTE_REQUEST);
@@ -103,10 +107,14 @@ public class RouteService {
                     .build());
         }
 
-        return MapRouteByDayRes.builder()
+        MapRouteByDayRes mapRouteByDayRes = MapRouteByDayRes.builder()
                 .mode(byDay.mode())
                 .days(enrichedDays)
                 .build();
+
+        plan.updateGeneratedRoute(mapRouteByDayRes);
+
+        return mapRouteByDayRes;
     }
 
     private double parseDoubleSafe(String s) {
