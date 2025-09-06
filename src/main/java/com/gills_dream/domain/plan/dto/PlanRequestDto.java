@@ -46,7 +46,17 @@ public class PlanRequestDto {
             @Schema(description = "content Id", example = "1234")
             String contentId,
             @Schema(description = "방문 날짜 (nullable)", example = "2025-07-25")
-            String date
+            String date,
+            @Schema(description = "장소명 (nullable)", example = "경복궁")
+            String title,
+            @Schema(description = "latitude (nullable)", example = "37.579617")
+            String lat,
+            @Schema(description = "longitude (nullable)", example = "126.977041")
+            String lng,
+            @Schema(description = "주소 (nullable)" , example = "서울특별시 종로구 사직로 161")
+            String roadAddress,
+            @Schema(description = "장소 상세정보 URL (nullable)", example = "http://place.map.kakao.com/18619553")
+            String detailUrl
     ) {}
 
     public record AccommodationDto(
@@ -57,7 +67,17 @@ public class PlanRequestDto {
             @Schema(description = "숙박 시작 날짜 (nullable)", example = "2025-07-25")
             String startDate,
             @Schema(description = "숙박 끝 날짜 (nullable)", example = "2025-07-25")
-            String endDate
+            String endDate,
+            @Schema(description = "장소명 (nullable)", example = "경복궁")
+            String title,
+            @Schema(description = "latitude (nullable)", example = "37.579617")
+            String lat,
+            @Schema(description = "longitude (nullable)", example = "126.977041")
+            String lng,
+            @Schema(description = "주소 (nullable)" , example = "서울특별시 종로구 사직로 161")
+            String roadAddress,
+            @Schema(description = "장소 상세정보 URL (nullable)", example = "http://place.map.kakao.com/18619553")
+            String detailUrl
     ) {}
 
     public record StyleDto (
