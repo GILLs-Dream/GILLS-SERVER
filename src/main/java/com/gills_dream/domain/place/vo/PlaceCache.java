@@ -38,6 +38,9 @@ public record PlaceCache(
                 String finishedAt,
 
                 @Schema(description = "체류 일수", example = "2")
-                Integer duration
+                Integer duration,
+
+                @Schema(description = "(날짜가 미정인 경우) 여행 몇일차에 갈지", example = "3")
+                Integer dayOrder
         ) {}
 }

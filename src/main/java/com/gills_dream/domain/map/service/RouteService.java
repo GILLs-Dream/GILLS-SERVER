@@ -55,7 +55,8 @@ public class RouteService {
                                 MapRouteReq.Period.of(
                                         p.period().startedAt(),
                                         p.period().finishedAt(),
-                                        p.period().duration()
+                                        p.period().duration(),
+                                        p.period().dayOrder()
                                 )
                 ))
                 .toList();
