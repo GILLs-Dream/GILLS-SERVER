@@ -1,6 +1,8 @@
 package com.gills_dream.domain.plan.service;
 
 import com.gills_dream.domain.gpt.service.GptService;
+import com.gills_dream.domain.map.dto.MapRouteByDayRes;
+import com.gills_dream.domain.map.service.RouteService;
 import com.gills_dream.domain.member.entity.Member;
 import com.gills_dream.domain.member.repository.MemberRepository;
 import com.gills_dream.domain.place.dto.PlaceAddedDto;
@@ -13,9 +15,11 @@ import com.gills_dream.domain.place.repository.PlaceRepository;
 import com.gills_dream.domain.place.service.PlaceCacheService;
 import com.gills_dream.domain.place.service.PlaceService;
 import com.gills_dream.domain.place.vo.PlaceCache;
+import com.gills_dream.domain.place.vo.PlacePeriod;
 import com.gills_dream.domain.plan.dto.PlanRequestDto;
 import com.gills_dream.domain.plan.dto.PlanResponseDto;
 import com.gills_dream.domain.plan.entity.Plan;
+import com.gills_dream.domain.plan.entity.PlanPlace;
 import com.gills_dream.domain.plan.enumerate.CategoryType;
 import com.gills_dream.domain.plan.enumerate.MoodType;
 import com.gills_dream.domain.plan.enumerate.TransportType;
@@ -26,14 +30,16 @@ import com.gills_dream.domain.python.service.PythonService;
 import com.gills_dream.global.apiPayload.code.status.ErrorStatus;
 import com.gills_dream.global.apiPayload.exception.GeneralException;
 import com.gills_dream.global.jwt.CustomUserDetails;
+import com.gills_dream.global.map.tourapi.TourApiClient;
+import com.gills_dream.global.map.tourapi.TourPlaceDetailRes;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.*;
-import java.util.stream.Stream;
 
-import static com.gills_dream.domain.plan.enumerate.TransportType.TRANSPORT_MAP;
+import static com.gills_dream.domain.place.enumerate.Platform.TOUR;
 
 @Service
 @Transactional(readOnly = true)
@@ -46,6 +52,7 @@ public class PlanServiceImpl implements PlanService {
     private final PlaceService placeService;
     private final PlaceRepository placeRepository;
     private final PlaceCacheService placeCacheService;
+    private final RouteService routeService;
 
     @Override
     @Transactional
@@ -108,8 +115,7 @@ public class PlanServiceImpl implements PlanService {
     public PlanResponseDto.TemplateResultDto savStyle(CustomUserDetails userDetails, Long planId, PlanRequestDto.StyleDto request) {
         Plan plan = checkMemberAndPlan(userDetails, planId);
 
-        String tType = request.transport();
-        plan.getTransports().addAll(TRANSPORT_MAP.get(tType));
+        plan.updateTransportType(TransportType.fromDescription(request.transport()));
         plan.getCategories().addAll(request.categoryTypeList().stream().map(CategoryType::fromDescription).toList());
 
         return new PlanResponseDto.TemplateResultDto(plan.getId());
@@ -139,25 +145,19 @@ public class PlanServiceImpl implements PlanService {
         return new PlanResponseDto.VideoResultDto(plan.getId(), placeAddedDtoList);
     }
 
-//    @Override
-//    @Transactional
-//    public PlanResponseDto.GenerateResultDto generate(CustomUserDetails userDetails, Long planId) {
-//        Plan plan = checkMemberAndPlan(userDetails, planId);
-//
-//        // candidate1: '어디로?'에서 받아서 db에 저장한 장소 정보 -> 필수로 계획에 포함
-//        // candidate2: 비디오에서 추출한 장소 정보
-//        // candidate3: 숙소 없는 경우만 gpt한테 숙소 한곳 추천해달라고 하기
-//        List<Place> candidate1 = placeRepository.findAllByPlanId(planId);
-//        List<PlaceCache> candidate2 = placeCacheService.getByPlanId(planId);
-//        if (candidate1.stream().noneMatch(v -> v.getPlaceType() == PlaceType.ACCOMMODATION) || candidate2.stream().noneMatch(v -> PlaceType.valueOf(v.placeType()) == PlaceType.ACCOMMODATION)) {
-//
-//        }
-//
-//        PlanResponseDto.PlanDraftDto dto = gptService.generatePlan(plan);
-//        placeService.addList(plan, dto);
-//
-//        return null;
-//    }
+    @Override
+    @Transactional
+    public PlanResponseDto.TemplateResultDto generate(CustomUserDetails userDetails, Long planId) {
+        Plan plan = checkMemberAndPlan(userDetails, planId);
+
+        // 여행 생성 (숙소 없는 경우만 gpt한테 숙소 한곳 추천해달라고 하기)
+        MapRouteByDayRes generated = routeService.getRoute(planId, plan.getTransportType());
+
+        // Plan에 속한 모든 place의 period 업데이트
+        placeService.updatePlaces(plan, generated);
+
+        return new PlanResponseDto.TemplateResultDto(planId);
+    }
 
 
     private Plan checkMemberAndPlan(CustomUserDetails userDetails, Long planId) {

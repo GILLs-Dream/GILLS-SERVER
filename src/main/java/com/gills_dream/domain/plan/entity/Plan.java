@@ -63,11 +63,9 @@ public class Plan extends BaseEntity {
     @Embedded
     private PlanSummary summary;
 
-    @ElementCollection(fetch = FetchType.LAZY)
-    @CollectionTable(name = "plan_transport", joinColumns = @JoinColumn(name = "plan_id"))
+    @Column
     @Enumerated(EnumType.STRING)
-    @Column(name = "transport_type")
-    private List<TransportType> transports = new ArrayList<>();
+    private TransportType transportType;
 
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "plan_category", joinColumns = @JoinColumn(name = "plan_id"))
@@ -98,7 +96,7 @@ public class Plan extends BaseEntity {
 
     @Builder
     public Plan(Member member, Team team, PlanSummary summary, PlanPeriod period, String moodSummary, String teamName, Region region,
-                Boolean isPinned, Long party, List<TransportType> transports, List<CategoryType> categories, List<MoodType> moods, List<String> videoIds, List<String> contentIds) {
+                Boolean isPinned, Long party, TransportType transportType, List<CategoryType> categories, List<MoodType> moods, List<String> videoIds, List<String> contentIds) {
         this.member = member;
         this.team = team;
         this.summary = summary;
@@ -108,7 +106,7 @@ public class Plan extends BaseEntity {
         this.region = region;
         this.isPinned = isPinned;
         this.party = party;
-        this.transports = transports != null ? new ArrayList<>(transports) : new ArrayList<>();
+        this.transportType = transportType;
         this.categories = categories != null ? new ArrayList<>(categories) : new ArrayList<>();
         this.moods = moods != null ? new ArrayList<>(moods) : new ArrayList<>();
         this.videoIds = videoIds != null ? new ArrayList<>(videoIds) : new ArrayList<>();
@@ -117,6 +115,10 @@ public class Plan extends BaseEntity {
 
     public void updatePeriod(PlanPeriod period) {
         this.period = period;
+    }
+
+    public void updateTransportType(TransportType transportType) {
+        this.transportType = transportType;
     }
 
     public void updateCompanion(String companion, Long party) {
