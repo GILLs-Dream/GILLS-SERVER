@@ -24,12 +24,13 @@ public class SecurityConfig {
             "/",
             "/member/oauth/kakao/login",
             "/member/reissue",
-            "/login",
+            "/login/**",
             "/v1/map/**",
             "/v1/place/**",
             "/swagger-ui/**",
             "/swagger-resources/**",
             "/v3/api-docs/**",
+            "/oauth2/**",
             "/resources/**",
             "/plan/**"
     };
