@@ -1,5 +1,7 @@
 package com.gills_dream.global.config;
 
+import com.gills_dream.domain.token.handler.OAuth2SuccessHandler;
+import com.gills_dream.domain.token.service.CustomOAuth2UserService;
 import com.gills_dream.global.jwt.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -10,6 +12,7 @@ import org.springframework.security.config.annotation.web.configurers.CsrfConfig
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -19,6 +22,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final OAuth2SuccessHandler oAuth2SuccessHandler;
+    private final CustomOAuth2UserService customOAuth2UserService;
 
     private static final String[] PERMITTED_PATTERNS = {
             "/",
@@ -32,7 +37,8 @@ public class SecurityConfig {
             "/v3/api-docs/**",
             "/oauth2/**",
             "/resources/**",
-            "/error"
+            "/error",
+            "/member/**"
     };
 
     @Bean
@@ -53,7 +59,8 @@ public class SecurityConfig {
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .oauth2Login(oauth -> oauth
-                        .defaultSuccessUrl("/", true)
+                        .successHandler(oAuth2SuccessHandler)
+                        .userInfoEndpoint(user -> user.userService(customOAuth2UserService))
                 );
 
         return http.build();

@@ -54,6 +54,9 @@ dependencies {
 	// AI
 	implementation platform("org.springframework.ai:spring-ai-bom:1.0.0-M3")
 	implementation 'org.springframework.ai:spring-ai-openai'
+
+	// OAuth2
+	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 }
 
 tasks.named('test') {

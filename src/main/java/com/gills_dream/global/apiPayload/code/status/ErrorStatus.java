@@ -22,7 +22,10 @@ public enum ErrorStatus implements BaseCode {
     EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "EXPIRED TOKEN", "만료된 토큰입니다."),
     UNSUPPORTED_TOKEN(HttpStatus.UNAUTHORIZED, "UNSUPPORTED TOKEN", "지원하지 않는 토큰입니다."),
     REDIS_KEY_NOT_FOUND(HttpStatus.NOT_FOUND, "REDIS KEY NOT FOUND", "요청한 키가 Redis에 존재하지 않습니다."),
-    INVALID_SIGNATURE(HttpStatus.UNAUTHORIZED, "INVALID SIGNATURE", "잘못된 JWT 서명입니다"),
+    INVALID_SIGNATURE(HttpStatus.UNAUTHORIZED, "INVALID SIGNATURE", "잘못된 JWT 서명입니다."),
+    OAUTH_ERROR(HttpStatus.BAD_REQUEST, "OAUTH ERROR", "OAUTH 처리 과정에서 에러가 생겼습니다."),
+    CANNOT_SERIALIZE_VALUE(HttpStatus.BAD_REQUEST, "CANNOT SERIALIZE VALUE", "값을 직렬화 할 수 없습니다."),
+    CANNOT_UNSERIALIZE_VALUE(HttpStatus.BAD_REQUEST, "CANNOT UNSERIALIZE VALUE", "값을 복원 할 수 없습니다."),
 
     // 멤버 관련 에러 응답
     MEMBER_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "USER ALREADY EXISTS", "유저가 이미 존재합니다."),

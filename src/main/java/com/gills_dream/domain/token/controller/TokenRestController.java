@@ -1,6 +1,8 @@
 package com.gills_dream.domain.token.controller;
 
+import com.gills_dream.domain.token.dto.TokenPairResponse;
 import com.gills_dream.domain.token.service.CustomTokenService;
+import com.gills_dream.global.apiPayload.ApiResponse;
 import com.gills_dream.global.common.record.TokenPair;
 import com.gills_dream.global.jwt.JwtAuthenticationFilter;
 import com.gills_dream.global.jwt.TokenUtils;
@@ -30,5 +32,11 @@ public class TokenRestController {
         if (!refreshToken.equals(tokenPair.refreshToken())) tokenUtils.addRefreshToken(headers, tokenPair.refreshToken());
 
         return ResponseEntity.ok().headers(headers).body("Access token reissued");
+    }
+
+    @GetMapping("member/code-token")
+    @Operation(summary = "tempCode로 token 반환 요청")
+    public ApiResponse<TokenPairResponse> codeToken(@RequestParam("tempCode") String tempCode) {
+        return ApiResponse.onSuccess(jwtTokenService.codeToken(tempCode));
     }
 }
