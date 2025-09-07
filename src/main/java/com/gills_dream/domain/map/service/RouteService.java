@@ -136,7 +136,7 @@ public class RouteService {
 
         // 3) GPT로 날짜/인덱스별 재정렬 결과
         MapRouteByDayRes byDay = gptService.createRouteRequest(
-                route, TransportType.toCategory(transportation), count
+                route, String.valueOf(transportation), count
         );
 
         log.info("byDay : " + byDay);
