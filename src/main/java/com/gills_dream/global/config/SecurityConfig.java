@@ -30,7 +30,9 @@ public class SecurityConfig {
             "/swagger-ui/**",
             "/swagger-resources/**",
             "/v3/api-docs/**",
-            "/resources/**"
+            "/oauth2/**",
+            "/resources/**",
+            "/login/**", "/error"
     };
 
     @Bean
@@ -49,7 +51,10 @@ public class SecurityConfig {
                         .requestMatchers(PERMITTED_PATTERNS).permitAll()
                         .anyRequest().authenticated()
                 )
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .oauth2Login(oauth -> oauth
+                        .defaultSuccessUrl("/", true)
+                );
 
         return http.build();
     }
