@@ -51,7 +51,10 @@ public class SecurityConfig {
                         .requestMatchers(PERMITTED_PATTERNS).permitAll()
                         .anyRequest().authenticated()
                 )
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .oauth2Login(oauth -> oauth
+                        .defaultSuccessUrl("/", true)
+                );
 
         return http.build();
     }
