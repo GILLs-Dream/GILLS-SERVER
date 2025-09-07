@@ -109,7 +109,7 @@ public class GptServiceImpl implements GptService {
             Resource resource = new FileSystemResource(promptProperties);
             String template = new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
             return template
-                    .replace("{{region}}", plan.getRegion().getDescription())
+                    .replace("{{region}}", plan.getRegion())
                     .replace("{{duration}}", plan.getPeriod().getDuration().toString())
                     .replace("{{party}}", plan.getParty().toString())
                     .replace("{{teamName}}", plan.getTeamName())

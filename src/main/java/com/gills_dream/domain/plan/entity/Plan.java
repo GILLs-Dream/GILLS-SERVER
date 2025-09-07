@@ -2,8 +2,6 @@ package com.gills_dream.domain.plan.entity;
 
 import com.gills_dream.domain.map.dto.MapRouteByDayRes;
 import com.gills_dream.domain.member.entity.Member;
-import com.gills_dream.domain.place.entity.Place;
-import com.gills_dream.domain.place.enumerate.Region;
 import com.gills_dream.domain.plan.enumerate.CategoryType;
 import com.gills_dream.domain.plan.enumerate.MoodType;
 import com.gills_dream.domain.plan.enumerate.TransportType;
@@ -54,9 +52,8 @@ public class Plan extends BaseEntity {
     @Column(columnDefinition = "TEXT")
     private String mooodSummary;
 
-    @Column
-    @Enumerated(EnumType.STRING)
-    private Region region;
+    @Column(columnDefinition = "TEXT")
+    private String region;
 
     @Embedded
     private PlanPeriod period;
@@ -95,7 +92,7 @@ public class Plan extends BaseEntity {
     private List<String> videoIds = new ArrayList<>();
 
     @Builder
-    public Plan(Member member, Team team, PlanSummary summary, PlanPeriod period, String moodSummary, String teamName, Region region,
+    public Plan(Member member, Team team, PlanSummary summary, PlanPeriod period, String moodSummary, String teamName, String region,
                 Boolean isPinned, Long party, TransportType transportType, List<CategoryType> categories, List<MoodType> moods, List<String> videoIds, MapRouteByDayRes generatedRoute) {
         this.member = member;
         this.team = team;
@@ -126,7 +123,7 @@ public class Plan extends BaseEntity {
         this.party = party;
     }
 
-    public void updateRegion(Region region) {
+    public void updateRegion(String region) {
         this.region = region;
     }
 

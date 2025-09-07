@@ -10,18 +10,13 @@ import com.gills_dream.domain.member.repository.MemberRepository;
 import com.gills_dream.domain.place.dto.PlaceAddedDto;
 import com.gills_dream.domain.place.dto.PlaceCacheWithContentId;
 import com.gills_dream.domain.place.entity.Place;
-import com.gills_dream.domain.place.enumerate.PlaceType;
-import com.gills_dream.domain.place.enumerate.Region;
 import com.gills_dream.domain.place.record.PlacePair;
 import com.gills_dream.domain.place.repository.PlaceRepository;
 import com.gills_dream.domain.place.service.PlaceCacheService;
 import com.gills_dream.domain.place.service.PlaceService;
-import com.gills_dream.domain.place.vo.PlaceCache;
-import com.gills_dream.domain.place.vo.PlacePeriod;
 import com.gills_dream.domain.plan.dto.PlanRequestDto;
 import com.gills_dream.domain.plan.dto.PlanResponseDto;
 import com.gills_dream.domain.plan.entity.Plan;
-import com.gills_dream.domain.plan.entity.PlanPlace;
 import com.gills_dream.domain.plan.enumerate.CategoryType;
 import com.gills_dream.domain.plan.enumerate.MoodType;
 import com.gills_dream.domain.plan.enumerate.TransportType;
@@ -32,16 +27,11 @@ import com.gills_dream.domain.python.service.PythonService;
 import com.gills_dream.global.apiPayload.code.status.ErrorStatus;
 import com.gills_dream.global.apiPayload.exception.GeneralException;
 import com.gills_dream.global.jwt.CustomUserDetails;
-import com.gills_dream.global.map.tourapi.TourApiClient;
-import com.gills_dream.global.map.tourapi.TourPlaceDetailRes;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.util.*;
-
-import static com.gills_dream.domain.place.enumerate.Platform.TOUR;
 
 @Service
 @Transactional(readOnly = true)
@@ -129,7 +119,7 @@ public class PlanServiceImpl implements PlanService {
     public PlanResponseDto.VideoResultDto saveVideo(CustomUserDetails userDetails, Long planId, PlanRequestDto.VideoUrlDto request) {
         Plan plan = checkMemberAndPlan(userDetails, planId);
 
-        plan.updateRegion(Region.fromDescription(request.getRegion()));
+        plan.updateRegion(request.getRegion());
 
         // 비디오에서 장소 추출
         PythonResponseDto.ProcessResultDto processDto = pythonService.processVideo(request);
