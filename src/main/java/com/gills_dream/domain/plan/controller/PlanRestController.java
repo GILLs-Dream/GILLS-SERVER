@@ -1,5 +1,6 @@
 package com.gills_dream.domain.plan.controller;
 
+import com.gills_dream.domain.map.dto.MapRouteByDayRes;
 import com.gills_dream.domain.plan.dto.PlanResponseDto;
 import com.gills_dream.domain.plan.dto.PlanRequestDto;
 import com.gills_dream.domain.plan.service.PlanService;
@@ -68,8 +69,8 @@ public class PlanRestController {
 
     @PostMapping("/{planId}/generate")
     @Operation(summary = "템플릿 정보 기반 여행 생성")
-    public ApiResponse<PlanResponseDto.TemplateResultDto> generate (@AuthenticationPrincipal CustomUserDetails userDetails,
-                                                                    @PathVariable("planId") Long planId) {
+    public ApiResponse<MapRouteByDayRes> generate (@AuthenticationPrincipal CustomUserDetails userDetails,
+                                                   @PathVariable("planId") Long planId) {
         return ApiResponse.onSuccess(planService.generate(userDetails, planId));
     }
 

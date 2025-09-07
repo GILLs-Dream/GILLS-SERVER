@@ -1,5 +1,6 @@
 package com.gills_dream.domain.plan.service;
 
+import com.gills_dream.domain.map.dto.MapRouteByDayRes;
 import com.gills_dream.domain.plan.dto.PlanRequestDto;
 import com.gills_dream.domain.plan.dto.PlanResponseDto;
 import com.gills_dream.global.jwt.CustomUserDetails;
@@ -11,7 +12,7 @@ public interface PlanService {
     PlanResponseDto.TemplateResultDto saveDestination(CustomUserDetails userDetails, Long planId, PlanRequestDto.DestinationDto request);
     PlanResponseDto.TemplateResultDto savStyle(CustomUserDetails userDetails, Long planId, PlanRequestDto.StyleDto request);
     PlanResponseDto.VideoResultDto saveVideo(CustomUserDetails userDetails, Long planId, PlanRequestDto.VideoUrlDto request);
-    PlanResponseDto.TemplateResultDto generate(CustomUserDetails userDetails, Long planId);
+    MapRouteByDayRes generate(CustomUserDetails userDetails, Long planId);
     PlanResponseDto.GenerateResultDto viewPlan(CustomUserDetails userDetails, Long planId);
     PlanResponseDto.SummaryDto viewPlanSummary(CustomUserDetails userDetails, Long planId);
 }

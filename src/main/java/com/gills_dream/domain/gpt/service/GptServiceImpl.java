@@ -38,8 +38,6 @@ public class GptServiceImpl implements GptService {
     private final ChatClient chatClient;
     private final ObjectMapper objectMapper;
     private final PromptProperties promptProperties;
-    private static final ObjectMapper om = new ObjectMapper()
-            .setSerializationInclusion(JsonInclude.Include.ALWAYS); // null도 출력
 
     @Override
     public List<MoodType> selectMood(String input) {
@@ -216,37 +214,5 @@ public class GptServiceImpl implements GptService {
                 .replaceAll("(?s)```json", "")
                 .replaceAll("```", "")
                 .trim();
-    }
-
-    public static String toPlacesJson(Plan plan) throws JsonProcessingException {
-        if (plan == null || plan.getPlanPlaces() == null) {
-            return "[]";
-        }
-
-        List<GptResponseDto.PlaceJson> items = plan.getPlanPlaces().stream()
-                .filter(Objects::nonNull)
-                .map(pp -> {
-                    Place place = pp.getPlace();
-                    if (place == null) return null;
-
-                    String name = place.getName();
-                    String type = place.getPlaceType().getDescription();
-
-                    // 날짜 매핑: 없으면 null
-                    String startedDate = null;
-                    String finishedDate = null;
-                    String duration = null;
-                    if (pp.getPeriod() != null) {
-                        startedDate = pp.getPeriod().getStartedAt() != null ? pp.getPeriod().getStartedAt().toString() : null;
-                        finishedDate = pp.getPeriod().getFinishedAt() != null ? pp.getPeriod().getFinishedAt().toString() : null;
-                        duration = pp.getPeriod().getDuration() != null ? pp.getPeriod().getDuration().toString() : null;
-                    }
-
-                    return new GptResponseDto.PlaceJson(name, type, startedDate, finishedDate, duration);
-                })
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
-
-        return om.writeValueAsString(items);
     }
 }

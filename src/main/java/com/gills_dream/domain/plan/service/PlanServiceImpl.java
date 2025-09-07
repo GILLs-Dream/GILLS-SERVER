@@ -142,16 +142,15 @@ public class PlanServiceImpl implements PlanService {
 
     @Override
     @Transactional
-    public PlanResponseDto.TemplateResultDto generate(CustomUserDetails userDetails, Long planId) {
+    public MapRouteByDayRes generate(CustomUserDetails userDetails, Long planId) {
         Plan plan = checkMemberAndPlan(userDetails, planId);
 
         // 여행 생성 (숙소 없는 경우만 gpt한테 숙소 한곳 추천해달라고 하기)
         MapRouteByDayRes generated = routeService.getRoute(planId, plan.getTransportType());
 
-        // Plan에 속한 모든 place의 period 업데이트
-        placeService.updatePlaces(plan, generated);
+        plan.updateGeneratedRoute(generated);
 
-        return new PlanResponseDto.TemplateResultDto(planId);
+        return generated;
     }
 
     @Override

@@ -136,7 +136,7 @@ public class RouteService {
 
         // 3) GPT로 날짜/인덱스별 재정렬 결과
         MapRouteByDayRes byDay = gptService.createRouteRequest(
-                route, String.valueOf(transportation), count
+                route, transportation.toString(), count
         );
 
         log.info("byDay : " + byDay);
@@ -167,7 +167,7 @@ public class RouteService {
             case CAR     -> carRouteProvider::route;
             case WALK    -> walkRouteProvider::route;
             case BICYCLE -> bicycleRouteProvider::route;
-            case TRANSPORT -> transitRouteProvider::route; // 대중교통
+            case TRANSPORT -> transitRouteProvider::route;
             default -> throw new GeneralException(ErrorStatus.TRANSPORT_TYPE_NOT_FOUND);
         };
 
@@ -183,7 +183,6 @@ public class RouteService {
             if (day.locations() != null && day.locations().size() >= 2) {
                 MapRouteReq oneDayReq = MapRouteReq.of(plan.getRegion(), plan.getPeriod(), day.locations());
                 MapRouteRes dayRes = runner.apply(oneDayReq);
-
                 if (!RouteUtils.isEmpty(dayRes)) {
                     // ★ PlaceInfo 보강(입력 locations로 역매핑)
                     List<MapRouteRes> enrichedRoutes = enrichRoutesWithPlaceInfo(List.of(dayRes), day.locations());
