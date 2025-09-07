@@ -24,7 +24,7 @@ public class SecurityConfig {
             "/",
             "/member/oauth/kakao/login",
             "/member/reissue",
-            "/login",
+            "/login/**",
             "/v1/map/**",
             "/v1/place/**",
             "/swagger-ui/**",
@@ -32,7 +32,7 @@ public class SecurityConfig {
             "/v3/api-docs/**",
             "/oauth2/**",
             "/resources/**",
-            "/login/**", "/error"
+            "/plan/**"
     };
 
     @Bean
