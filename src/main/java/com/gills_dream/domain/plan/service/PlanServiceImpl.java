@@ -183,7 +183,7 @@ public class PlanServiceImpl implements PlanService {
     public PlanResponseDto.VideoResultDto saveVideo(CustomUserDetails userDetails, Long planId, PlanRequestDto.VideoUrlDto request) {
         Plan plan = checkMemberAndPlan(userDetails, planId);
 
-        plan.updateRegion(Region.fromDescription(request.getRegion()));
+        plan.updateRegion(request.getRegion());
 
         // 비디오에서 장소 추출
         PythonResponseDto.ProcessResultDto processDto = pythonService.processVideo(request);

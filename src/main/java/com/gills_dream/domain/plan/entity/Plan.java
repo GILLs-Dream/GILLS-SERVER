@@ -54,8 +54,7 @@ public class Plan extends BaseEntity {
     private String mooodSummary;
 
     @Column
-    @Enumerated(EnumType.STRING)
-    private Region region;
+    private String region;
 
     @Embedded
     private PlanPeriod period;
@@ -97,7 +96,7 @@ public class Plan extends BaseEntity {
     private List<String> contentIds = new ArrayList<>();
 
     @Builder
-    public Plan(Member member, Team team, PlanSummary summary, PlanPeriod period, String moodSummary, String teamName, Region region,
+    public Plan(Member member, Team team, PlanSummary summary, PlanPeriod period, String moodSummary, String teamName, String region,
                 Boolean isPinned, Long party, List<TransportType> transports, List<CategoryType> categories, List<MoodType> moods, List<String> videoIds, List<String> contentIds) {
         this.member = member;
         this.team = team;
@@ -124,7 +123,7 @@ public class Plan extends BaseEntity {
         this.party = party;
     }
 
-    public void updateRegion(Region region) {
+    public void updateRegion(String region) {
         this.region = region;
     }
 }

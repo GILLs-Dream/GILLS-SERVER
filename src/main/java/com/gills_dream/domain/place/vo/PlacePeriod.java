@@ -22,10 +22,30 @@ public class PlacePeriod {
     @Column(columnDefinition = "bigint")
     private Integer duration;
 
+    @Column(columnDefinition = "bigint")
+    private Integer dayOrder;
+
     @Builder
-    public PlacePeriod(LocalDate startedAt, LocalDate finishedAt, Integer duration) {
+    public PlacePeriod(LocalDate startedAt, LocalDate finishedAt, Integer duration, Integer dayOrder) {
         this.startedAt = startedAt;
         this.finishedAt = finishedAt;
         this.duration = duration;
+        this.dayOrder = dayOrder;
+    }
+
+    public void setStartedAt(LocalDate startedAt) {
+        this.startedAt = startedAt;
+    }
+
+    public void setFinishedAt(LocalDate finishedAt) {
+        this.finishedAt = finishedAt;
+    }
+
+    public void setDuration(Integer duration) {
+        this.duration = duration;
+    }
+
+    public void setDayOrder(Integer dayOrder) {
+        this.dayOrder = dayOrder;
     }
 }

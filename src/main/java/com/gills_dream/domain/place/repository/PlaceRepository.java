@@ -18,6 +18,20 @@ public interface PlaceRepository extends JpaRepository<Place, Long> {
                                                     @Param("lat") double lat,
                                                     @Param("lng") double lng);
 
-    @Query("SELECT p FROM Place p LEFT JOIN p.planPlaces pp WHERE pp.plan.id = :planId")
+    @Query("""
+    select distinct p
+    from Place p
+    join fetch p.planPlaces pp
+    join fetch pp.plan pl
+    where pl.id = :planId
+""")
     List<Place> findAllByPlanId(@Param("planId") Long planId);
+
+    @Query("""
+    select distinct p
+    from Place p
+    left join fetch p.images imgs
+    where p.id in :ids
+""")
+    List<Place> findAllWithImagesByIdIn(@Param("ids") List<Long> ids);
 }
