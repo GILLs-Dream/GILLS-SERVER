@@ -34,6 +34,23 @@ public class PlacePeriod {
         this.dayOrder = dayOrder;
     }
 
+    public void setStartedAt(LocalDate startedAt) {
+        this.startedAt = startedAt;
+    }
+
+    public void setFinishedAt(LocalDate finishedAt) {
+        this.finishedAt = finishedAt;
+    }
+
+    public void setDuration(Integer duration) {
+        this.duration = duration;
+    }
+
+    public void setDayOrder(Integer dayOrder) {
+        this.dayOrder = dayOrder;
+        this.dayOrder = dayOrder;
+    }
+
     public void updateDate(MapRouteReq.Period period) {
         this.startedAt = LocalDate.parse(period.startedAt());
         this.finishedAt = LocalDate.parse(period.finishedAt());

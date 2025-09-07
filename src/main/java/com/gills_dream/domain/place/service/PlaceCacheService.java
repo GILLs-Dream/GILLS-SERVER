@@ -32,17 +32,18 @@ public class PlaceCacheService {
         String hashKey = contentKey(planId, contentId);
         HashOperations<String, String, String> h = redis.opsForHash();
 
-        h.putAll(hashKey, Map.of(
-                "platform", platform,
-                "name", nz(m.name()),
-                "lat",  String.valueOf(m.lat()),
-                "lng",  String.valueOf(m.lng()),
-                "imageUrl", nz(m.imageUrl()),
-                "detailUrl", nz(m.detailUrl()),
-                "placeType", nz(String.valueOf(m.placeType())),
-                "period.startedAt", nz(m.period() == null ? "" : String.valueOf(m.period().startedAt())),
-                "period.finishedAt", nz(m.period() == null ? "" : String.valueOf(m.period().finishedAt())),
-                "period.duration", nz(m.period() == null ? "1" : String.valueOf(m.period().duration()))
+        h.putAll(hashKey, Map.ofEntries(
+                Map.entry("platform", platform),
+                Map.entry("name", nz(m.name())),
+                Map.entry("lat", String.valueOf(m.lat())),
+                Map.entry("lng", String.valueOf(m.lng())),
+                Map.entry("imageUrl", nz(m.imageUrl())),
+                Map.entry("detailUrl", nz(m.detailUrl())),
+                Map.entry("placeType", nz(String.valueOf(m.placeType()))),
+                Map.entry("period.startedAt", nz(m.period() == null ? "" : String.valueOf(m.period().startedAt()))),
+                Map.entry("period.finishedAt", nz(m.period() == null ? "" : String.valueOf(m.period().finishedAt()))),
+                Map.entry("period.duration", m.period() == null || m.period().duration() == null ? "" : String.valueOf(m.period().duration())),
+                Map.entry("period.dayOrder", m.period() == null || m.period().dayOrder() == null ? "" : String.valueOf(m.period().dayOrder()))
         ));
 
         // TTL
@@ -72,7 +73,15 @@ public class PlaceCacheService {
             Map<String, String> m = h.entries(contentKey(planId, contentId));
             if (m == null || m.isEmpty()) continue;
 
+            PlaceCache.Period period = PlaceCache.Period.builder()
+                    .startedAt(m.getOrDefault("period.startedAt", ""))
+                    .finishedAt(m.getOrDefault("period.finishedAt", ""))
+                    .duration(parseNullableInt(m.get("period.duration")))     // << 안전 파싱
+                    .dayOrder(parseNullableIntOrDefault(m.get("period.dayOrder"), 0))
+                    .build();
+
             result.add(PlaceCache.builder()
+                    .contentId(contentId)
                     .platform(m.getOrDefault("platform", ""))
                     .name(m.getOrDefault("name", ""))
                     .lat(m.getOrDefault("lat", "0"))
@@ -80,11 +89,7 @@ public class PlaceCacheService {
                     .imageUrl(m.getOrDefault("imageUrl", ""))
                     .detailUrl(m.getOrDefault("detailUrl", ""))
                     .placeType(m.getOrDefault("placeType", ""))
-                    .period(PlaceCache.Period.builder()
-                            .startedAt(m.getOrDefault("period.startedAt", ""))
-                            .finishedAt(m.getOrDefault("period.finishedAt", ""))
-                            .duration(Integer.valueOf(m.getOrDefault("period.duration", "1")))
-                            .build())
+                    .period(period)
                     .build());
         }
         return result;
@@ -95,7 +100,15 @@ public class PlaceCacheService {
         Map<String, String> m = redis.<String, String>opsForHash().entries(contentKey(planId, contentId));
         if (m == null || m.isEmpty()) return null;
 
+        PlaceCache.Period period = PlaceCache.Period.builder()
+                .startedAt(m.getOrDefault("period.startedAt", ""))
+                .finishedAt(m.getOrDefault("period.finishedAt", ""))
+                .duration(parseNullableInt(m.get("period.duration")))
+                .dayOrder(parseNullableIntOrDefault(m.get("period.dayOrder"), 0))
+                .build();
+
         return PlaceCache.builder()
+                .contentId(contentId)
                 .platform(m.getOrDefault("platform", ""))
                 .name(m.getOrDefault("name", ""))
                 .lat(m.getOrDefault("lat", "0"))
@@ -103,11 +116,7 @@ public class PlaceCacheService {
                 .imageUrl(m.getOrDefault("imageUrl", ""))
                 .detailUrl(m.getOrDefault("detailUrl", ""))
                 .placeType(m.getOrDefault("placeType", ""))
-                .period(PlaceCache.Period.builder()
-                        .startedAt(m.getOrDefault("period.startedAt", ""))
-                        .finishedAt(m.getOrDefault("period.finishedAt", ""))
-                        .duration(Integer.valueOf(m.getOrDefault("period.duration", "1")))
-                        .build())
+                .period(period)
                 .build();
     }
 
@@ -127,6 +136,19 @@ public class PlaceCacheService {
             }
         }
         redis.delete(setKey);
+    }
+
+    private static Integer parseNullableInt(String s) {
+        if (s == null) return null;
+        String t = s.trim();
+        if (t.isEmpty() || t.equalsIgnoreCase("null")) return null;
+        try { return Integer.valueOf(t); }
+        catch (NumberFormatException e) { return null; } // 쓰레기값은 null 처리
+    }
+
+    private static Integer parseNullableIntOrDefault(String s, int defaultVal) {
+        Integer v = parseNullableInt(s);
+        return v == null ? defaultVal : v;
     }
 
     private static String nz(String s){ return s == null ? "" : s; }

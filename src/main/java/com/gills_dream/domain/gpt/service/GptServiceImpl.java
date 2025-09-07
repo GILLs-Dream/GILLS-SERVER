@@ -104,6 +104,26 @@ public class GptServiceImpl implements GptService {
         return placePair;
     }
 
+    @Override
+    public String summarizePlan(Long duration, List<PlanResponseDto.PlanPerDayDto> planPerDayList) {
+        return "";
+    }
+
+    @Override
+    public PlanResponseDto.PlanDraftDto generatePlan(Plan plan) {
+        PlanResponseDto.PlanDraftDto dto;
+        try {
+            String prompt = buildPrompt(plan, promptProperties.getGeneratePlan());
+            String response = getResponse(prompt);
+            System.out.println(response);
+            dto = objectMapper.readValue(response, new TypeReference<PlanResponseDto.PlanDraftDto>() {});
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to process GPT response", e);
+        }
+
+        return dto;
+    }
+
     private String buildPrompt(Plan plan, String promptProperties) throws IOException {
         try {
             Resource resource = new FileSystemResource(promptProperties);
@@ -129,7 +149,7 @@ public class GptServiceImpl implements GptService {
             String inputJson = objectMapper.writeValueAsString(routeReq);
 
             // 2) 프롬프트 템플릿 파일 읽고 {{input}} 치환
-            String prompt = buildPrompt(inputJson, transportType, promptProperties.getCreateRoute());
+            String prompt = buildPrompt(routeReq.region(), String.valueOf(routeReq.planPeriod()), inputJson, transportType, promptProperties.getCreateRoute());
 
             // 3) GPT 호출 → JSON 문자열만 오도록 getResponse에서 정제
             String response = getResponse(prompt);
@@ -177,11 +197,13 @@ public class GptServiceImpl implements GptService {
             throw new IOException("Failed to read prompt text", e);
         }
     }
-    private String buildPrompt(String input, String transportType, String promptProperties) throws IOException {
+    private String buildPrompt(String region, String period, String input, String transportType, String promptProperties) throws IOException {
         try {
             Resource resource = new FileSystemResource(promptProperties);
             String template = new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
             return template
+                    .replace("{{region}}", region)
+                    .replace("{{period}}", period)
                     .replace("{{input}}", input)
                     .replace("{{transportation}}", transportType);
         } catch (IOException e) {

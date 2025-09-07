@@ -34,4 +34,8 @@ public class PlanPlace {
         this.place = place;
         this.period = period;
     }
+
+    public void setPeriod(PlacePeriod cur) {
+        this.period = cur;
+    }
 }

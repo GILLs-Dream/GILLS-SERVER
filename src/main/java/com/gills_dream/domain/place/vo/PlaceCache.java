@@ -1,10 +1,14 @@
 package com.gills_dream.domain.place.vo;
 
+import com.gills_dream.domain.place.entity.Place;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
 @Builder
 public record PlaceCache(
+
+        @Schema(description = "컨텐츠ID", example = "1234")
+        String contentId,
 
         @Schema(description = "플랫폼", example = "KAKAO")
         String platform,
@@ -40,7 +44,25 @@ public record PlaceCache(
                 @Schema(description = "체류 일수", example = "2")
                 Integer duration,
 
-                @Schema(description = "(날짜가 미정인 경우) 여행 몇일차에 갈지", example = "3")
+                @Schema(description = "몇일차", example = "1")
                 Integer dayOrder
         ) {}
+        public static PlaceCache fromEntity(Place p, PlacePeriod period) {
+                return PlaceCache.builder()
+                        .contentId(p.getContentId())
+                        .platform(p.getPlatform() == null ? null : p.getPlatform().toString())
+                        .name(p.getName())
+                        .placeType(p.getPlaceType() == null ? null : p.getPlaceType().toString())
+                        .lat(p.getLat())
+                        .lng(p.getLng())
+                        .imageUrl(p.getImages() == null || p.getImages().isEmpty() ? null : p.getImages().get(0)) // ← ; 제거
+                        .detailUrl(p.getDetailUrl())
+                        .period(period == null ? null : Period.builder()
+                                .startedAt(period.getStartedAt() == null ? null : period.getStartedAt().toString())
+                                .finishedAt(period.getFinishedAt() == null ? null : period.getFinishedAt().toString())
+                                .duration(period.getDuration())
+                                .dayOrder(period.getDayOrder())
+                                .build())
+                        .build();
+        }
 }
