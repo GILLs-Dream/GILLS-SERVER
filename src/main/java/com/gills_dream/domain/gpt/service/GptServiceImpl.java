@@ -104,26 +104,6 @@ public class GptServiceImpl implements GptService {
         return placePair;
     }
 
-    @Override
-    public String summarizePlan(Long duration, List<PlanResponseDto.PlanPerDayDto> planPerDayList) {
-        return "";
-    }
-
-    @Override
-    public PlanResponseDto.PlanDraftDto generatePlan(Plan plan) {
-        PlanResponseDto.PlanDraftDto dto;
-        try {
-            String prompt = buildPrompt(plan, promptProperties.getGeneratePlan());
-            String response = getResponse(prompt);
-            System.out.println(response);
-            dto = objectMapper.readValue(response, new TypeReference<PlanResponseDto.PlanDraftDto>() {});
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to process GPT response", e);
-        }
-
-        return dto;
-    }
-
     private String buildPrompt(Plan plan, String promptProperties) throws IOException {
         try {
             Resource resource = new FileSystemResource(promptProperties);
