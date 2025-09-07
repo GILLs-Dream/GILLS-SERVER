@@ -23,16 +23,45 @@ public record MapRouteRes(
             double startLat,
             @Schema(description = "출발지 경도", example = "126.977041")
             double startLng,
+            @Schema(description = "출발지 정보")
+            PlaceInfo startPlace,
             @Schema(description = "도착지명", example = "홍대입구역")
             String endName,
             @Schema(description = "도착지 위도", example = "37.557192")
             double endLat,
             @Schema(description = "도착지 경도", example = "126.925381")
             double endLng,
+            @Schema(description = "도착지 정보")
+            PlaceInfo endPlace,
             @Schema(description = "이동 수단", example = "WALK/CAR/BUS/SUBWAY/BICYCLE")
             String mode,
             double distance,
             @Schema(description = "소요 시간(초)", example = "1800")
             double duration
-    ) {}
+    ) {
+        public record PlaceInfo(
+                @Schema(description = "플랫폼", example = "KAKAO")
+                String platform,
+                @Schema(description = "컨텐츠ID", example = "1234")
+                String contentId,
+                @Schema(description = "장소 타입" , example = "TOUR")
+                String placeType,
+                @Schema(description = "상세 설명 URL", example = "http://example.com/details")
+                String detailUrl,
+                @Schema(description = "이미지 URL", example = "http://example.com/image.jpg")
+                String imageUrl,
+                Period period
+        ) {
+            public record Period(
+                    @Schema(description = "시작일", example = "2025-09-05")
+                    String startedAt,
+                    @Schema(description = "종료일", example = "2025-09-07")
+                    String finishedAt,
+                    @Schema(description = "체류 일수", example = "2")
+                    Integer duration,
+                    @Schema(description = "몇일차", example = "1")
+                    Integer dayOrder
+            ) {}
+        }
+    }
 }
