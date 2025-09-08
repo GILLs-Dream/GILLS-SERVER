@@ -12,7 +12,6 @@ import java.util.Map;
 @Getter
 @RequiredArgsConstructor
 public enum TransportType {
-    BUS("버스"),
     CAR("자동차"),
     WALK("도보"),
     BICYCLE("자전거"),

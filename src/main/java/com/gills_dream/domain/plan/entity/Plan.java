@@ -67,7 +67,7 @@ public class Plan extends BaseEntity {
     private TransportType transportType;
 
     @Convert(converter = MapRouteByDayResConverter.class)
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "LONGTEXT")
     @Lob
     private MapRouteByDayRes generatedRoute;
 
