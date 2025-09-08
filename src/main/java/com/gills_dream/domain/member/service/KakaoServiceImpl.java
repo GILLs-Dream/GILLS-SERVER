@@ -29,6 +29,8 @@ public class KakaoServiceImpl implements KakaoService {
         body.add("redirect_uri", kakaoProperties.getRedirectUri());
         body.add("code", code);
 
+        log.info("Kakao Token Request Body: {}", body);
+
         MemberResponseDto.TokenDto tokenDto = restClient
                 .post()
                 .uri(kakaoProperties.getTokenUri())
@@ -37,6 +39,7 @@ public class KakaoServiceImpl implements KakaoService {
                 .retrieve()
                 .body(MemberResponseDto.TokenDto.class);
 
+        log.info("Kakao Token Response: {}", tokenDto);
         return Objects.requireNonNull(tokenDto).accessToken();
     }
 
