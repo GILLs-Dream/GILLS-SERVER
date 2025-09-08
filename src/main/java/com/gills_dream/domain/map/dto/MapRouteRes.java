@@ -33,8 +33,8 @@ public record MapRouteRes(
             double endLng,
             @Schema(description = "도착지 정보")
             PlaceInfo endPlace,
-            @Schema(description = "이동 수단", example = "WALK/CAR/BUS/SUBWAY/BICYCLE")
-            String mode,
+            @Schema(description="이동 수단 리스트(순서 보존, 중복 제거)", example="[\"WALK\",\"BUS\",\"SUBWAY\"]")
+            List<String> modes,
             double distance,
             @Schema(description = "소요 시간(초)", example = "1800")
             double duration

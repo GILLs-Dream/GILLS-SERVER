@@ -12,6 +12,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
 @Configuration
 @EnableRedisRepositories
@@ -27,10 +28,9 @@ public class RedisConfig {
     public RedisConnectionFactory redisConnectionFactory() {
         return new LettuceConnectionFactory(host, port);
     }
-
     @Bean
-    public ObjectMapper redisObjectMapper() {
-        ObjectMapper om = new ObjectMapper();
+    public ObjectMapper redisObjectMapper(Jackson2ObjectMapperBuilder builder) {
+        ObjectMapper om = builder.build();
         om.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
         return om;
     }

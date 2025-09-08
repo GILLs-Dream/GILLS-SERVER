@@ -59,7 +59,7 @@ public class CarRouteProvider implements RouteProvider {
 
             if (res == null || res.routes() == null || res.routes().isEmpty()) {
                 // 실패 시라도 day가 비지 않게 0거리 leg 추가 (원하면 스킵 처리 가능)
-                allLegs.add(RouteUtils.leg(
+                allLegs.add(RouteUtils.legSingleMode(
                         origin.name(), origin.lat(), origin.lng(),
                         dest.name(),   dest.lat(),   dest.lng(),
                         "CAR", 0, 0
@@ -130,7 +130,7 @@ public class CarRouteProvider implements RouteProvider {
             var sec = sections.get(s);
             var fr  = points.get(s);
             var to  = points.get(s + 1);
-            legs.add(RouteUtils.leg(
+            legs.add(RouteUtils.legSingleMode(
                     fr != null ? fr.name() : null, fr != null ? fr.y() : null, fr != null ? fr.x() : null,
                     to != null ? to.name() : null, to != null ? to.y() : null, to != null ? to.x() : null,
                     "CAR", sec.distance(), sec.duration()

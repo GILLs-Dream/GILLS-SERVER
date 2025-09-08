@@ -20,13 +20,8 @@ public class TransitRouteProvider implements RouteProvider {
 
     private final TmapRouteClient tmap;
 
-    @Override public TransportType supports() { return TransportType.BUS; } // SUBWAY도 이 Provider 사용
+    @Override public TransportType supports() { return TransportType.BUS; } // SUBWAY도 동일 Provider 사용 시 그대로
 
-    /**
-     * 대중교통 경로 조회
-     * @param req
-     * @return MapRouteRes
-     */
     @Override
     public MapRouteRes route(MapRouteReq req) {
         if (RouteUtils.invalid(req)) return RouteUtils.empty();
@@ -38,7 +33,7 @@ public class TransitRouteProvider implements RouteProvider {
             var from = req.locations().get(p[0]);
             var to   = req.locations().get(p[1]);
 
-            TransitRouteReq segReq = TransitRouteReq.builder()
+            var segReq = TransitRouteReq.builder()
                     .startX(String.valueOf(from.lng()))
                     .startY(String.valueOf(from.lat()))
                     .endX(String.valueOf(to.lng()))
@@ -56,23 +51,27 @@ public class TransitRouteProvider implements RouteProvider {
                     .orElse(raw.metaData().plan().itineraries().get(0));
 
             double segDist = 0, segTime = 0;
+            // ★ 모드 모으기: 순서 보존 + 중복 제거
+            java.util.LinkedHashSet<String> modes = new java.util.LinkedHashSet<>();
+
             if (route.legs() != null) {
                 for (var l : route.legs()) {
                     segDist += l.distance();
                     segTime += l.sectionTime();
-
-                    legs.add(RouteUtils.leg(
-                            l.startName() != null ? l.startName() : from.name(),
-                            from.lat(), from.lng(),
-                            l.endName()   != null ? l.endName()   : to.name(),
-                            to.lat(), to.lng(),
-                            RouteUtils.normalizeMode(l.mode()),  // BUS/SUBWAY → TRANSIT 매핑도 같이
-                            l.distance(), l.sectionTime()
-                    ));
+                    modes.add(RouteUtils.normalizeMode(l.mode()));
                 }
             }
 
-            totalDist += segDist; totalTime += segTime;
+            // ★ 같은 출발-도착(한 구간) → 한 개의 Leg, 여러 모드
+            legs.add(RouteUtils.leg(
+                    from.name(), from.lat(), from.lng(),
+                    to.name(),   to.lat(),   to.lng(),
+                    new java.util.ArrayList<>(modes),  // e.g. ["WALK","BUS","SUBWAY"]
+                    segDist, segTime
+            ));
+
+            totalDist += segDist;
+            totalTime += segTime;
         }
 
         return RouteUtils.build(totalDist, totalTime, legs);
