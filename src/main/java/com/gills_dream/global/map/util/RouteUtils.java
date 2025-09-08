@@ -5,44 +5,21 @@ import com.gills_dream.domain.map.dto.MapRouteRes;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public final class RouteUtils {
 
     private RouteUtils() {}
 
-    /**
-     * 요청 유효성 검사
-     * @param req
-     * @return boolean
-     */
-    public static boolean invalid(MapRouteReq req) {
-        return req == null || req.locations() == null || req.locations().size() < 2;
-    }
-
-    /**
-     * 빈 경로
-     * @return MapRouteRes
-     */
     public static MapRouteRes empty() {
-        return MapRouteRes.builder()
-                .distance(0).duration(0).polyline(null).legs(List.of())
-                .build();
+        return MapRouteRes.builder().distance(0).duration(0).polyline(null).legs(List.of()).build();
     }
 
     public static boolean isEmpty(MapRouteRes res) {
-        return res == null
-                || res.legs() == null
-                || res.legs().isEmpty()
+        return res == null || res.legs() == null || res.legs().isEmpty()
                 || (res.distance() == 0 && res.duration() == 0);
     }
 
-    /**
-     * 경로 응답 생성
-     * @param totalDist
-     * @param totalTime
-     * @param legs
-     * @return MapRouteRes
-     */
     public static MapRouteRes build(double totalDist, double totalTime, List<MapRouteRes.Leg> legs) {
         return MapRouteRes.builder()
                 .distance(totalDist)
@@ -52,22 +29,22 @@ public final class RouteUtils {
                 .build();
     }
 
-    /**
-     * 구간 응답 생성
-     * @param startName
-     * @param startLat
-     * @param startLng
-     * @param endName
-     * @param endLat
-     * @param endLng
-     * @param mode
-     * @param distance
-     * @param duration
-     * @return MapRouteRes.Leg
-     */
-    public static MapRouteRes.Leg leg(String startName, Double startLat, Double startLng,
-                               String endName,   Double endLat,   Double endLng,
-                               String mode, double distance, double duration) {
+    /** ★ 단일 모드 → 리스트로 감싸는 헬퍼 (CAR/WALK 등에서 편하게 사용) */
+    public static MapRouteRes.Leg legSingleMode(
+            String startName, Double startLat, Double startLng,
+            String endName,   Double endLat,   Double endLng,
+            String mode, double distance, double duration
+    ) {
+        return leg(startName, startLat, startLng, endName, endLat, endLng,
+                List.of(normalizeMode(mode)), distance, duration);
+    }
+
+    /** ★ 다중 모드 레그 생성 */
+    public static MapRouteRes.Leg leg(
+            String startName, Double startLat, Double startLng,
+            String endName,   Double endLat,   Double endLng,
+            List<String> modes, double distance, double duration
+    ) {
         return MapRouteRes.Leg.builder()
                 .startName(startName)
                 .startLat(startLat == null ? 0.0 : startLat)
@@ -75,33 +52,48 @@ public final class RouteUtils {
                 .endName(endName)
                 .endLat(endLat == null ? 0.0 : endLat)
                 .endLng(endLng == null ? 0.0 : endLng)
-                .mode(normalizeMode(mode))
+                .modes(modes == null ? List.of() : modes.stream()
+                        .filter(Objects::nonNull)
+                        .map(RouteUtils::normalizeMode)
+                        .distinct()
+                        .toList())
                 .distance(distance)
                 .duration(duration)
                 .build();
     }
 
-    /**
-     * 이동 수단 표준화 (BUS, SUBWAY → TRANSIT)
-     * @param raw
-     * @return String
-     */
+    /** ★ 모드 표준화 (세분화 유지) */
     public static String normalizeMode(String raw) {
-        if (raw == null) return null;
-        return switch (raw.toUpperCase()) {
-            case "BUS", "SUBWAY" -> "TRANSIT";
-            default -> raw.toUpperCase();
-        };
+        if (raw == null) return "WALK";
+        String m = raw.trim().toUpperCase();
+        if (m.contains("WALK"))    return "WALK";
+        if (m.contains("BUS"))     return "BUS";
+        if (m.contains("SUBWAY") || m.contains("METRO")) return "SUBWAY";
+        if (m.contains("BICYCLE") || m.contains("BIKE")) return "BICYCLE";
+        if (m.contains("CAR") || m.contains("DRIVE"))    return "CAR";
+        return m;
     }
 
-    /**
-     * 위치 쌍 목록 생성
-     * @param req
-     * @return List<int[]>
-     */
+    /** ★ 레그들에서 모드 수집 (순서 보존) */
+    public static List<String> collectModes(MapRouteRes res) {
+        var ordered = new java.util.LinkedHashSet<String>();
+        if (res != null && res.legs() != null) {
+            for (var l : res.legs()) {
+                if (l.modes() != null) {
+                    for (var m : l.modes()) ordered.add(normalizeMode(m));
+                }
+            }
+        }
+        return new java.util.ArrayList<>(ordered);
+    }
+
     public static List<int[]> segmentPairs(MapRouteReq req) {
         var out = new ArrayList<int[]>();
         for (int i = 0; i < req.locations().size() - 1; i++) out.add(new int[]{i, i + 1});
         return out;
+    }
+
+    public static boolean invalid(MapRouteReq req) {
+        return req == null || req.locations() == null || req.locations().size() < 2;
     }
 }

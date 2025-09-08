@@ -108,16 +108,18 @@ public class PlanServiceImpl implements PlanService {
         request.tourDtoList().forEach(tourPlaceDto -> {
             TourPlaceDetailRes detail = tourPlaceDto.platform() == TOUR ?
                     tourApiClient.getPlaceDetail(tourPlaceDto.contentId()) : null;
-            Place place = Place.builder()
-                    .platform(tourPlaceDto.platform())
-                    .contentId(tourPlaceDto.contentId())
-                    .name(tourPlaceDto.title() != null ? tourPlaceDto.title() : (detail != null ? detail.title() : null))
-                    .detailUrl(tourPlaceDto.detailUrl() != null ? tourPlaceDto.detailUrl() : null)
-                    .lat(tourPlaceDto.lat() != null ? tourPlaceDto.lat() : (detail != null ? detail.mapy() : null))
-                    .lng(tourPlaceDto.lng() != null ? tourPlaceDto.lng() : (detail != null ? detail.mapx() : null))
-                    .placeType(PlaceType.TOUR)
-                    .images(detail != null ? List.of(detail.firstimage()) : List.of())
-                    .build();
+            Place place = placeRepository.findByContentId(tourPlaceDto.contentId())
+                    .orElseGet(() -> Place.builder()
+                            .platform(tourPlaceDto.platform())
+                            .contentId(tourPlaceDto.contentId())
+                            .name(tourPlaceDto.title() != null ? tourPlaceDto.title() : (detail != null ? detail.title() : null))
+                            .detailUrl(tourPlaceDto.detailUrl() != null ? tourPlaceDto.detailUrl() : null)
+                            .lat(tourPlaceDto.lat() != null ? tourPlaceDto.lat() : (detail != null ? detail.mapy() : null))
+                            .lng(tourPlaceDto.lng() != null ? tourPlaceDto.lng() : (detail != null ? detail.mapx() : null))
+                            .placeType(PlaceType.TOUR)
+                            .images(detail != null ? List.of(detail.firstimage()) : List.of())
+                            .build()
+            );
             placeRepository.save(place);
             PlanPlace planPlace = PlanPlace.builder()
                     .plan(plan)
@@ -133,16 +135,28 @@ public class PlanServiceImpl implements PlanService {
         request.accommodationDtoList().forEach(accommodationDto -> {
             TourPlaceDetailRes detail = accommodationDto.platform() == TOUR ?
                     tourApiClient.getPlaceDetail(accommodationDto.contentId()) : null;
-            Place place = Place.builder()
-                    .platform(accommodationDto.platform())
-                    .contentId(accommodationDto.contentId())
-                    .name(accommodationDto.title() != null ? accommodationDto.title() : (detail != null ? detail.title() : null))
-                    .detailUrl(accommodationDto.detailUrl() != null ? accommodationDto.detailUrl() : null)
-                    .lat(accommodationDto.lat() != null ? accommodationDto.lat() : (detail != null ? detail.mapy() : null))
-                    .lng(accommodationDto.lng() != null ? accommodationDto.lng() : (detail != null ? detail.mapx() : null))
-                    .placeType(PlaceType.ACCOMMODATION)
-                    .images(detail != null ? List.of(detail.firstimage()) : List.of())
-                    .build();
+            Place place = placeRepository.findByContentId(accommodationDto.contentId())
+                    .orElseGet(() -> Place.builder()
+                            .platform(accommodationDto.platform())
+                            .contentId(accommodationDto.contentId())
+                            .name(accommodationDto.title() != null
+                                    ? accommodationDto.title()
+                                    : (detail != null ? detail.title() : null))
+                            .detailUrl(accommodationDto.detailUrl() != null
+                                    ? accommodationDto.detailUrl()
+                                    : (detail != null ? detail.mapy() : null))
+                            .lat(accommodationDto.lat() != null
+                                    ? accommodationDto.lat()
+                                    : (detail != null ? detail.mapy() : null))
+                            .lng(accommodationDto.lng() != null
+                                    ? accommodationDto.lng()
+                                    : (detail != null ? detail.mapx() : null))
+                            .placeType(PlaceType.ACCOMMODATION)
+                            .images(detail != null && detail.firstimage() != null
+                                    ? List.of(detail.firstimage())
+                                    : List.of())
+                            .build()
+                    );
             placeRepository.save(place);
             PlanPlace planPlace = PlanPlace.builder()
                     .plan(plan)
