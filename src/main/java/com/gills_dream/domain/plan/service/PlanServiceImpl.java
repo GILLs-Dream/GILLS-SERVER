@@ -13,6 +13,7 @@ import com.gills_dream.domain.place.repository.PlaceRepository;
 import com.gills_dream.domain.place.service.PlaceCacheService;
 import com.gills_dream.domain.place.service.PlaceService;
 import com.gills_dream.domain.place.vo.PlacePeriod;
+import com.gills_dream.domain.plan.dto.PlanListResponseDto;
 import com.gills_dream.domain.plan.dto.PlanRequestDto;
 import com.gills_dream.domain.plan.dto.PlanResponseDto;
 import com.gills_dream.domain.plan.entity.Plan;
@@ -217,6 +218,14 @@ public class PlanServiceImpl implements PlanService {
         plan.getContentIds().addAll(placeAddedDtoList.stream().map(PlaceAddedDto::contentId).toList());
 
         return new PlanResponseDto.VideoResultDto(plan.getId(), placeAddedDtoList);
+    }
+
+    @Override
+    public PlanListResponseDto getTemplateList(CustomUserDetails userDetails) {
+        Member member = memberRepository.findById(userDetails.getId())
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+        List<Plan> planList = planRepository.findAllByMember(member);
+        return PlanListResponseDto.fromEntityList(planList);
     }
 
 //    @Override
