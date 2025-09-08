@@ -131,6 +131,7 @@ public class GptServiceImpl implements GptService {
             // 2) 프롬프트 템플릿 파일 읽고 {{input}} 치환
             String prompt = buildPrompt(routeReq.region(), String.valueOf(routeReq.planPeriod()), inputJson, transportType, promptProperties.getCreateRoute());
 
+            log.info("build prompt completed");
             // 3) GPT 호출 → JSON 문자열만 오도록 getResponse에서 정제
             String response = getResponse(prompt);
 
