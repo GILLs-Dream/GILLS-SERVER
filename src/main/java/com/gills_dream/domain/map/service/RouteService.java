@@ -324,6 +324,11 @@ public class RouteService {
     ) {
         if (contentId == null || contentId.isBlank()) return null;
         return placeByContentId.computeIfAbsent(contentId, cid -> {
+            Optional<Place> maybeExisting = placeRepository.findByNameAndLatAndLngRounded(name, lat, lng);
+            if (maybeExisting.isPresent()) {
+                return maybeExisting.get();
+            }
+
             Place newPlace = Place.builder()
                     .contentId(cid)
                     .name(name)
@@ -333,8 +338,9 @@ public class RouteService {
                     .detailUrl(detailUrl)
                     .images(imageUrl != null ? List.of(imageUrl) : Collections.emptyList())
                     .build();
-            placeRepository.save(newPlace);
-            return newPlace;
+
+            // 반드시 save() 결과를 받아서 반환해야 함 (영속 상태 보장)
+            return placeRepository.save(newPlace);
         });
     }
 
