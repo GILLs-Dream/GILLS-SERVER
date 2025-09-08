@@ -28,7 +28,6 @@ public class RedisConfig {
     public RedisConnectionFactory redisConnectionFactory() {
         return new LettuceConnectionFactory(host, port);
     }
-
     @Bean
     public ObjectMapper redisObjectMapper(Jackson2ObjectMapperBuilder builder) {
         ObjectMapper om = builder.build();

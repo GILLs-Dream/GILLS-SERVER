@@ -11,13 +11,18 @@ import com.gills_dream.domain.place.dto.PlaceAddedDto;
 import com.gills_dream.domain.place.dto.PlaceCacheWithContentId;
 import com.gills_dream.domain.place.dto.PlaceResponseDto;
 import com.gills_dream.domain.place.entity.Place;
+import com.gills_dream.domain.place.enumerate.PlaceType;
+import com.gills_dream.domain.place.enumerate.Region;
 import com.gills_dream.domain.place.record.PlacePair;
 import com.gills_dream.domain.place.repository.PlaceRepository;
 import com.gills_dream.domain.place.service.PlaceCacheService;
 import com.gills_dream.domain.place.service.PlaceService;
+import com.gills_dream.domain.place.vo.PlacePeriod;
+import com.gills_dream.domain.plan.dto.PlanListResponseDto;
 import com.gills_dream.domain.plan.dto.PlanRequestDto;
 import com.gills_dream.domain.plan.dto.PlanResponseDto;
 import com.gills_dream.domain.plan.entity.Plan;
+import com.gills_dream.domain.plan.entity.PlanPlace;
 import com.gills_dream.domain.plan.enumerate.CategoryType;
 import com.gills_dream.domain.plan.enumerate.MoodType;
 import com.gills_dream.domain.plan.enumerate.TransportType;
@@ -28,12 +33,19 @@ import com.gills_dream.domain.python.service.PythonService;
 import com.gills_dream.global.apiPayload.code.status.ErrorStatus;
 import com.gills_dream.global.apiPayload.exception.GeneralException;
 import com.gills_dream.global.jwt.CustomUserDetails;
+import com.gills_dream.global.map.tourapi.TourApiClient;
+import com.gills_dream.global.map.tourapi.TourPlaceDetailRes;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Stream;
+
+import static com.gills_dream.domain.place.enumerate.Platform.TOUR;
+import static com.gills_dream.domain.plan.enumerate.TransportType.TRANSPORT_MAP;
 
 @Service
 @Transactional(readOnly = true)
@@ -223,7 +235,13 @@ public class PlanServiceImpl implements PlanService {
                 summary
         );
     }
-
+    @Override
+    public PlanListResponseDto getTemplateList(CustomUserDetails userDetails) {
+        Member member = memberRepository.findById(userDetails.getId())
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+        List<Plan> planList = planRepository.findAllByMember(member);
+        return PlanListResponseDto.fromEntityList(planList);
+    }
 
     private Plan checkMemberAndPlan(CustomUserDetails userDetails, Long planId) {
         Member member = null;

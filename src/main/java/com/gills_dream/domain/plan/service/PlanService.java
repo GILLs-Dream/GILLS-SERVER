@@ -1,6 +1,7 @@
 package com.gills_dream.domain.plan.service;
 
 import com.gills_dream.domain.map.dto.MapRouteByDayRes;
+import com.gills_dream.domain.plan.dto.PlanListResponseDto;
 import com.gills_dream.domain.plan.dto.PlanRequestDto;
 import com.gills_dream.domain.plan.dto.PlanResponseDto;
 import com.gills_dream.global.jwt.CustomUserDetails;
@@ -15,4 +16,5 @@ public interface PlanService {
     MapRouteByDayRes generate(CustomUserDetails userDetails, Long planId);
     PlanResponseDto.GenerateResultDto viewPlan(CustomUserDetails userDetails, Long planId);
     PlanResponseDto.SummaryDto viewPlanSummary(CustomUserDetails userDetails, Long planId);
+    PlanListResponseDto getTemplateList(CustomUserDetails userDetails);
 }

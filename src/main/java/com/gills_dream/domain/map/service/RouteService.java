@@ -48,6 +48,9 @@ public class RouteService {
     private final PlanRepository planRepository;
     private final KakaoMapClient kakaoMapClient;
 
+    /** 지오펜스 반경(km) – 지역 밖/이상치 필터 기준 */
+    private static final double KM_GEOFENCE = 30.0;
+
     /**
      * 경로 조회 (GPT가 만든 날짜/인덱스별 locations로 provider 호출 → routes만 채워서 반환)
      * - Provider가 PlaceInfo를 세팅하지 않아도, 본 서비스에서 day.locations로 역매핑하여 PlaceInfo 보강
@@ -79,11 +82,11 @@ public class RouteService {
             placeList.add(PlaceCache.fromEntity(p, period));
         }
 
-        log.info("placeList : " + placeList);
+        log.info("placeList : {}", placeList);
 
         // 캐시 병합(없으면 무시)
         List<PlaceCache> cachePlaces = placeCacheService.getByPlanId(planId);
-        log.info("cachePlaces"  + cachePlaces);
+        log.info("cachePlaces : {}", cachePlaces);
 
         if (cachePlaces != null && !cachePlaces.isEmpty()) {
             // key = platform:contentId 로 중복 방지
@@ -122,10 +125,11 @@ public class RouteService {
                 ))
                 .toList();
 
-        log.info("locations : " + locations);
+        log.info("locations : {}", locations);
 
         MapRouteReq route = MapRouteReq.of(plan.getRegion(), plan.getPeriod(), locations);
-        log.info("route : " + route);
+        log.info("route : {}", route);
+
         long count = route.locations().stream()
                 .filter(l -> l.lat() != 0 && l.lng() != 0)
                 .count();
@@ -135,25 +139,76 @@ public class RouteService {
                 route, transportation.toString(), count
         );
 
-        log.info("byDay : " + byDay);
+        log.info("byDay (raw) : {}", byDay);
 
-        // locations를 돌며 contentId가 비어있는 경우, kakaoMapClient.searchByKeyword(keyword)로 정보 받아서 넣기
-        byDay.days().forEach(d -> {
-            if (d.locations() != null) {
+        // ===== [A] DATED 모드: day.date로 period.startedAt/finishedAt 강제 정규화 =====
+        if ("DATED".equalsIgnoreCase(String.valueOf(byDay.mode()))) {
+            for (var d : byDay.days()) {
+                if (d.locations() == null) continue;
+                String dayDate = d.date(); // "YYYY-MM-DD"
                 for (int i = 0; i < d.locations().size(); i++) {
                     var loc = d.locations().get(i);
-                    if ((loc.contentId() == null || loc.contentId().isBlank())
-                            && loc.name() != null && !loc.name().isBlank()
-                            && loc.lat() != 0 && loc.lng() != 0) {
-                        List<MapSearchRes> searchResults = kakaoMapClient.searchByKeyword(loc.name());
-                        if (searchResults != null && !searchResults.isEmpty()) {
-                            // 가장 첫번째 결과 사용
-                            MapSearchRes found = searchResults.get(0);
-                            MapRouteReq.Location newLoc = MapRouteReq.Location.updateContent(loc, found.id(), found.detailUrl(), found.imageUrl(), "KAKAO",
-                                    parseDoubleSafe(found.lat()), parseDoubleSafe(found.lng()), found.name());
-                            d.locations().set(i, newLoc); // 변경된 Location으로 교체
-                        }
-                    }
+                    var p = loc.period();
+                    MapRouteReq.Period np = MapRouteReq.Period.of(
+                            (p == null || p.startedAt() == null || p.startedAt().isBlank()) ? dayDate : dayDate,
+                            (p != null && p.finishedAt() != null && !p.finishedAt().isBlank()) ? dayDate : dayDate,
+                            (p != null) ? p.duration() : null,
+                            (p != null && p.dayOrder() != null) ? p.dayOrder() : d.index()
+                    );
+                    d.locations().set(i, MapRouteReq.Location.of(
+                            loc.lat(), loc.lng(), loc.name(), loc.placeType(), np,
+                            loc.contentId(), loc.detailUrl(), loc.imageUrl(), loc.platform()
+                    ));
+                }
+            }
+        }
+
+        // ===== [B] contentId 비어있을 경우 카카오 검색으로 보강하되, 지역/거리 기반 후보만 허용 =====
+        byDay.days().forEach(d -> {
+            if (d.locations() == null || d.locations().isEmpty()) return;
+
+            // day centroid
+            double[] ctr = centroid(d.locations());
+            String regionName = plan.getRegion() == null ? "" : plan.getRegion().trim();
+
+            for (int i = 0; i < d.locations().size(); i++) {
+                var loc = d.locations().get(i);
+                boolean needSearch = (loc.contentId() == null || loc.contentId().isBlank());
+                if (!needSearch || loc.name() == null || loc.name().isBlank()) continue;
+
+                List<MapSearchRes> results = kakaoMapClient.searchByKeyword(loc.name());
+                if (results == null || results.isEmpty()) continue;
+
+                // 좌표 파싱 + 지오펜스 필터 + (가능하면) 지역 힌트
+                List<MapSearchRes> candidates = results.stream()
+                        .filter(r -> {
+                            double rLat = parseDoubleSafe(r.lat());
+                            double rLng = parseDoubleSafe(r.lng());
+                            if (rLat == 0 || rLng == 0) return false;
+                            // 거리 기반(centroid 30km 이내)
+                            if (!inGeofence(ctr[0], ctr[1], rLat, rLng)) return false;
+                            // 이름에 region 힌트가 있으면 가산(강제는 아님) – 없으면 거리로 통과
+                            if (!nz(regionName).isEmpty()) {
+                                String nm = nz(r.name()).toLowerCase(Locale.ROOT);
+                                String rn = regionName.toLowerCase(Locale.ROOT);
+                                // 지역명이 이름에 안 들어가도 거리 조건을 만족하면 통과
+                                // 필요 시 엄격하게 하려면 여기서 nm.contains(rn) 강제 가능
+                            }
+                            return true;
+                        })
+                        .sorted(Comparator.comparingDouble(r ->
+                                haversineKm(loc.lat(), loc.lng(), parseDoubleSafe(r.lat()), parseDoubleSafe(r.lng()))
+                        ))
+                        .toList();
+
+                if (!candidates.isEmpty()) {
+                    MapSearchRes best = candidates.get(0);
+                    MapRouteReq.Location newLoc = MapRouteReq.Location.updateContent(
+                            loc,
+                            best.id(), best.detailUrl(), best.imageUrl(), "KAKAO",
+                            parseDoubleSafe(best.lat()), parseDoubleSafe(best.lng()), best.name()
+                    );
+                    d.locations().set(i, newLoc);
                 }
             }
         });
@@ -178,11 +233,36 @@ public class RouteService {
 
             if (day.locations() != null && day.locations().size() >= 2) {
                 MapRouteReq oneDayReq = MapRouteReq.of(plan.getRegion(), plan.getPeriod(), day.locations());
+
                 MapRouteRes dayRes = runner.apply(oneDayReq);
                 if (!RouteUtils.isEmpty(dayRes)) {
-                    // ★ PlaceInfo 보강(입력 locations로 역매핑)
-                    List<MapRouteRes> enrichedRoutes = enrichRoutesWithPlaceInfo(List.of(dayRes), day.locations());
-                    routes.addAll(enrichedRoutes);
+                    // ===== [C] 이상거리(스파이크) 및 지역 밖 leg 제거 =====
+                    double[] ctr = centroid(day.locations());
+                    var filteredLegs = dayRes.legs().stream()
+                            .filter(l -> {
+                                // 단일 leg 길이 제한 (지오펜스 * 1,000 m)
+                                // 지오펜스 검사: 시작/끝 모두 day centroid 반경 내
+                                boolean okStart = inGeofence(ctr[0], ctr[1], l.startLat(), l.startLng());
+                                boolean okEnd   = inGeofence(ctr[0], ctr[1], l.endLat(),   l.endLng());
+                                return okStart && okEnd;
+                            })
+                            .toList();
+
+                    if (!filteredLegs.isEmpty()) {
+                        dayRes = MapRouteRes.builder()
+                                .distance(dayRes.distance())
+                                .duration(dayRes.duration())
+                                .polyline(dayRes.polyline())
+                                .legs(filteredLegs)
+                                .build();
+
+                        // ★ PlaceInfo 보강(입력 locations로 역매핑)
+                        List<MapRouteRes> enrichedRoutes = enrichRoutesWithPlaceInfo(List.of(dayRes), day.locations());
+                        routes.addAll(enrichedRoutes);
+                    } else {
+                        log.warn("day {}/{}: all legs removed by spike/geofence filter",
+                                nz(day.date()), nz(String.valueOf(day.index())));
+                    }
                 }
             }
 
@@ -238,6 +318,12 @@ public class RouteService {
                 .build();
     }
 
+    /**
+     * MapRouteRes의 각 Leg에 PlaceInfo가 없으면 locs로부터 역매핑하여 보강
+     * @param routes
+     * @param locs
+     * @return
+     */
     private List<MapRouteRes> enrichRoutesWithPlaceInfo(List<MapRouteRes> routes, List<MapRouteReq.Location> locs) {
         Map<String, MapRouteRes.Leg.PlaceInfo> idx = buildIndex(locs);
         List<MapRouteRes> out = new ArrayList<>(routes.size());
@@ -263,7 +349,7 @@ public class RouteService {
                         .endLat(l.endLat())
                         .endLng(l.endLng())
                         .endPlace(ep)
-                        .mode(l.mode())
+                        .modes(l.modes())
                         .distance(l.distance())
                         .duration(l.duration())
                         .build());
@@ -278,6 +364,11 @@ public class RouteService {
         return out;
     }
 
+    /**
+     * Location 목록으로부터 key(좌표, 이름) → PlaceInfo 인덱스 생성
+     * @param locs
+     * @return
+     */
     private Map<String, MapRouteRes.Leg.PlaceInfo> buildIndex(List<MapRouteReq.Location> locs) {
         Map<String, MapRouteRes.Leg.PlaceInfo> idx = new HashMap<>();
         for (var l : locs) {
@@ -323,25 +414,31 @@ public class RouteService {
             String imageUrl
     ) {
         if (contentId == null || contentId.isBlank()) return null;
-        return placeByContentId.computeIfAbsent(contentId, cid -> {
-            Optional<Place> maybeExisting = placeRepository.findByNameAndLatAndLngRounded(name, lat, lng);
-            if (maybeExisting.isPresent()) {
-                return maybeExisting.get();
-            }
 
-            Place newPlace = Place.builder()
-                    .contentId(cid)
-                    .name(name)
-                    .lat(String.valueOf(lat))
-                    .lng(String.valueOf(lng))
-                    .placeType(parsePlaceType(placeTypeStr))
-                    .detailUrl(detailUrl)
-                    .images(imageUrl != null ? List.of(imageUrl) : Collections.emptyList())
-                    .build();
+        // 1) 메모리 캐시 우선
+        Place cached = placeByContentId.get(contentId);
+        if (cached != null) return cached;
 
-            // 반드시 save() 결과를 받아서 반환해야 함 (영속 상태 보장)
-            return placeRepository.save(newPlace);
-        });
+        // 2) DB 조회
+        Optional<Place> found = placeRepository.findByContentId(contentId);
+        if (found.isPresent()) {
+            placeByContentId.put(contentId, found.get());
+            return found.get();
+        }
+
+        // 3) 신규 저장
+        Place newPlace = Place.builder()
+                .contentId(contentId)
+                .name(name)
+                .lat(String.valueOf(lat))
+                .lng(String.valueOf(lng))
+                .placeType(parsePlaceType(placeTypeStr))
+                .detailUrl(detailUrl)
+                .images(imageUrl != null ? List.of(imageUrl) : Collections.emptyList())
+                .build();
+        placeRepository.save(newPlace);
+        placeByContentId.put(contentId, newPlace);
+        return newPlace;
     }
 
     private PlaceType parsePlaceType(String s) {
@@ -349,7 +446,7 @@ public class RouteService {
             return PlaceType.TOUR; // 기본값
         }
         try {
-            return PlaceType.valueOf(s.trim().toUpperCase());
+            return PlaceType.valueOf(s.trim().toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
             log.warn("Unknown placeType: {}, defaulting to TOUR", s);
             return PlaceType.TOUR;
@@ -413,6 +510,11 @@ public class RouteService {
         }
     }
 
+    /**
+     * 안전한 double 파싱 (null/예외 시 0.0 반환)
+     * @param s
+     * @return
+     */
     private double parseDoubleSafe(String s) {
         try { return s == null ? 0.0 : Double.parseDouble(s); }
         catch (Exception e) { return 0.0; }
@@ -424,5 +526,49 @@ public class RouteService {
 
     private String nz(String s) {
         return (s == null) ? "" : s;
+    }
+
+
+    /**
+     * haversine 공식에 의한 두 지점 간 거리 계산 (km)
+     * @param lat1
+     * @param lng1
+     * @param lat2
+     * @param lng2
+     * @return
+     */
+    private double haversineKm(double lat1, double lng1, double lat2, double lng2) {
+        final double R = 6371.0088;
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLng = Math.toRadians(lng2 - lng1);
+        double a = Math.sin(dLat/2)*Math.sin(dLat/2) +
+                Math.cos(Math.toRadians(lat1))*Math.cos(Math.toRadians(lat2))*
+                        Math.sin(dLng/2)*Math.sin(dLng/2);
+        return 2 * R * Math.asin(Math.sqrt(a));
+    }
+
+    /**
+     * 위치들의 중심 좌표 계산 (lat/lng 평균)
+     * @param locs
+     * @return
+     */
+    private double[] centroid(List<MapRouteReq.Location> locs) {
+        double lat = 0, lng = 0; int n = 0;
+        for (var l : locs) {
+            if (l.lat() != 0 && l.lng() != 0) { lat += l.lat(); lng += l.lng(); n++; }
+        }
+        return (n == 0) ? new double[]{0, 0} : new double[]{lat / n, lng / n};
+    }
+
+    /**
+     * 기준점(baseLat, baseLng)으로부터 대상점(lat, lng)이 지오펜스 내에 있는지 여부
+     * @param baseLat
+     * @param baseLng
+     * @param lat
+     * @param lng
+     * @return
+     */
+    private boolean inGeofence(double baseLat, double baseLng, double lat, double lng) {
+        return haversineKm(baseLat, baseLng, lat, lng) <= KM_GEOFENCE;
     }
 }

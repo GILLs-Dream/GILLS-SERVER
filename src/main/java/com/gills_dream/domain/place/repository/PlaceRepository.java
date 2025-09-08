@@ -34,4 +34,6 @@ public interface PlaceRepository extends JpaRepository<Place, Long> {
     where p.id in :ids
 """)
     List<Place> findAllWithImagesByIdIn(@Param("ids") List<Long> ids);
+
+    Optional<Place> findByContentId(String contentId);
 }

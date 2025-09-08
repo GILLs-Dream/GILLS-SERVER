@@ -54,7 +54,7 @@ public class WalkRouteProvider implements RouteProvider {
             }
 
             totalDist += segDist; totalTime += segTime;
-            legs.add(RouteUtils.leg(
+            legs.add(RouteUtils.legSingleMode(
                     from.name(), from.lat(), from.lng(),
                     to.name(),   to.lat(),   to.lng(),
                     "WALK", segDist, segTime

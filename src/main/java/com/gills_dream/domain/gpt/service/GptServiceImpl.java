@@ -15,6 +15,7 @@ import com.gills_dream.domain.plan.enumerate.MoodType;
 import com.gills_dream.domain.python.dto.PythonResponseDto;
 import com.gills_dream.global.common.properties.PromptProperties;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -31,6 +32,7 @@ import java.util.stream.Collectors;
 
 import static com.gills_dream.global.apiPayload.code.status.ErrorStatus.*;
 
+@Slf4j
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -131,6 +133,8 @@ public class GptServiceImpl implements GptService {
 
             // 3) GPT 호출 → JSON 문자열만 오도록 getResponse에서 정제
             String response = getResponse(prompt);
+
+            log.info("GPT 응답: {}", response);
 
             // 4) 응답 JSON → MapRouteByDayRes 로 역직렬화
             MapRouteByDayRes byDay = objectMapper.readValue(
