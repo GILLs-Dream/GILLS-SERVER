@@ -24,14 +24,15 @@ public class SecurityConfig {
             "/",
             "/member/oauth/kakao/login",
             "/member/reissue",
-            "/login",
+            "/login/**",
             "/v1/map/**",
             "/v1/place/**",
             "/swagger-ui/**",
             "/swagger-resources/**",
             "/v3/api-docs/**",
             "/oauth2/**",
-            "/resources/**"
+            "/resources/**",
+            "/plan/**"
     };
 
     @Bean
@@ -47,15 +48,11 @@ public class SecurityConfig {
                 .formLogin((auth) -> auth.disable())
                 .sessionManagement(configurer -> configurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/oauth2/**", "/login/**", "/error").permitAll()
+                        .requestMatchers(PERMITTED_PATTERNS).permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .oauth2Login(oauth -> oauth
-                        .defaultSuccessUrl("/", true)
-                );
-
+                .oauth2Login(oauth -> {});
         return http.build();
     }
 }
-
