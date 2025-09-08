@@ -52,11 +52,7 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .oauth2Login(oauth -> oauth
-                        .defaultSuccessUrl("/", true)
-                );
-
+                .oauth2Login(oauth -> {});
         return http.build();
     }
 }
-
