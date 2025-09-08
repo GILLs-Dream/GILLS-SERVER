@@ -36,6 +36,7 @@ public enum ErrorStatus implements BaseCode {
     INVALID_ROUTE_REQUEST(HttpStatus.BAD_REQUEST, "INVALID ROUTE REQUEST", "잘못된 경로 요청입니다."),
     PLACE_COUNT_MISMATCH(HttpStatus.BAD_REQUEST, "PLACE COUNT MISMATCH", "유효한 장소의 개수가 부족합니다."),
     PLACE_CONTENT_MISMATCH(HttpStatus.BAD_REQUEST, "PLAN CONTENT MISMATCH", "플랜의 내용이 올바르지 않습니다."),
+    PLAN_NOT_GENERATED(HttpStatus.BAD_REQUEST, "PLAN NOT GENERATED", "여행이 생성되지 않았습니다."),
 
     // Enum 관련 에러 응답
     NO_SUCH_CATEGORY(HttpStatus.NOT_FOUND, "NO SUCH CATEGORY", "해당 카테고리가 존재하지 않습니다."),
@@ -49,7 +50,8 @@ public enum ErrorStatus implements BaseCode {
     CANNOT_PROCESS_VIDEO(HttpStatus.BAD_REQUEST, "CANNOT PROCESS VIDEO", "비디오 프로세스중 에러가 발생했습니다."),
 
     // 장소 관련 에러 응답
-    CANNOT_FIND_PLACE_FROM_REDIS(HttpStatus.NOT_FOUND, "CANNOT FIND PLACE FROM REDIS", "레디스에서 해당 장소를 찾을 수 없습니다.");
+    CANNOT_FIND_PLACE_FROM_REDIS(HttpStatus.NOT_FOUND, "CANNOT FIND PLACE FROM REDIS", "레디스에서 해당 장소를 찾을 수 없습니다."),
+    CANNOT_FIND_PLACE_FROM_DB(HttpStatus.NOT_FOUND, "CANNOT FIND PLACE FROM DB", "디비에서 해당 장소를 찾을 수 없습니다.");
 
     private final HttpStatus httpStatus;
     private final String code;

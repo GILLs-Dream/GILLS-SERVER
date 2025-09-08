@@ -30,7 +30,7 @@ public class MemberRestController {
     private final CustomTokenService customTokenService;
 
     @PostMapping("/oauth/kakao/login")
-    @Operation(summary = "카카오 로그인, 회원가입", description = "프론트가 로그인 api를 호출하면서 백엔드에게 인가 코드를 넘겨줍니다")
+    @Operation(summary = "카카오 로그인, 회원가입", description = "백엔드에서 카카오 로그인/회원가입 처리")
     public ResponseEntity<ApiResponse<MemberResponseDto.LoginResultDto>> kakaoLogin(@RequestParam("code") String code) {
         TokenPair tokenPair= memberService.kakaoLogin(code);
         ResponsePair responsePair = customTokenService.buildLoginResponse(tokenPair, new HttpHeaders());
@@ -51,5 +51,9 @@ public class MemberRestController {
                                                                       @RequestBody @Valid MemberRequestDto.ProfileDto request) {
         return ApiResponse.onSuccess(memberService.setProfile(userDetails.getMember(), request));
     }
+
+//    @PostMapping("oauth/apple/login")
+//    @Operation(summary = "애플 로그인, 회원가입", description = "프론트가 애플 로그인 api를 호출하고 백엔드에게 인가 코드를 넘겨줍니다")
+//
 }
 

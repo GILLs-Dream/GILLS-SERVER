@@ -1,8 +1,7 @@
 package com.gills_dream.domain.plan.entity;
 
+import com.gills_dream.domain.map.dto.MapRouteByDayRes;
 import com.gills_dream.domain.member.entity.Member;
-import com.gills_dream.domain.place.entity.Place;
-import com.gills_dream.domain.place.enumerate.Region;
 import com.gills_dream.domain.plan.enumerate.CategoryType;
 import com.gills_dream.domain.plan.enumerate.MoodType;
 import com.gills_dream.domain.plan.enumerate.TransportType;
@@ -10,6 +9,7 @@ import com.gills_dream.domain.plan.vo.PlanPeriod;
 import com.gills_dream.domain.plan.vo.PlanSummary;
 import com.gills_dream.domain.team.entity.Team;
 import com.gills_dream.global.common.entity.BaseEntity;
+import com.gills_dream.global.config.MapRouteByDayResConverter;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -53,7 +53,7 @@ public class Plan extends BaseEntity {
     @Column(columnDefinition = "TEXT")
     private String mooodSummary;
 
-    @Column
+    @Column(columnDefinition = "TEXT")
     private String region;
 
     @Embedded
@@ -62,11 +62,14 @@ public class Plan extends BaseEntity {
     @Embedded
     private PlanSummary summary;
 
-    @ElementCollection(fetch = FetchType.LAZY)
-    @CollectionTable(name = "plan_transport", joinColumns = @JoinColumn(name = "plan_id"))
+    @Column
     @Enumerated(EnumType.STRING)
-    @Column(name = "transport_type")
-    private List<TransportType> transports = new ArrayList<>();
+    private TransportType transportType;
+
+    @Convert(converter = MapRouteByDayResConverter.class)
+    @Column(columnDefinition = "LONGTEXT")
+    @Lob
+    private MapRouteByDayRes generatedRoute;
 
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "plan_category", joinColumns = @JoinColumn(name = "plan_id"))
@@ -89,15 +92,9 @@ public class Plan extends BaseEntity {
     @Column(name = "video_url")
     private List<String> videoIds = new ArrayList<>();
 
-    @ElementCollection(fetch = FetchType.LAZY)
-    @CollectionTable(name = "plan_content_id", joinColumns = @JoinColumn(name = "plan_id"))
-    @Enumerated(EnumType.STRING)
-    @Column(name = "content_id")
-    private List<String> contentIds = new ArrayList<>();
-
     @Builder
     public Plan(Member member, Team team, PlanSummary summary, PlanPeriod period, String moodSummary, String teamName, String region,
-                Boolean isPinned, Long party, List<TransportType> transports, List<CategoryType> categories, List<MoodType> moods, List<String> videoIds, List<String> contentIds) {
+                Boolean isPinned, Long party, TransportType transportType, List<CategoryType> categories, List<MoodType> moods, List<String> videoIds, MapRouteByDayRes generatedRoute) {
         this.member = member;
         this.team = team;
         this.summary = summary;
@@ -107,15 +104,19 @@ public class Plan extends BaseEntity {
         this.region = region;
         this.isPinned = isPinned;
         this.party = party;
-        this.transports = transports != null ? new ArrayList<>(transports) : new ArrayList<>();
+        this.transportType = transportType;
         this.categories = categories != null ? new ArrayList<>(categories) : new ArrayList<>();
         this.moods = moods != null ? new ArrayList<>(moods) : new ArrayList<>();
         this.videoIds = videoIds != null ? new ArrayList<>(videoIds) : new ArrayList<>();
-        this.contentIds = contentIds != null ? new ArrayList<>(contentIds) : new ArrayList<>();
+        this.generatedRoute = generatedRoute;
     }
 
     public void updatePeriod(PlanPeriod period) {
         this.period = period;
+    }
+
+    public void updateTransportType(TransportType transportType) {
+        this.transportType = transportType;
     }
 
     public void updateCompanion(String companion, Long party) {
@@ -125,5 +126,9 @@ public class Plan extends BaseEntity {
 
     public void updateRegion(String region) {
         this.region = region;
+    }
+
+    public void updateGeneratedRoute(MapRouteByDayRes generatedRoute) {
+        this.generatedRoute = generatedRoute;
     }
 }

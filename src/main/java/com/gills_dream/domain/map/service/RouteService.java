@@ -136,7 +136,7 @@ public class RouteService {
 
         // 3) GPT로 날짜/인덱스별 재정렬 결과
         MapRouteByDayRes byDay = gptService.createRouteRequest(
-                route, TransportType.toCategory(transportation), count
+                route, transportation.toString(), count
         );
 
         log.info("byDay (raw) : {}", byDay);
@@ -167,7 +167,6 @@ public class RouteService {
         byDay.days().forEach(d -> {
             if (d.locations() == null || d.locations().isEmpty()) return;
 
-            // day centroid
             double[] ctr = centroid(d.locations());
             String regionName = plan.getRegion() == null ? "" : plan.getRegion().trim();
 
@@ -177,22 +176,17 @@ public class RouteService {
                 if (!needSearch || loc.name() == null || loc.name().isBlank()) continue;
 
                 List<MapSearchRes> results = kakaoMapClient.searchByKeyword(loc.name());
-                if (results == null || results.isEmpty()) continue;
+                if (results == null) results = List.of();
 
-                // 좌표 파싱 + 지오펜스 필터 + (가능하면) 지역 힌트
                 List<MapSearchRes> candidates = results.stream()
                         .filter(r -> {
                             double rLat = parseDoubleSafe(r.lat());
                             double rLng = parseDoubleSafe(r.lng());
                             if (rLat == 0 || rLng == 0) return false;
-                            // 거리 기반(centroid 30km 이내)
                             if (!inGeofence(ctr[0], ctr[1], rLat, rLng)) return false;
-                            // 이름에 region 힌트가 있으면 가산(강제는 아님) – 없으면 거리로 통과
                             if (!nz(regionName).isEmpty()) {
                                 String nm = nz(r.name()).toLowerCase(Locale.ROOT);
                                 String rn = regionName.toLowerCase(Locale.ROOT);
-                                // 지역명이 이름에 안 들어가도 거리 조건을 만족하면 통과
-                                // 필요 시 엄격하게 하려면 여기서 nm.contains(rn) 강제 가능
                             }
                             return true;
                         })
@@ -209,6 +203,20 @@ public class RouteService {
                             parseDoubleSafe(best.lat()), parseDoubleSafe(best.lng()), best.name()
                     );
                     d.locations().set(i, newLoc);
+                } else {
+                    String genId = genContentId();
+                    MapRouteReq.Location newLoc = MapRouteReq.Location.updateContent(
+                            loc,
+                            genId,            // contentId
+                            null,             // detailUrl
+                            null,             // imageUrl
+                            "GENERATED",      // platform
+                            loc.lat(),        // 좌표
+                            loc.lng(),
+                            loc.name()
+                    );
+                    d.locations().set(i, newLoc);
+                    log.warn("contentId not found via Kakao. Generated contentId={} for name='{}'", genId, nz(loc.name()));
                 }
             }
         });
@@ -218,7 +226,7 @@ public class RouteService {
             case CAR     -> carRouteProvider::route;
             case WALK    -> walkRouteProvider::route;
             case BICYCLE -> bicycleRouteProvider::route;
-            case BUS, SUBWAY -> transitRouteProvider::route;
+            case TRANSPORT -> transitRouteProvider::route;
             default -> throw new GeneralException(ErrorStatus.TRANSPORT_TYPE_NOT_FOUND);
         };
 
@@ -316,6 +324,10 @@ public class RouteService {
                 .mode(byDay.mode())
                 .days(enrichedDays)
                 .build();
+    }
+
+    private String genContentId() {
+        return "GEN-" + UUID.randomUUID().toString().replace("-", "").substring(0, 16);
     }
 
     /**

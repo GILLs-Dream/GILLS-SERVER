@@ -54,19 +54,19 @@ public class PlanResponseDto {
     ) {}
 
     public record GenerateResultDto (
+            @Schema(description = "여행 제목", example = "강릉 트로피컬 써머 여행")
+            String title,
             @Schema(description = "여행 id", example = "1")
             Long planId,
             @Schema(description = "여행 총 일수", example = "3")
-            Long duration,
+            Integer duration,
             @Schema(description = "하루별 여행지 추천 리스트")
-            List<PlanPerDayDto> planPerDayDtoList,
-            @Schema(description = "여행 전체 요약", example = "이 여행은 아주 흥미롭군요...")
-            String summary
+            List<PlanPerDayDto> planPerDayDtoList
     ) {}
 
     public record PlanPerDayDto (
             @Schema(description = "n일차", example = "1")
-            Long dayNum,
+            Integer dayNum,
             @Schema(description = "시작 장소")
             PlaceDto from,
             @Schema(description = "장소와 거리 정보 리스트")
@@ -75,13 +75,13 @@ public class PlanResponseDto {
 
     public record RouteDto (
             @Schema(description = "순서", example = "1")
-            Long cnt,
+            Integer cnt,
             @Schema(description = "to 장소 정보")
             PlaceDto to,
             @Schema(description = "거리 km", example = "3.1")
             Double distance,
-            @Schema(description = "소요 시간 min", example = "30")
-            Long time
+            @Schema(description = "소요 시간 (second)", example = "30")
+            double time
     ) {}
 
     public record PlaceDto (
@@ -92,4 +92,12 @@ public class PlanResponseDto {
             @Schema(description = "장소 대표 이미지", example = "https://...")
             String mainImg
     ) {}
+
+    public record SummaryDto (
+            @Schema(description = "여행 제목", example = "강릉 트로피컬 써머 여행")
+            String title,
+
+            @Schema(description = "여행 경로 요약", example = "이 여행은 ... 어쩌고")
+            String summary
+            ) {}
 }

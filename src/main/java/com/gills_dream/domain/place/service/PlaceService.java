@@ -1,5 +1,6 @@
 package com.gills_dream.domain.place.service;
 
+import com.gills_dream.domain.map.dto.MapRouteByDayRes;
 import com.gills_dream.domain.place.dto.PlaceAddedDto;
 import com.gills_dream.domain.place.dto.PlaceCacheWithContentId;
 import com.gills_dream.domain.place.dto.PlaceSearchReq;
@@ -15,4 +16,5 @@ public interface PlaceService {
     PlaceSearchRes choosePlace(PlaceSearchReq req);
     List<PlaceCacheWithContentId> searchPlaces(Plan plan, PlacePair placePair);
     List<PlaceAddedDto> addToRedis(Plan plan, List<PlaceCacheWithContentId> placeCacheList);
+    void updatePlaces(Plan plan, MapRouteByDayRes generated);
 }

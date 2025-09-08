@@ -84,7 +84,7 @@ public record MapRouteReq(
             @Schema(description = "체류 일수", example = "2")
             Integer duration,
 
-            @Schema(description = "몇일차", example = "1")
+            @Schema(description = "(날짜가 미정인 경우) 여행 몇일차에 갈지", example = "3")
             Integer dayOrder
     ) {
         public static Period of(String startedAt, String finishedAt, Integer duration, Integer dayOrder) {
@@ -95,7 +95,6 @@ public record MapRouteReq(
                     .dayOrder(dayOrder)
                     .build();
         }
-
     }
 
     public static MapRouteReq of(String region, PlanPeriod period, List<Location> locations) {

@@ -2,8 +2,6 @@ package com.gills_dream.domain.place.entity;
 
 import com.gills_dream.domain.place.enumerate.PlaceType;
 import com.gills_dream.domain.place.enumerate.Platform;
-import com.gills_dream.domain.place.enumerate.Region;
-import com.gills_dream.domain.place.vo.PlacePeriod;
 import com.gills_dream.domain.plan.entity.PlanPlace;
 import jakarta.persistence.*;
 import lombok.AccessLevel;

@@ -40,8 +40,6 @@ public class GptServiceImpl implements GptService {
     private final ChatClient chatClient;
     private final ObjectMapper objectMapper;
     private final PromptProperties promptProperties;
-    private static final ObjectMapper om = new ObjectMapper()
-            .setSerializationInclusion(JsonInclude.Include.ALWAYS); // null도 출력
 
     @Override
     public List<MoodType> selectMood(String input) {
@@ -75,6 +73,20 @@ public class GptServiceImpl implements GptService {
     }
 
     @Override
+    public String summarizePlan(Plan plan) {
+        String summary;
+        try {
+            String prompt = buildPrompt(plan, promptProperties.getSummarizePlan());
+            String response = getResponse(prompt);
+            System.out.println(response);
+            summary = objectMapper.readValue(response, new TypeReference<>() {});
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to process GPT response", e);
+        }
+        return summary;
+    }
+
+    @Override
     public PlacePair filterPlace(PythonResponseDto.ProcessResultDto processDto, String region) {
         PlacePair placePair = new PlacePair(new ArrayList<>(), new ArrayList<>());
         try {
@@ -92,39 +104,19 @@ public class GptServiceImpl implements GptService {
         return placePair;
     }
 
-    @Override
-    public String summarizePlan(Long duration, List<PlanResponseDto.PlanPerDayDto> planPerDayList) {
-        return "";
-    }
-
-    @Override
-    public PlanResponseDto.PlanDraftDto generatePlan(Plan plan) {
-        PlanResponseDto.PlanDraftDto dto;
-        try {
-            String prompt = buildPrompt(plan, promptProperties.getGeneratePlan());
-            String response = getResponse(prompt);
-            System.out.println(response);
-            dto = objectMapper.readValue(response, new TypeReference<PlanResponseDto.PlanDraftDto>() {});
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to process GPT response", e);
-        }
-
-        return dto;
-    }
-
     private String buildPrompt(Plan plan, String promptProperties) throws IOException {
         try {
             Resource resource = new FileSystemResource(promptProperties);
             String template = new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
             return template
                     .replace("{{region}}", plan.getRegion())
-                    .replace("{{startedAt}}", plan.getPeriod().getStartedAt().toString())
-                    .replace("{{finishedAt}}", plan.getPeriod().getFinishedAt().toString())
                     .replace("{{duration}}", plan.getPeriod().getDuration().toString())
                     .replace("{{party}}", plan.getParty().toString())
+                    .replace("{{teamName}}", plan.getTeamName())
                     .replace("{{categories}}", plan.getCategories().toString())
                     .replace("{{moods}}", plan.getMoods().toString())
-                    .replace("{{placeList}}", toPlacesJson(plan));
+                    .replace("{{moodSummary}}", plan.getMooodSummary())
+                    .replace("{{generatedRoute}}", plan.getGeneratedRoute() == null ? "" : plan.getGeneratedRoute().toString());
         } catch (IOException e) {
             throw new IOException("Failed to read prompt text", e);
         }
@@ -139,6 +131,7 @@ public class GptServiceImpl implements GptService {
             // 2) 프롬프트 템플릿 파일 읽고 {{input}} 치환
             String prompt = buildPrompt(routeReq.region(), String.valueOf(routeReq.planPeriod()), inputJson, transportType, promptProperties.getCreateRoute());
 
+            log.info("build prompt completed");
             // 3) GPT 호출 → JSON 문자열만 오도록 getResponse에서 정제
             String response = getResponse(prompt);
 
@@ -226,37 +219,5 @@ public class GptServiceImpl implements GptService {
                 .replaceAll("(?s)```json", "")
                 .replaceAll("```", "")
                 .trim();
-    }
-
-    public static String toPlacesJson(Plan plan) throws JsonProcessingException {
-        if (plan == null || plan.getPlanPlaces() == null) {
-            return "[]";
-        }
-
-        List<GptResponseDto.PlaceJson> items = plan.getPlanPlaces().stream()
-                .filter(Objects::nonNull)
-                .map(pp -> {
-                    Place place = pp.getPlace();
-                    if (place == null) return null;
-
-                    String name = place.getName();
-                    String type = place.getPlaceType().getDescription();
-
-                    // 날짜 매핑: 없으면 null
-                    String startedDate = null;
-                    String finishedDate = null;
-                    String duration = null;
-                    if (pp.getPeriod() != null) {
-                        startedDate = pp.getPeriod().getStartedAt() != null ? pp.getPeriod().getStartedAt().toString() : null;
-                        finishedDate = pp.getPeriod().getFinishedAt() != null ? pp.getPeriod().getFinishedAt().toString() : null;
-                        duration = pp.getPeriod().getDuration() != null ? pp.getPeriod().getDuration().toString() : null;
-                    }
-
-                    return new GptResponseDto.PlaceJson(name, type, startedDate, finishedDate, duration);
-                })
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
-
-        return om.writeValueAsString(items);
     }
 }

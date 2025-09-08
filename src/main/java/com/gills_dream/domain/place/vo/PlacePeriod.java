@@ -1,5 +1,6 @@
 package com.gills_dream.domain.place.vo;
 
+import com.gills_dream.domain.map.dto.MapRouteReq;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import lombok.AccessLevel;
@@ -47,5 +48,13 @@ public class PlacePeriod {
 
     public void setDayOrder(Integer dayOrder) {
         this.dayOrder = dayOrder;
+        this.dayOrder = dayOrder;
+    }
+
+    public void updateDate(MapRouteReq.Period period) {
+        this.startedAt = LocalDate.parse(period.startedAt());
+        this.finishedAt = LocalDate.parse(period.finishedAt());
+        this.duration = period.duration();
+        this.dayOrder = period.dayOrder();
     }
 }

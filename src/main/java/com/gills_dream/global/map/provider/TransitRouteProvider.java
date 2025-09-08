@@ -20,8 +20,13 @@ public class TransitRouteProvider implements RouteProvider {
 
     private final TmapRouteClient tmap;
 
-    @Override public TransportType supports() { return TransportType.BUS; } // SUBWAY도 동일 Provider 사용 시 그대로
+    @Override public TransportType supports() { return TransportType.TRANSPORT; } // SUBWAY도 동일 Provider 사용 시 그대로
 
+    /**
+     * 대중교통 경로 조회
+     * @param req
+     * @return MapRouteRes
+     */
     @Override
     public MapRouteRes route(MapRouteReq req) {
         if (RouteUtils.invalid(req)) return RouteUtils.empty();

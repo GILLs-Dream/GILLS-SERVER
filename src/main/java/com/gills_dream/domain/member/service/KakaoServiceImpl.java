@@ -26,7 +26,8 @@ public class KakaoServiceImpl implements KakaoService {
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         body.add("grant_type", "authorization_code");
         body.add("client_id", kakaoProperties.getClientId());
-        body.add("redirect_uri", kakaoProperties.getRedirectUri());
+//        body.add("redirect_uri", kakaoProperties.getRedirectUri());
+        body.add("redirect_uri", "http://localhost:8080/login/link/kakao");
         body.add("code", code);
 
         log.info("Kakao Token Request Body: {}", body);

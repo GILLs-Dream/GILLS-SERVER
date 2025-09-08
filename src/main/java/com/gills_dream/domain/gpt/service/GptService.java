@@ -13,8 +13,7 @@ import java.util.List;
 public interface GptService {
     List<MoodType> selectMood(String input);
     String summarizeInput(String input);
-    String summarizePlan(Long duration, List<PlanResponseDto.PlanPerDayDto> planPerDayList);
-    PlanResponseDto.PlanDraftDto generatePlan(Plan plan);
+    String summarizePlan(Plan plan);
     PlacePair filterPlace(PythonResponseDto.ProcessResultDto processDto, String region);
     MapRouteByDayRes createRouteRequest(MapRouteReq routeReq, String transportType, Long count);
 }

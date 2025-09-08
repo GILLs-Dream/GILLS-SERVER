@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 public class PlanRequestDto {
@@ -19,7 +20,7 @@ public class PlanRequestDto {
 
     public record DurationDto(
             @Schema(description = "여행 기간 (최대 7일)", example = "5")
-            Long duration,
+            Integer duration,
             @Schema(description = "여행 시작 날짜 (nullable)", example = "2025-07-25")
             LocalDate startDate,
             @Schema(description = "여행 끝 날짜 (nullable)", example = "2025-07-25")
@@ -47,6 +48,8 @@ public class PlanRequestDto {
             String contentId,
             @Schema(description = "방문 날짜 (nullable)", example = "2025-07-25")
             String date,
+            @Schema(description = "(날짜가 미정인 경우) 여행 몇일차에 갈지", example = "3")
+            Integer dayOrder,
             @Schema(description = "장소명 (nullable)", example = "경복궁")
             String title,
             @Schema(description = "latitude (nullable)", example = "37.579617")
@@ -68,6 +71,8 @@ public class PlanRequestDto {
             String startDate,
             @Schema(description = "숙박 끝 날짜 (nullable)", example = "2025-07-25")
             String endDate,
+            @Schema(description = "(날짜가 미정인 경우) 여행 몇일차에 갈지", example = "3")
+            Integer dayOrder,
             @Schema(description = "장소명 (nullable)", example = "경복궁")
             String title,
             @Schema(description = "latitude (nullable)", example = "37.579617")
@@ -98,6 +103,6 @@ public class PlanRequestDto {
 
         @JsonProperty("video_url_list")
         @Schema(description = "받은 유튜브 링크 리스트")
-        private List<String> videoUrlList;
+        private List<String> videoUrlList = new ArrayList<>();
     }
 }
