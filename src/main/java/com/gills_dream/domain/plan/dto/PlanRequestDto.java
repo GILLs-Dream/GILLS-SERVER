@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 public class PlanRequestDto {
@@ -102,6 +103,6 @@ public class PlanRequestDto {
 
         @JsonProperty("video_url_list")
         @Schema(description = "받은 유튜브 링크 리스트")
-        private List<String> videoUrlList;
+        private List<String> videoUrlList = new ArrayList<>();
     }
 }

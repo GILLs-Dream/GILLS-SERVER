@@ -9,6 +9,7 @@ import com.gills_dream.domain.member.entity.Member;
 import com.gills_dream.domain.member.repository.MemberRepository;
 import com.gills_dream.domain.place.dto.PlaceAddedDto;
 import com.gills_dream.domain.place.dto.PlaceCacheWithContentId;
+import com.gills_dream.domain.place.dto.PlaceResponseDto;
 import com.gills_dream.domain.place.entity.Place;
 import com.gills_dream.domain.place.record.PlacePair;
 import com.gills_dream.domain.place.repository.PlaceRepository;
@@ -125,17 +126,20 @@ public class PlanServiceImpl implements PlanService {
         plan.updateRegion(request.getRegion());
 
         // 비디오에서 장소 추출
-        PythonResponseDto.ProcessResultDto processDto = pythonService.processVideo(request);
-        plan.getVideoIds().addAll(processDto.getVideoResultDtoList().stream().map(PythonResponseDto.VideoResultDto::getVideoId).toList());
+        List<PlaceAddedDto> placeAddedDtoList = new ArrayList<>();
+        if (!request.getVideoUrlList().isEmpty()) {
+            PythonResponseDto.ProcessResultDto processDto = pythonService.processVideo(request);
+            plan.getVideoIds().addAll(processDto.getVideoResultDtoList().stream().map(PythonResponseDto.VideoResultDto::getVideoId).toList());
 
-        // 비디오에서 추출된 장소 필터링
-        PlacePair placePair = gptService.filterPlace(processDto, request.getRegion());
+            // 비디오에서 추출된 장소 필터링
+            PlacePair placePair = gptService.filterPlace(processDto, request.getRegion());
 
-        // 비디오에서 추출된 장소를 tour&kakao api에서 검색
-        List<PlaceCacheWithContentId> placeCacheList = placeService.searchPlaces(plan, placePair);
+            // 비디오에서 추출된 장소를 tour&kakao api에서 검색
+            List<PlaceCacheWithContentId> placeCacheList = placeService.searchPlaces(plan, placePair);
 
-        // 검색 내용 바탕으로 redis에 업로드
-        List<PlaceAddedDto> placeAddedDtoList = placeService.addToRedis(plan, placeCacheList);
+            // 검색 내용 바탕으로 redis에 업로드
+            placeAddedDtoList = placeService.addToRedis(plan, placeCacheList);
+        }
 
         return new PlanResponseDto.VideoResultDto(plan.getId(), placeAddedDtoList);
     }
@@ -158,49 +162,39 @@ public class PlanServiceImpl implements PlanService {
         Plan plan = checkMemberAndPlan(userDetails, planId);
 
         MapRouteByDayRes generatedRoute = plan.getGeneratedRoute();
-
         List<PlanResponseDto.PlanPerDayDto> planPerDayDtoList = new ArrayList<>();
-        for (int i=1; i<=plan.getPeriod().getDuration(); i++) {
-            MapRouteByDayRes.Day day = generatedRoute.days().get(i);
 
-            // 시작 장소 (첫 번째 location)
-            MapRouteReq.Location fromLocation = day.locations().get(0);
-            Place place = placeRepository.findByNameAndLatAndLngRounded(fromLocation.name(), fromLocation.lat(), fromLocation.lng())
+        if (generatedRoute == null) throw new GeneralException(ErrorStatus.PLAN_NOT_GENERATED);
+        for (int i=0; i<generatedRoute.days().size(); i++) {
+            if (generatedRoute.days().get(i).routes().isEmpty()) throw new GeneralException(ErrorStatus.PLAN_NOT_GENERATED);
+            MapRouteRes routes = generatedRoute.days().get(i).routes().getFirst();
+
+            if (routes.legs().size() <= 1) throw new GeneralException(ErrorStatus.PLAN_NOT_GENERATED);
+            MapRouteRes.Leg firstPlace = routes.legs().getFirst();
+            Place fromPlace = placeRepository.findByNameAndLatAndLngRounded(firstPlace.startName(), firstPlace.startLat(), firstPlace.startLng())
                     .orElseThrow(() -> new GeneralException(ErrorStatus.CANNOT_FIND_PLACE_FROM_DB));
-            PlanResponseDto.PlaceDto from = new PlanResponseDto.PlaceDto(
-                    place.getId(),
-                    fromLocation.name(),
-                    place.getImages().getFirst()
-            );
+            PlanResponseDto.PlaceDto from = new PlanResponseDto.PlaceDto(fromPlace.getId(), fromPlace.getName(), fromPlace.getImages().isEmpty() ? "" : fromPlace.getImages().getFirst());
 
             List<PlanResponseDto.RouteDto> routeDtoList = new ArrayList<>();
-            List<MapRouteReq.Location> locations = day.locations();
-            List<MapRouteRes> routes = day.routes();
-
-            for (int j = 0; j < routes.size(); j++) {
-                MapRouteReq.Location toLocation = locations.get(j + 1); // 시작점 다음부터
-                MapRouteRes route = routes.get(j);
-                Place p = placeRepository.findByNameAndLatAndLngRounded(fromLocation.name(), fromLocation.lat(), fromLocation.lng())
+            for (int j=1; j < routes.legs().size(); j++) { // 하루의 경로
+                MapRouteRes.Leg preLeg = routes.legs().get(j-1);
+                MapRouteRes.Leg leg = routes.legs().get(j);
+                Place toPlace = placeRepository.findByNameAndLatAndLngRounded(leg.startName(), leg.startLat(), leg.endLng())
                         .orElseThrow(() -> new GeneralException(ErrorStatus.CANNOT_FIND_PLACE_FROM_DB));
-                PlanResponseDto.PlaceDto to = new PlanResponseDto.PlaceDto(
-                        p.getId(),
-                        toLocation.name(),
-                        p.getImages().getFirst()
-                );
-
-                routeDtoList.add(new PlanResponseDto.RouteDto(
-                        (long) j + 1,
-                        to,
-                        route.distance(),
-                        route.duration()
-                ));
+                PlanResponseDto.PlaceDto to = new PlanResponseDto.PlaceDto(toPlace.getId(), toPlace.getName(), toPlace.getImages().isEmpty() ? "" : toPlace.getImages().getFirst());
+                PlanResponseDto.RouteDto routeDto = new PlanResponseDto.RouteDto(j, to, preLeg.distance(), preLeg.duration());
+                routeDtoList.add(routeDto);
+                if (j == (routes.legs().size() - 1)) { // 하루의 마지막 경로
+                    Place lastPlace = placeRepository.findByNameAndLatAndLngRounded(leg.endName(), leg.endLat(), leg.endLng())
+                            .orElseThrow(() -> new GeneralException(ErrorStatus.CANNOT_FIND_PLACE_FROM_DB));
+                    PlanResponseDto.PlaceDto last = new PlanResponseDto.PlaceDto(lastPlace.getId(), lastPlace.getName(), lastPlace.getImages().isEmpty() ? "" : lastPlace.getImages().getFirst());
+                    PlanResponseDto.RouteDto lastRoute = new PlanResponseDto.RouteDto(j+1, last, leg.distance(), leg.duration());
+                    routeDtoList.add(lastRoute);
+                }
             }
 
-            planPerDayDtoList.add(new PlanResponseDto.PlanPerDayDto(
-                    (long) i,
-                    from,
-                    routeDtoList
-            ));
+            PlanResponseDto.PlanPerDayDto planPerDayDto = new PlanResponseDto.PlanPerDayDto(i+1, from , routeDtoList);
+            planPerDayDtoList.add(planPerDayDto);
         }
 
         return new PlanResponseDto.GenerateResultDto(

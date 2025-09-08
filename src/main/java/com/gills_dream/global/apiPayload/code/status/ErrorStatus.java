@@ -36,6 +36,7 @@ public enum ErrorStatus implements BaseCode {
     INVALID_ROUTE_REQUEST(HttpStatus.BAD_REQUEST, "INVALID ROUTE REQUEST", "잘못된 경로 요청입니다."),
     PLACE_COUNT_MISMATCH(HttpStatus.BAD_REQUEST, "PLACE COUNT MISMATCH", "유효한 장소의 개수가 부족합니다."),
     PLACE_CONTENT_MISMATCH(HttpStatus.BAD_REQUEST, "PLAN CONTENT MISMATCH", "플랜의 내용이 올바르지 않습니다."),
+    PLAN_NOT_GENERATED(HttpStatus.BAD_REQUEST, "PLAN NOT GENERATED", "여행이 생성되지 않았습니다."),
 
     // Enum 관련 에러 응답
     NO_SUCH_CATEGORY(HttpStatus.NOT_FOUND, "NO SUCH CATEGORY", "해당 카테고리가 존재하지 않습니다."),

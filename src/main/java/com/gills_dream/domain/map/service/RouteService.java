@@ -99,10 +99,6 @@ public class RouteService {
             }
         }
 
-        if (placeList.size() < 2) {
-            throw new GeneralException(ErrorStatus.INVALID_ROUTE_REQUEST);
-        }
-
         log.info("cached placeList : " + placeList);
 
         // 2) PlaceCache → MapRouteReq.Location 변환
