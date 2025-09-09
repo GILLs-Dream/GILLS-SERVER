@@ -221,7 +221,7 @@ public class RouteService {
             }
         });
 
-        // 4) Provider 실행기 선택
+        // 4) Provider 선택
         Function<MapRouteReq, MapRouteRes> runner = switch (transportation) {
             case CAR     -> carRouteProvider::route;
             case WALK    -> walkRouteProvider::route;
