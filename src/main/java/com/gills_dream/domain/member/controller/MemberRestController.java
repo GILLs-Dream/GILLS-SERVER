@@ -30,20 +30,19 @@ public class MemberRestController {
     private final TokenUtils tokenUtils;
 
     @PostMapping("/oauth/kakao/login")
-    @Operation(summary = "카카오 로그인, 회원가입", description = "엑세스 토큰 받아서 JWT 토큰 반환 ")
+    @Operation(summary = "카카오 로그인, 회원가입", description = "엑세스 토큰 받아서 JWT 토큰 반환")
     public ResponseEntity<?> kakaoLogin(@RequestParam("accessToken") String accessToken) {
         TokenPair tokenPair = memberService.kakaoLoginWithToken(accessToken);
 
         // Token 처리
         HttpHeaders headers = new HttpHeaders();
-        tokenUtils.addAccessToken(headers, tokenPair.accessToken());
-        tokenUtils.addRefreshToken(headers, tokenPair.refreshToken());
+        tokenUtils.addToken(headers, tokenPair, true);
 
-        return ResponseEntity.ok().headers(headers).body(MemberConverter.toResultWithTokenDto(tokenPair));
+        return ResponseEntity.ok().headers(headers).body(MemberConverter.toLoginResultWithTokenDto(tokenPair));
     }
 
     @PostMapping("/oauth/kakao/logout")
-    @Operation(summary = "카카오 로그아웃")
+    @Operation(summary = "카카오 로그아웃", description = "레디스에서 관련 키를 블랙리스트로 처리합니다.")
     public ApiResponse<MemberResponseDto.LoginResultDto> kakaoLogout(HttpServletRequest request, @AuthenticationPrincipal CustomUserDetails userDetails) {
         memberService.kakaoLogout(jwtAuthenticationFilter.resolveToken(request), userDetails.getMember());
         return ApiResponse.onSuccess(SuccessStatus._OK);

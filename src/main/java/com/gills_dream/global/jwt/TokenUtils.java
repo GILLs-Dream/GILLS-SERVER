@@ -1,5 +1,6 @@
 package com.gills_dream.global.jwt;
 
+import com.gills_dream.global.common.record.TokenPair;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
@@ -10,20 +11,14 @@ import java.time.Duration;
 @Component
 @RequiredArgsConstructor
 public class TokenUtils {
-    public void addAccessToken(HttpHeaders headers, String accessToken) {
+    public void addToken(HttpHeaders headers, TokenPair tokenPair, boolean reissued) {
         // Authorization 헤더에 access token 추가
-        headers.add("Authorization", "Bearer " + accessToken);
-    }
+        headers.add("Authorization", "Bearer " + tokenPair.accessToken());
 
-    public void addRefreshToken(HttpHeaders headers, String refreshToken) {
-        // Refresh token은 HttpOnly, secure 쿠키로 설정
-        ResponseCookie refreshCookie = ResponseCookie.from("refresh_token", refreshToken)
-                .httpOnly(true)
-                .secure(false) // 배포할때 true로 변경
-                .path("/")
-                .sameSite("Strict")
-                .maxAge(Duration.ofDays(28)) // 4주
-                .build();
-        headers.add(HttpHeaders.SET_COOKIE, refreshCookie.toString());
+        // refresh token이 재발급된 경우에만
+        // X-Refresh-Token 헤더에 refresh token 추가
+        if (reissued) {
+            headers.add("X-Refresh-Token", tokenPair.refreshToken());
+        }
     }
 }
