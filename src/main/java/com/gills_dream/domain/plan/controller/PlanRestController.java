@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "여행 생성", description = "여행 생성 관련 API")
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/plan/template")
+@RequestMapping("/v1/plan/template")
 public class PlanRestController {
     private final PlanService planService;
 

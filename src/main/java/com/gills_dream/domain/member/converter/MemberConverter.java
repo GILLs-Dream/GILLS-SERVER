@@ -4,6 +4,7 @@ import com.gills_dream.domain.member.dto.MemberResponseDto;
 import com.gills_dream.domain.member.entity.LoginType;
 import com.gills_dream.domain.member.entity.Member;
 import com.gills_dream.domain.member.entity.RoleType;
+import com.gills_dream.global.common.record.TokenPair;
 
 public class MemberConverter {
 
@@ -20,5 +21,14 @@ public class MemberConverter {
                 .loginType(login)
                 .roleType(role)
                 .build();
+    }
+
+    public static MemberResponseDto.LoginResultWithTokenDto toResultWithTokenDto(TokenPair tokenPair) {
+        return new MemberResponseDto.LoginResultWithTokenDto(
+                tokenPair.member().getId(),
+                tokenPair.member().getEmail(),
+                tokenPair.accessToken(),
+                tokenPair.refreshToken()
+        );
     }
 }

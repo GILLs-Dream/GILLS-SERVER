@@ -23,10 +23,12 @@ public enum ErrorStatus implements BaseCode {
     UNSUPPORTED_TOKEN(HttpStatus.UNAUTHORIZED, "UNSUPPORTED TOKEN", "지원하지 않는 토큰입니다."),
     REDIS_KEY_NOT_FOUND(HttpStatus.NOT_FOUND, "REDIS KEY NOT FOUND", "요청한 키가 Redis에 존재하지 않습니다."),
     INVALID_SIGNATURE(HttpStatus.UNAUTHORIZED, "INVALID SIGNATURE", "잘못된 JWT 서명입니다"),
+    CANNOT_LOAD_USER_FROM_KAKAO(HttpStatus.NOT_FOUND, "CANNOT LOAD USER FROM KAKAO", "Kakao에서 해당 유저를 불러오지 못했습니다."),
+    EMAIL_IS_REQUIRED(HttpStatus.BAD_REQUEST, "EMAIL IS REQUIRED", "이메일은 필수입니다."),
 
     // 멤버 관련 에러 응답
     MEMBER_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "USER ALREADY EXISTS", "유저가 이미 존재합니다."),
-    MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "USER NOT FOUND", "유저를 찾을 수 없습니다."),
+    MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "MEMBER NOT FOUND", "유저를 찾을 수 없습니다."),
     NICKNAME_IS_NECESSARY(HttpStatus.BAD_REQUEST, "NICKNAME IS NECESSARY", "닉네임은 필수입니다."),
     DATE_INDEX_MISMATCH(HttpStatus.BAD_REQUEST, "DATE INDEX MISMATCH", "날짜와 인덱스 모드가 일치하지 않습니다."),
 

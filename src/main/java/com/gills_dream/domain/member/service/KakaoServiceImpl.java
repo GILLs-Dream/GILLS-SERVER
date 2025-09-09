@@ -1,6 +1,8 @@
 package com.gills_dream.domain.member.service;
 
 import com.gills_dream.domain.member.dto.MemberResponseDto;
+import com.gills_dream.global.apiPayload.code.status.ErrorStatus;
+import com.gills_dream.global.apiPayload.exception.GeneralException;
 import com.gills_dream.global.common.properties.KakaoProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,29 +24,6 @@ public class KakaoServiceImpl implements KakaoService {
     private final RestClient restClient = RestClient.create();
 
     @Override
-    public String getAccessToken(String code) {
-        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
-        body.add("grant_type", "authorization_code");
-        body.add("client_id", kakaoProperties.getClientId());
-//        body.add("redirect_uri", kakaoProperties.getRedirectUri());
-        body.add("redirect_uri", "http://localhost:8080/login/link/kakao");
-        body.add("code", code);
-
-        log.info("Kakao Token Request Body: {}", body);
-
-        MemberResponseDto.TokenDto tokenDto = restClient
-                .post()
-                .uri(kakaoProperties.getTokenUri())
-                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                .body(body)
-                .retrieve()
-                .body(MemberResponseDto.TokenDto.class);
-
-        log.info("Kakao Token Response: {}", tokenDto);
-        return Objects.requireNonNull(tokenDto).accessToken();
-    }
-
-    @Override
     public MemberResponseDto.KakaoUserInfoDto getUserInfo(String accessToken) {
         MemberResponseDto.KakaoUserInfoDto userInfoDto = restClient
                 .get()
@@ -52,6 +31,8 @@ public class KakaoServiceImpl implements KakaoService {
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
                 .retrieve()
                 .body(MemberResponseDto.KakaoUserInfoDto.class);
+
+        if (userInfoDto == null) throw new GeneralException(ErrorStatus.CANNOT_LOAD_USER_FROM_KAKAO);
 
         return Objects.requireNonNull(userInfoDto);
     }

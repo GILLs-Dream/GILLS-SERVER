@@ -22,17 +22,14 @@ public class SecurityConfig {
 
     private static final String[] PERMITTED_PATTERNS = {
             "/",
-            "/member/oauth/kakao/login",
-            "/member/reissue",
-            "/login/**",
+            "/v1/member/reissue",
             "/v1/map/**",
             "/v1/place/**",
             "/swagger-ui/**",
             "/swagger-resources/**",
             "/v3/api-docs/**",
-            "/oauth2/**",
             "/resources/**",
-            "/plan/**"
+            "/v1/member/oauth/kakao/login"
     };
 
     @Bean
@@ -51,8 +48,7 @@ public class SecurityConfig {
                         .requestMatchers(PERMITTED_PATTERNS).permitAll()
                         .anyRequest().authenticated()
                 )
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .oauth2Login(oauth -> {});
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 }
