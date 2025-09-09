@@ -1,8 +1,8 @@
 package com.gills_dream.domain.token.controller;
 
+import com.gills_dream.domain.member.converter.MemberConverter;
 import com.gills_dream.domain.token.service.CustomTokenService;
 import com.gills_dream.global.common.record.TokenPair;
-import com.gills_dream.global.jwt.JwtAuthenticationFilter;
 import com.gills_dream.global.jwt.TokenUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -18,17 +18,15 @@ public class TokenRestController {
     private final TokenUtils tokenUtils;
     private final CustomTokenService jwtTokenService;
 
-    @GetMapping("member/reissue")
-    @Operation(summary = "리프레시 토큰으로 엑세스 토큰 재발급", description = "프론트가 쿠키로 요청합니다")
-    public ResponseEntity<?> reissue(@CookieValue("refresh_token") String refreshToken) {
+    @GetMapping("/v1/member/reissue")
+    @Operation(summary = "리프레시 토큰으로 엑세스 토큰 재발급", description = "Authorization: Bearer {access-token}, X-Refresh-Token: {refresh-token}")
+    public ResponseEntity<?> reissue(@RequestParam("refresh_token") String refreshToken) {
         TokenPair tokenPair = jwtTokenService.reissue(refreshToken);
 
         // Token 처리
         HttpHeaders headers = new HttpHeaders();
-        tokenUtils.addAccessToken(headers, tokenPair.accessToken());
-        // Refresh token이 재발급된 경우
-        if (!refreshToken.equals(tokenPair.refreshToken())) tokenUtils.addRefreshToken(headers, tokenPair.refreshToken());
+        tokenUtils.addToken(headers, tokenPair, refreshToken.equals(tokenPair.refreshToken()));
 
-        return ResponseEntity.ok().headers(headers).body("Access token reissued");
+        return ResponseEntity.ok().headers(headers).body(MemberConverter.toTokenDto(tokenPair));
     }
 }

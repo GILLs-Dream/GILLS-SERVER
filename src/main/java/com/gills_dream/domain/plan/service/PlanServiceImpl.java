@@ -52,11 +52,9 @@ public class PlanServiceImpl implements PlanService {
     @Override
     @Transactional
     public PlanResponseDto.MoodResultDto selectAndSummarizeMood(CustomUserDetails userDetails, PlanRequestDto.MoodTextDto request) {
-        Member member = null;
-        if (userDetails != null) {
-            member = memberRepository.findById(userDetails.getMember().getId())
+        Member member = memberRepository.findById(userDetails.getMember().getId())
                     .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
-        }
+
         List<MoodType> moodTypeList = gptService.selectMood(request.inputText());
         String summary = gptService.summarizeInput(request.inputText());
 
@@ -66,7 +64,7 @@ public class PlanServiceImpl implements PlanService {
                 .moodSummary(summary)
                 .build();
         planRepository.save(plan);
-        if (member != null) member.getPlanList().add(plan);
+        member.getPlanList().add(plan);
 
         return new PlanResponseDto.MoodResultDto(
                 plan.getId(),
@@ -230,16 +228,8 @@ public class PlanServiceImpl implements PlanService {
     }
 
     private Plan checkMemberAndPlan(CustomUserDetails userDetails, Long planId) {
-        Member member = null;
-        if (userDetails != null) {
-            member = memberRepository.findById(userDetails.getId())
-                    .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
-        }
-
-        if (member == null) {
-            return planRepository.findById(planId)
-                    .orElseThrow(() -> new GeneralException(ErrorStatus.PLAN_NOT_FOUND));
-        }
+        Member member = memberRepository.findById(userDetails.getId())
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
 
         return planRepository.findByIdAndMember(planId, member)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.PLAN_NOT_FOUND));

@@ -11,7 +11,5 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "kakao")
 public class KakaoProperties {
     private String clientId;
-    private String redirectUri;
-    private String tokenUri;
     private String userInfoUri;
 }

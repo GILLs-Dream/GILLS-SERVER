@@ -4,21 +4,23 @@ import com.gills_dream.domain.member.dto.MemberResponseDto;
 import com.gills_dream.domain.member.entity.LoginType;
 import com.gills_dream.domain.member.entity.Member;
 import com.gills_dream.domain.member.entity.RoleType;
+import com.gills_dream.global.common.record.TokenPair;
 
 public class MemberConverter {
 
-    public static MemberResponseDto.LoginResultDto toLoginResultDto(Member member) {
-        return new MemberResponseDto.LoginResultDto(
-                member.getId(),
-                member.getEmail()
+    public static MemberResponseDto.TokenDto toTokenDto(TokenPair tokenPair) {
+        return new MemberResponseDto.TokenDto(
+                tokenPair.accessToken(),
+                tokenPair.refreshToken()
         );
     }
 
-    public static Member toMember(MemberResponseDto.KakaoUserInfoDto kakaoInfo, RoleType role, LoginType login) {
-        return Member.builder()
-                .email(kakaoInfo.getKakaoAccount().getEmail())
-                .loginType(login)
-                .roleType(role)
-                .build();
+    public static MemberResponseDto.LoginResultWithTokenDto toLoginResultWithTokenDto(TokenPair tokenPair) {
+        return new MemberResponseDto.LoginResultWithTokenDto(
+                tokenPair.member().getId(),
+                tokenPair.member().getEmail(),
+                tokenPair.accessToken(),
+                tokenPair.refreshToken()
+        );
     }
 }

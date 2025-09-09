@@ -15,6 +15,22 @@ public class MemberResponseDto {
             String email
     ) {}
 
+    public record LoginResultWithTokenDto(
+            @Schema(description = "멤버 id", example = "1")
+            Long memberId,
+
+            @Schema(description = "멤버 이메일", example = "gillsoon@gmail.com")
+            String email,
+
+            @Schema(description = "엑세스 토큰", example = "sdfsfsfsfsfdfds")
+            String accessToken,
+
+            @Schema(description = "리프레시 토큰", example = "jiljijililjilkl")
+            String refreshToken
+    ) {}
+
+
+
     public record ProfileResultDto (
         @Schema(description = "멤버 id", example = "1")
         Long memberId,
