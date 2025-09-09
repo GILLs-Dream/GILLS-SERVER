@@ -5,6 +5,12 @@ import com.gills_dream.domain.member.dto.MemberResponseDto;
 import com.gills_dream.domain.member.entity.LoginType;
 import com.gills_dream.domain.member.entity.Member;
 import com.gills_dream.domain.member.entity.RoleType;
+import com.gills_dream.domain.place.entity.Place;
+import com.gills_dream.domain.place.repository.PlaceRepository;
+import com.gills_dream.domain.plan.entity.Plan;
+import com.gills_dream.domain.plan.entity.PlanPlace;
+import com.gills_dream.domain.plan.repository.PlanPlaceRepository;
+import com.gills_dream.domain.plan.repository.PlanRepository;
 import com.gills_dream.global.apiPayload.code.status.ErrorStatus;
 import com.gills_dream.global.apiPayload.exception.GeneralException;
 import com.gills_dream.global.common.properties.AdminProperties;
@@ -18,7 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.Duration;
-import java.util.Objects;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -32,6 +38,9 @@ public class MemberServiceImpl implements MemberService {
     private final RedisService redisService;
     private final AdminProperties adminProperties;
     private final TokenUtils tokenUtils;
+    private final PlaceRepository placeRepository;
+    private final PlanPlaceRepository planPlaceRepository;
+    private final PlanRepository planRepository;
 
     @Override
     @Transactional
@@ -61,7 +70,28 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     @Transactional
-    public void kakaoLogout(String accessToken, Member member) {
+    public void delete(String accessToken, Member memberDet) {
+        if (memberDet == null) throw new GeneralException(ErrorStatus.MEMBER_NOT_FOUND);
+
+        Member member = memberRepository.findById(memberDet.getId())
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+
+        // refreshToken을 redis에서 삭제하고 accessToken을 redis에 저장
+        redisService.deleteValue(member.getEmail()); // 재로그인 방지
+        redisService.setValue(accessToken, "logout", tokenProvider.getExpirationTime(accessToken)); // AccessToken을 블랙리스트에 저장
+
+        // DB에서 멤버 삭제
+        for (Plan plan : member.getPlanList()) {
+            plan.updateMember(null);
+        }
+        planRepository.flush();
+        member.getPlanList().clear();
+        memberRepository.delete(member);
+    }
+
+    @Override
+    @Transactional
+    public void logout(String accessToken, Member member) {
         if (member == null) throw new GeneralException(ErrorStatus.MEMBER_NOT_FOUND);
 
         // 로그아웃 시 refreshToken을 redis에서 삭제하고 accessToken을 redis에 저장

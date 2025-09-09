@@ -33,7 +33,7 @@ public class Member {
     @Enumerated(EnumType.STRING)
     private LoginType loginType;
 
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Plan> planList = new ArrayList<>();
 
     @Builder

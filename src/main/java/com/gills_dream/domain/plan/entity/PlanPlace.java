@@ -38,4 +38,12 @@ public class PlanPlace {
     public void setPeriod(PlacePeriod cur) {
         this.period = cur;
     }
+
+    public void updatePlan(Plan plan) {
+        this.plan = plan;
+    }
+
+    public void updatePlace(Place place) {
+        this.place = place;
+    }
 }

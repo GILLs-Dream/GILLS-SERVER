@@ -22,7 +22,8 @@ import java.util.List;
 
 @Getter
 @Entity
-@SQLDelete(sql = "UPDATE \"plan\" SET deleted_at = NOW() WHERE id = ?")
+@Table(name = "`plan`")
+@SQLDelete(sql = "UPDATE `plan` SET deleted_at = NOW() WHERE id = ?")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Plan extends BaseEntity {
 
@@ -77,7 +78,7 @@ public class Plan extends BaseEntity {
     @Column(name = "category_type")
     private List<CategoryType> categories = new ArrayList<>();
 
-    @OneToMany(mappedBy = "plan", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "plan", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PlanPlace> planPlaces = new ArrayList<>();
 
     @ElementCollection(fetch = FetchType.LAZY)
@@ -130,5 +131,9 @@ public class Plan extends BaseEntity {
 
     public void updateGeneratedRoute(MapRouteByDayRes generatedRoute) {
         this.generatedRoute = generatedRoute;
+    }
+
+    public void updateMember(Member member) {
+        this.member = member;
     }
 }

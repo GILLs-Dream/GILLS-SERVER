@@ -64,7 +64,7 @@ public class PlanServiceImpl implements PlanService {
                 .moodSummary(summary)
                 .build();
         planRepository.save(plan);
-        if (member != null) member.getPlanList().add(plan);
+        member.getPlanList().add(plan);
 
         return new PlanResponseDto.MoodResultDto(
                 plan.getId(),

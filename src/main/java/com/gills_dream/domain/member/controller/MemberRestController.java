@@ -41,10 +41,17 @@ public class MemberRestController {
         return ResponseEntity.ok().headers(headers).body(MemberConverter.toLoginResultWithTokenDto(tokenPair));
     }
 
-    @PostMapping("/oauth/kakao/logout")
-    @Operation(summary = "카카오 로그아웃", description = "레디스에서 관련 키를 블랙리스트로 처리합니다.")
-    public ApiResponse<MemberResponseDto.LoginResultDto> kakaoLogout(HttpServletRequest request, @AuthenticationPrincipal CustomUserDetails userDetails) {
-        memberService.kakaoLogout(jwtAuthenticationFilter.resolveToken(request), userDetails.getMember());
+    @PostMapping("/logout")
+    @Operation(summary = "로그아웃", description = "레디스에서 관련 키를 블랙리스트로 처리합니다.")
+    public ApiResponse<MemberResponseDto.LoginResultDto> logout(HttpServletRequest request, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        memberService.logout(jwtAuthenticationFilter.resolveToken(request), userDetails.getMember());
+        return ApiResponse.onSuccess(SuccessStatus._OK);
+    }
+
+    @DeleteMapping("/delete")
+    @Operation(summary = "탈퇴", description = "레디스에서 관련 키를 블랙리스트로 처리합니다.")
+    public ApiResponse<MemberResponseDto.LoginResultDto> delete(HttpServletRequest request, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        memberService.delete(jwtAuthenticationFilter.resolveToken(request), userDetails.getMember());
         return ApiResponse.onSuccess(SuccessStatus._OK);
     }
 
