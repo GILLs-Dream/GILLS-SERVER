@@ -15,6 +15,7 @@ public class MapRouteByDayResConverter implements AttributeConverter<MapRouteByD
 
     @Override
     public String convertToDatabaseColumn(MapRouteByDayRes attribute) {
+        if (attribute == null) return null;
         try {
             return objectMapper.writeValueAsString(attribute);
         } catch (JsonProcessingException e) {
@@ -24,6 +25,7 @@ public class MapRouteByDayResConverter implements AttributeConverter<MapRouteByD
 
     @Override
     public MapRouteByDayRes convertToEntityAttribute(String dbData) {
+        if (dbData == null || dbData.isBlank()) return null;
         try {
             return objectMapper.readValue(dbData, MapRouteByDayRes.class);
         } catch (IOException e) {

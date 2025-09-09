@@ -224,10 +224,8 @@ public class PlanServiceImpl implements PlanService {
         );
     }
     @Override
-    public PlanListResponseDto getTemplateList(CustomUserDetails userDetails) {
-        Member member = memberRepository.findById(userDetails.getId())
-                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
-        List<Plan> planList = planRepository.findAllByMember(member);
+    public PlanListResponseDto getTemplateList() {
+        List<Plan> planList = planRepository.findAll();
         return PlanListResponseDto.fromEntityList(planList);
     }
 
