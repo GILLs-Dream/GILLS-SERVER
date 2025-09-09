@@ -8,7 +8,7 @@ import com.gills_dream.global.common.record.TokenPair;
 public interface MemberService {
     void logout(String accessToken, Member member);
     MemberResponseDto.ProfileResultDto setProfile(Member member, MemberRequestDto.ProfileDto request);
-    TokenPair kakaoLoginWithToken(String accessToken);
+    TokenPair kakaoLogin(String accessToken);
     void delete(String accessToken, Member member);
     TokenPair appleLogin(String identityToken);
 }

@@ -32,7 +32,7 @@ public class MemberRestController {
     @PostMapping("/oauth/kakao/login")
     @Operation(summary = "카카오 로그인, 회원가입", description = "access token 받아서 서버 JWT 토큰 반환")
     public ResponseEntity<?> kakaoLogin(@RequestParam("accessToken") String accessToken) {
-        TokenPair tokenPair = memberService.kakaoLoginWithToken(accessToken);
+        TokenPair tokenPair = memberService.kakaoLogin(accessToken);
 
         // Token 처리
         HttpHeaders headers = new HttpHeaders();

@@ -36,7 +36,7 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     @Transactional
-    public TokenPair kakaoLoginWithToken(String kakaoAccessToken) {
+    public TokenPair kakaoLogin(String kakaoAccessToken) {
         // 유저에 대한 정보 받기
         MemberResponseDto.KakaoUserInfoDto kakaoUser = kakaoService.getUserInfo(kakaoAccessToken);
 
