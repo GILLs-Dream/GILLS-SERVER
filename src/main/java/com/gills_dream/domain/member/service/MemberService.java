@@ -10,4 +10,5 @@ public interface MemberService {
     MemberResponseDto.ProfileResultDto setProfile(Member member, MemberRequestDto.ProfileDto request);
     TokenPair kakaoLoginWithToken(String accessToken);
     void delete(String accessToken, Member member);
+    TokenPair appleLogin(String identityToken);
 }

@@ -5,11 +5,7 @@ import com.gills_dream.domain.member.dto.MemberResponseDto;
 import com.gills_dream.domain.member.entity.LoginType;
 import com.gills_dream.domain.member.entity.Member;
 import com.gills_dream.domain.member.entity.RoleType;
-import com.gills_dream.domain.place.entity.Place;
-import com.gills_dream.domain.place.repository.PlaceRepository;
 import com.gills_dream.domain.plan.entity.Plan;
-import com.gills_dream.domain.plan.entity.PlanPlace;
-import com.gills_dream.domain.plan.repository.PlanPlaceRepository;
 import com.gills_dream.domain.plan.repository.PlanRepository;
 import com.gills_dream.global.apiPayload.code.status.ErrorStatus;
 import com.gills_dream.global.apiPayload.exception.GeneralException;
@@ -17,7 +13,6 @@ import com.gills_dream.global.common.properties.AdminProperties;
 import com.gills_dream.domain.member.repository.MemberRepository;
 import com.gills_dream.global.common.record.TokenPair;
 import com.gills_dream.global.jwt.TokenProvider;
-import com.gills_dream.global.jwt.TokenUtils;
 import com.gills_dream.global.redis.RedisService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,9 +32,6 @@ public class MemberServiceImpl implements MemberService {
     private final TokenProvider tokenProvider;
     private final RedisService redisService;
     private final AdminProperties adminProperties;
-    private final TokenUtils tokenUtils;
-    private final PlaceRepository placeRepository;
-    private final PlanPlaceRepository planPlaceRepository;
     private final PlanRepository planRepository;
 
     @Override
@@ -67,6 +59,30 @@ public class MemberServiceImpl implements MemberService {
 
         return new TokenPair(member, accessToken, refreshToken);
     }
+
+    @Override
+    @Transactional
+    public TokenPair appleLogin(String identityToken) {
+        MemberResponseDto.AppleUserInfoDto appleUser = appleService.getUserInfo(identityToken);
+
+        String email = appleUser.getEmail();
+        if (email == null) throw new GeneralException(ErrorStatus.EMAIL_IS_REQUIRED);
+
+        Member member = memberRepository.findByEmail(email)
+                .orElseGet(() -> memberRepository.save(Member.builder()
+                        .email(email)
+                        .loginType(LoginType.APPLE)
+                        .roleType(decideRole(email))
+                        .build()));
+
+        String accessToken = tokenProvider.createAccessToken(member.getEmail());
+        String refreshToken = tokenProvider.createRefreshToken(member.getEmail());
+
+        redisService.setValue(member.getEmail(), refreshToken, Duration.ofDays(28).toMillis());
+
+        return new TokenPair(member, accessToken, refreshToken);
+    }
+
 
     @Override
     @Transactional
