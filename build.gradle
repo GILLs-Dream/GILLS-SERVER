@@ -55,7 +55,11 @@ dependencies {
 	implementation platform("org.springframework.ai:spring-ai-bom:1.0.0-M3")
 	implementation 'org.springframework.ai:spring-ai-openai'
 
+	// Object Mapper Serializer
 	implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+
+	// S3
+	implementation 'software.amazon.awssdk:s3:2.31.40'
 }
 
 tasks.named('test') {

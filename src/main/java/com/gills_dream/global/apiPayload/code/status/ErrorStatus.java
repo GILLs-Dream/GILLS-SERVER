@@ -53,7 +53,13 @@ public enum ErrorStatus implements BaseCode {
 
     // 장소 관련 에러 응답
     CANNOT_FIND_PLACE_FROM_REDIS(HttpStatus.NOT_FOUND, "CANNOT FIND PLACE FROM REDIS", "레디스에서 해당 장소를 찾을 수 없습니다."),
-    CANNOT_FIND_PLACE_FROM_DB(HttpStatus.NOT_FOUND, "CANNOT FIND PLACE FROM DB", "디비에서 해당 장소를 찾을 수 없습니다.");
+    CANNOT_FIND_PLACE_FROM_DB(HttpStatus.NOT_FOUND, "CANNOT FIND PLACE FROM DB", "디비에서 해당 장소를 찾을 수 없습니다."),
+
+    // s3 관련 에러 응답
+    CANNOT_PROCESS_EXTENSION(HttpStatus.BAD_REQUEST, "CANNOT PROCESS EXTENSION", "해당 확장자를 찾을 수 없습니다."),
+    CANNOT_FIND_IMAGE(HttpStatus.BAD_REQUEST, "CANNOT FIND IMAGE", "해당 이미지를 s3에서 찾을 수 없습니다."),
+    CANNOT_UPLOAD_IMAGE(HttpStatus.BAD_REQUEST, "CANNOT UPLOAD IMAGE", "이미지를 s3에 업로드할 수 없습니다."),
+    CANNOT_DELETE_IMAGE(HttpStatus.BAD_REQUEST, "CANNOT DELETE IMAGE", "이미지를 s3에서 삭제할 수 없습니다.");
 
     private final HttpStatus httpStatus;
     private final String code;

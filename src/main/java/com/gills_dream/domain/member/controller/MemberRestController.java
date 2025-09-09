@@ -16,9 +16,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @Tag(name = "멤버", description = "멤버 로그인 관련 API")
 @RestController
@@ -55,11 +57,12 @@ public class MemberRestController {
         return ApiResponse.onSuccess(SuccessStatus._OK);
     }
 
-    @PatchMapping("/setting")
-    @Operation(summary = "프로필 설정 + 이용약관 동의")
+    @PatchMapping(value = "/setting", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "프로필 설정 + 이용약관 동의 + 프로필 이미지 설정(이미지 이름에 확장자 꼭 추가해주세요)")
     public ApiResponse<MemberResponseDto.ProfileResultDto> setProfile(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                                                      @RequestBody @Valid MemberRequestDto.ProfileDto request) {
-        return ApiResponse.onSuccess(memberService.setProfile(userDetails.getMember(), request));
+                                                                      @RequestPart("profile") @Valid MemberRequestDto.ProfileDto request,
+                                                                      @RequestPart(value = "image", required = false) MultipartFile image) {
+        return ApiResponse.onSuccess(memberService.setProfile(userDetails, request, image));
     }
 }
 
