@@ -16,5 +16,5 @@ public interface PlanService {
     MapRouteByDayRes generate(CustomUserDetails userDetails, Long planId);
     PlanResponseDto.GenerateResultDto viewPlan(CustomUserDetails userDetails, Long planId);
     PlanResponseDto.SummaryDto viewPlanSummary(CustomUserDetails userDetails, Long planId);
-    PlanListResponseDto getTemplateList(CustomUserDetails userDetails);
+    PlanListResponseDto getTemplateList();
 }

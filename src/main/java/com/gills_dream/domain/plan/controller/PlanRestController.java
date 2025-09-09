@@ -1,6 +1,7 @@
 package com.gills_dream.domain.plan.controller;
 
 import com.gills_dream.domain.map.dto.MapRouteByDayRes;
+import com.gills_dream.domain.plan.dto.PlanListResponseDto;
 import com.gills_dream.domain.plan.dto.PlanResponseDto;
 import com.gills_dream.domain.plan.dto.PlanRequestDto;
 import com.gills_dream.domain.plan.service.PlanService;
@@ -86,5 +87,11 @@ public class PlanRestController {
     public ApiResponse<PlanResponseDto.SummaryDto> viewPlanSummary (@AuthenticationPrincipal CustomUserDetails userDetails,
                                                          @PathVariable("planId") Long planId) {
         return ApiResponse.onSuccess(planService.viewPlanSummary(userDetails, planId));
+    }
+
+    @GetMapping
+    @Operation(summary = "사용자 여행 템플릿 리스트 조회")
+    public ApiResponse<PlanListResponseDto> getTemplateList (/*@AuthenticationPrincipal CustomUserDetails userDetails*/) {
+        return ApiResponse.onSuccess(planService.getTemplateList());
     }
 }
