@@ -36,7 +36,10 @@ public class MemberResponseDto {
         Long memberId,
 
         @Schema(description = "멤버 닉네임", example = "길순이")
-        String nickname
+        String nickname,
+
+        @Schema(description = "정상적으로 업로드되면 활성화될 imageURL", example = "https://influy-s3...")
+        String imgUrl
     ) {}
 
 
