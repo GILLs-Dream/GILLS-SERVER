@@ -94,4 +94,12 @@ public class PlanRestController {
     public ApiResponse<PlanListResponseDto> getTemplateList (/*@AuthenticationPrincipal CustomUserDetails userDetails*/) {
         return ApiResponse.onSuccess(planService.getTemplateList());
     }
+
+    @PostMapping("/{planId}/setting")
+    @Operation(summary = "생성된 여행에 제목과 대표 이미지 설정")
+    public ApiResponse<PlanResponseDto.TemplateResultDto> setTitleAndImg(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                                                         @PathVariable("planId") Long planId){
+//                                                                         @Valid @RequestBody PlanRequestDto.TitleAndImgDto request) {
+        return ApiResponse.onSuccess(planService.setTitleAndImg(userDetails, planId));
+    }
 }

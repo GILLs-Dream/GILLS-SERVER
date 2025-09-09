@@ -17,4 +17,5 @@ public interface PlanService {
     PlanResponseDto.GenerateResultDto viewPlan(CustomUserDetails userDetails, Long planId);
     PlanResponseDto.SummaryDto viewPlanSummary(CustomUserDetails userDetails, Long planId);
     PlanListResponseDto getTemplateList();
+    PlanResponseDto.TemplateResultDto setTitleAndImg(CustomUserDetails userDetails, Long planId);
 }

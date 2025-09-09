@@ -46,7 +46,6 @@ public class PlanServiceImpl implements PlanService {
     private final PythonService pythonService;
     private final PlaceService placeService;
     private final PlaceRepository placeRepository;
-    private final PlaceCacheService placeCacheService;
     private final RouteService routeService;
 
     @Override
@@ -202,7 +201,7 @@ public class PlanServiceImpl implements PlanService {
         }
 
         return new PlanResponseDto.GenerateResultDto(
-                plan.getMooodSummary(),
+                plan.getMoodSummary(),
                 planId,
                 plan.getPeriod().getDuration(),
                 planPerDayDtoList
@@ -217,7 +216,7 @@ public class PlanServiceImpl implements PlanService {
         String summary = gptService.summarizePlan(plan);
 
         return new PlanResponseDto.SummaryDto(
-                plan.getMooodSummary(),
+                plan.getMoodSummary(),
                 summary
         );
     }
@@ -225,6 +224,14 @@ public class PlanServiceImpl implements PlanService {
     public PlanListResponseDto getTemplateList() {
         List<Plan> planList = planRepository.findAll();
         return PlanListResponseDto.fromEntityList(planList);
+    }
+
+    @Override
+    @Transactional
+    public PlanResponseDto.TemplateResultDto setTitleAndImg(CustomUserDetails userDetails, Long planId) {
+        Plan plan = checkMemberAndPlan(userDetails, planId);
+
+        return null;
     }
 
     private Plan checkMemberAndPlan(CustomUserDetails userDetails, Long planId) {
