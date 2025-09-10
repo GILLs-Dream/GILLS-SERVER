@@ -52,7 +52,7 @@ public class Plan extends BaseEntity {
     private Long party;
 
     @Column(columnDefinition = "TEXT")
-    private String mooodSummary;
+    private String moodSummary;
 
     @Column(columnDefinition = "TEXT")
     private String region;
@@ -99,7 +99,7 @@ public class Plan extends BaseEntity {
         this.member = member;
         this.team = team;
         this.summary = summary;
-        this.mooodSummary = moodSummary;
+        this.moodSummary = moodSummary;
         this.teamName = teamName;
         this.period = period;
         this.region = region;
@@ -135,5 +135,9 @@ public class Plan extends BaseEntity {
 
     public void updateMember(Member member) {
         this.member = member;
+    }
+
+    public void updateSummary(PlanSummary summary) {
+        this.summary = summary;
     }
 }

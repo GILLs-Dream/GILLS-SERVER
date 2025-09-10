@@ -15,7 +15,7 @@ public record PlanListResponseDto (
             String title,
             String startedAt,
             String finishedAt,
-            String thumbnailUrl
+            String mainImg
     ) {
         public static PlanSummaryRes fromEntity(Plan plan) {
             return PlanSummaryRes.builder()
@@ -29,8 +29,8 @@ public record PlanListResponseDto (
                     .finishedAt(plan.getPeriod() != null && plan.getPeriod().getFinishedAt() != null
                             ? plan.getPeriod().getFinishedAt().toString()
                             : "")
-                    .thumbnailUrl(plan.getSummary() != null && plan.getSummary().getThumbnailUrl() != null
-                            ? plan.getSummary().getThumbnailUrl()
+                    .mainImg(plan.getSummary() != null && plan.getSummary().getMainImg() != null
+                            ? plan.getSummary().getMainImg()
                             : "")
                     .build();
         }

@@ -102,7 +102,6 @@ public class MemberServiceImpl implements MemberService {
     public MemberResponseDto.ProfileResultDto setProfile(CustomUserDetails userDetails, MemberRequestDto.ProfileDto request, MultipartFile image) {
         Member member = memberRepository.findById(userDetails.getId())
                 .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
-        if (!Objects.equals(member.getId(), request.memberId())) throw new GeneralException(ErrorStatus.MEMBER_NOT_FOUND);
 
         if (request.nickname() == null) throw new GeneralException(ErrorStatus.NICKNAME_IS_NECESSARY);
         member.updateNickname(request.nickname());
