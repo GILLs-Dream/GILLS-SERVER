@@ -10,5 +10,6 @@ import org.springframework.stereotype.Component;
 @Component
 @ConfigurationProperties(prefix = "python")
 public class PythonProperties {
-    private String processYoutube;
+    private String processVideo;
+    private String bearerToken;
 }
