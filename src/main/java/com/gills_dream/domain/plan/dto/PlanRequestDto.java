@@ -105,4 +105,9 @@ public class PlanRequestDto {
         @Schema(description = "받은 유튜브 링크 리스트")
         private List<String> videoUrlList = new ArrayList<>();
     }
+
+    public record TitleDto (
+            @Schema(description = "생성된 여행 제목", example = "길쑤니 빵투어")
+            String title
+    ) {}
 }

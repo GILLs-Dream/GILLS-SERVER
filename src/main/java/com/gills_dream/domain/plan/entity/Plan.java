@@ -32,12 +32,6 @@ public class Plan extends BaseEntity {
     @Column(columnDefinition = "bigint", nullable = false)
     private Long id;
 
-    @Column(columnDefinition = "TEXT")
-    private String title;
-
-    @Column(columnDefinition = "TEXT")
-    private String mainImg;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
@@ -100,14 +94,12 @@ public class Plan extends BaseEntity {
     private List<String> videoIds = new ArrayList<>();
 
     @Builder
-    public Plan(Member member, Team team, PlanSummary summary, PlanPeriod period, String moodSummary, String teamName, String region, String title, String mainImg,
+    public Plan(Member member, Team team, PlanSummary summary, PlanPeriod period, String moodSummary, String teamName, String region,
                 Boolean isPinned, Long party, TransportType transportType, List<CategoryType> categories, List<MoodType> moods, List<String> videoIds, MapRouteByDayRes generatedRoute) {
         this.member = member;
         this.team = team;
         this.summary = summary;
         this.moodSummary = moodSummary;
-        this.title = title;
-        this.mainImg = mainImg;
         this.teamName = teamName;
         this.period = period;
         this.region = region;
@@ -143,5 +135,9 @@ public class Plan extends BaseEntity {
 
     public void updateMember(Member member) {
         this.member = member;
+    }
+
+    public void updateSummary(PlanSummary summary) {
+        this.summary = summary;
     }
 }

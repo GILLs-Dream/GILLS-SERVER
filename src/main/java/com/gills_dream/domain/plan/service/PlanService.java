@@ -5,6 +5,7 @@ import com.gills_dream.domain.plan.dto.PlanListResponseDto;
 import com.gills_dream.domain.plan.dto.PlanRequestDto;
 import com.gills_dream.domain.plan.dto.PlanResponseDto;
 import com.gills_dream.global.jwt.CustomUserDetails;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface PlanService {
     PlanResponseDto.MoodResultDto selectAndSummarizeMood(CustomUserDetails userDetails, PlanRequestDto.MoodTextDto request);
@@ -16,6 +17,6 @@ public interface PlanService {
     MapRouteByDayRes generate(CustomUserDetails userDetails, Long planId);
     PlanResponseDto.GenerateResultDto viewPlan(CustomUserDetails userDetails, Long planId);
     PlanResponseDto.SummaryDto viewPlanSummary(CustomUserDetails userDetails, Long planId);
-    PlanListResponseDto getTemplateList();
-    PlanResponseDto.TemplateResultDto setTitleAndImg(CustomUserDetails userDetails, Long planId);
+    PlanListResponseDto getTemplateList(CustomUserDetails userDetails);
+    PlanResponseDto.TemplateResultDto setTitleAndImg(CustomUserDetails userDetails, Long planId, PlanRequestDto.TitleDto request, MultipartFile image);
 }

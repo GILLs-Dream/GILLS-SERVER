@@ -115,7 +115,7 @@ public class GptServiceImpl implements GptService {
                     .replace("{{teamName}}", plan.getTeamName())
                     .replace("{{categories}}", plan.getCategories().toString())
                     .replace("{{moods}}", plan.getMoods().toString())
-                    .replace("{{moodSummary}}", plan.getMooodSummary())
+                    .replace("{{moodSummary}}", plan.getMoodSummary())
                     .replace("{{generatedRoute}}", plan.getGeneratedRoute() == null ? "" : plan.getGeneratedRoute().toString());
         } catch (IOException e) {
             throw new IOException("Failed to read prompt text", e);
