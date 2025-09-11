@@ -15,7 +15,10 @@ public class MemberResponseDto {
             String email,
 
             @Schema(description = "멤버 닉네임", example = "스미스키")
-            String nickname
+            String nickname,
+
+            @Schema(description = "멤버 프로필 사진", example = "https://smiski...")
+            String img
     ) {}
 
     public record LoginResultWithTokenDto(
