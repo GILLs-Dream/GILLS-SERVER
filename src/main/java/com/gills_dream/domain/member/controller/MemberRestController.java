@@ -45,14 +45,14 @@ public class MemberRestController {
 
     @PostMapping("/logout")
     @Operation(summary = "로그아웃", description = "레디스에서 관련 키를 블랙리스트로 처리합니다.")
-    public ApiResponse<MemberResponseDto.LoginResultDto> logout(HttpServletRequest request, @AuthenticationPrincipal CustomUserDetails userDetails) {
+    public ApiResponse<?> logout(HttpServletRequest request, @AuthenticationPrincipal CustomUserDetails userDetails) {
         memberService.logout(jwtAuthenticationFilter.resolveToken(request), userDetails.getMember());
         return ApiResponse.onSuccess(SuccessStatus._OK);
     }
 
     @DeleteMapping("/delete")
     @Operation(summary = "탈퇴", description = "레디스에서 관련 키를 블랙리스트로 처리합니다.")
-    public ApiResponse<MemberResponseDto.LoginResultDto> delete(HttpServletRequest request, @AuthenticationPrincipal CustomUserDetails userDetails) {
+    public ApiResponse<?> delete(HttpServletRequest request, @AuthenticationPrincipal CustomUserDetails userDetails) {
         memberService.delete(jwtAuthenticationFilter.resolveToken(request), userDetails.getMember());
         return ApiResponse.onSuccess(SuccessStatus._OK);
     }
@@ -63,6 +63,12 @@ public class MemberRestController {
                                                                       @RequestPart("profile") @Valid MemberRequestDto.ProfileDto request,
                                                                       @RequestPart(value = "image", required = false) MultipartFile image) {
         return ApiResponse.onSuccess(memberService.setProfile(userDetails, request, image));
+    }
+
+    @GetMapping("/info")
+    @Operation(summary = "본인 닉네임, 이메일 조회")
+    public ApiResponse<MemberResponseDto.MemberInfoDto> info(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        return ApiResponse.onSuccess(memberService.info(userDetails));
     }
 }
 

@@ -87,6 +87,18 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
+    public MemberResponseDto.MemberInfoDto info(CustomUserDetails userDetails) {
+        Member member = memberRepository.findById(userDetails.getId())
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+
+        return new MemberResponseDto.MemberInfoDto(
+                member.getId(),
+                member.getEmail(),
+                member.getNickname()
+        );
+    }
+
+    @Override
     @Transactional
     public void logout(String accessToken, Member member) {
         if (member == null) throw new GeneralException(ErrorStatus.MEMBER_NOT_FOUND);

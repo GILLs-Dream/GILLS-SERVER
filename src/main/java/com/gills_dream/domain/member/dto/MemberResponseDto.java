@@ -7,12 +7,15 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 public class MemberResponseDto {
-    public record LoginResultDto(
+    public record MemberInfoDto(
             @Schema(description = "멤버 id", example = "1")
             Long memberId,
 
             @Schema(description = "멤버 이메일", example = "gillsoon@gmail.com")
-            String email
+            String email,
+
+            @Schema(description = "멤버 닉네임", example = "스미스키")
+            String nickname
     ) {}
 
     public record LoginResultWithTokenDto(
