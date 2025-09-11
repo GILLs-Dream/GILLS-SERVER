@@ -94,7 +94,8 @@ public class MemberServiceImpl implements MemberService {
         return new MemberResponseDto.MemberInfoDto(
                 member.getId(),
                 member.getEmail(),
-                member.getNickname()
+                member.getNickname(),
+                member.getProfileImg()
         );
     }
 
