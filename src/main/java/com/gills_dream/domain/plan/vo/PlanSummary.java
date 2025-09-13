@@ -15,24 +15,27 @@ public class PlanSummary {
     private String title;
 
     @Column(columnDefinition = "TEXT")
-    private String detail;
-
-    @Column(columnDefinition = "TEXT")
     private String summary;
 
     @Column(columnDefinition = "TEXT")
-    private String thumbnailUrl;
-
-    // Todo: 정책 정해지면, enum으로 변경
-    @Column(columnDefinition = "varchar(50)")
-    private String mood;
+    private String mainImg;
 
     @Builder
-    public PlanSummary(String title, String detail, String summary, String thumbnailUrl, String mood) {
+    public PlanSummary(String title, String summary, String mainImg) {
         this.title = title;
-        this.detail = detail;
         this.summary = summary;
-        this.thumbnailUrl = thumbnailUrl;
-        this.mood = mood;
+        this.mainImg = mainImg;
+    }
+
+    public void updateTitle(String title) {
+        this.title = title;
+    }
+
+    public void updateSummary(String summary) {
+        this.summary = summary;
+    }
+
+    public void updateMainImg(String mainImg) {
+        this.mainImg = mainImg;
     }
 }

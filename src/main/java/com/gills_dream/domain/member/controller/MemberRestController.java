@@ -16,9 +16,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @Tag(name = "멤버", description = "멤버 로그인 관련 API")
 @RestController
@@ -55,23 +57,30 @@ public class MemberRestController {
 
     @PostMapping("/logout")
     @Operation(summary = "로그아웃", description = "레디스에서 관련 키를 블랙리스트로 처리합니다.")
-    public ApiResponse<MemberResponseDto.LoginResultDto> logout(HttpServletRequest request, @AuthenticationPrincipal CustomUserDetails userDetails) {
+    public ApiResponse<?> logout(HttpServletRequest request, @AuthenticationPrincipal CustomUserDetails userDetails) {
         memberService.logout(jwtAuthenticationFilter.resolveToken(request), userDetails.getMember());
         return ApiResponse.onSuccess(SuccessStatus._OK);
     }
 
     @DeleteMapping("/delete")
     @Operation(summary = "탈퇴", description = "레디스에서 관련 키를 블랙리스트로 처리합니다.")
-    public ApiResponse<MemberResponseDto.LoginResultDto> delete(HttpServletRequest request, @AuthenticationPrincipal CustomUserDetails userDetails) {
+    public ApiResponse<?> delete(HttpServletRequest request, @AuthenticationPrincipal CustomUserDetails userDetails) {
         memberService.delete(jwtAuthenticationFilter.resolveToken(request), userDetails.getMember());
         return ApiResponse.onSuccess(SuccessStatus._OK);
     }
 
-    @PatchMapping("/setting")
-    @Operation(summary = "프로필 설정 + 이용약관 동의")
+    @PatchMapping(value = "/setting", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "프로필 설정 + 이용약관 동의 + 프로필 이미지 설정(이미지 이름에 확장자 꼭 추가해주세요)")
     public ApiResponse<MemberResponseDto.ProfileResultDto> setProfile(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                                                      @RequestBody @Valid MemberRequestDto.ProfileDto request) {
-        return ApiResponse.onSuccess(memberService.setProfile(userDetails.getMember(), request));
+                                                                      @RequestPart("profile") @Valid MemberRequestDto.ProfileDto request,
+                                                                      @RequestPart(value = "image", required = false) MultipartFile image) {
+        return ApiResponse.onSuccess(memberService.setProfile(userDetails, request, image));
+    }
+
+    @GetMapping("/info")
+    @Operation(summary = "본인 닉네임, 이메일 조회")
+    public ApiResponse<MemberResponseDto.MemberInfoDto> info(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        return ApiResponse.onSuccess(memberService.info(userDetails));
     }
 }
 

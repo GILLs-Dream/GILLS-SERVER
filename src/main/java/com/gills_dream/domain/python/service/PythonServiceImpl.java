@@ -20,16 +20,18 @@ public class PythonServiceImpl implements PythonService {
     private final PythonProperties pythonProperties;
 
     @Override
+    @Transactional
     public PythonResponseDto.ProcessResultDto processVideo(PlanRequestDto.VideoUrlDto request){
         try {
             RestTemplate restTemplate = new RestTemplate();
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setBearerAuth(pythonProperties.getBearerToken());
 
             HttpEntity<PlanRequestDto.VideoUrlDto> entity = new HttpEntity<>(request, headers);
 
             ResponseEntity<PythonResponseDto.ProcessResultDto> response = restTemplate.exchange(
-                    pythonProperties.getProcessYoutube(),
+                    pythonProperties.getProcessVideo(),
                     HttpMethod.POST,
                     entity,
                     PythonResponseDto.ProcessResultDto.class

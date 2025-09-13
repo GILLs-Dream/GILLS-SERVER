@@ -2,7 +2,6 @@ package com.gills_dream.domain.plan.service;
 
 import com.gills_dream.domain.gpt.service.GptService;
 import com.gills_dream.domain.map.dto.MapRouteByDayRes;
-import com.gills_dream.domain.map.dto.MapRouteReq;
 import com.gills_dream.domain.map.dto.MapRouteRes;
 import com.gills_dream.domain.map.service.RouteService;
 import com.gills_dream.domain.member.entity.Member;
@@ -12,7 +11,6 @@ import com.gills_dream.domain.place.dto.PlaceCacheWithContentId;
 import com.gills_dream.domain.place.entity.Place;
 import com.gills_dream.domain.place.record.PlacePair;
 import com.gills_dream.domain.place.repository.PlaceRepository;
-import com.gills_dream.domain.place.service.PlaceCacheService;
 import com.gills_dream.domain.place.service.PlaceService;
 import com.gills_dream.domain.plan.dto.PlanListResponseDto;
 import com.gills_dream.domain.plan.dto.PlanRequestDto;
@@ -23,8 +21,10 @@ import com.gills_dream.domain.plan.enumerate.MoodType;
 import com.gills_dream.domain.plan.enumerate.TransportType;
 import com.gills_dream.domain.plan.repository.PlanRepository;
 import com.gills_dream.domain.plan.vo.PlanPeriod;
+import com.gills_dream.domain.plan.vo.PlanSummary;
 import com.gills_dream.domain.python.dto.PythonResponseDto;
 import com.gills_dream.domain.python.service.PythonService;
+import com.gills_dream.domain.s3.service.S3Service;
 import com.gills_dream.global.apiPayload.code.status.ErrorStatus;
 import com.gills_dream.global.apiPayload.exception.GeneralException;
 import com.gills_dream.global.jwt.CustomUserDetails;
@@ -32,6 +32,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
 
@@ -46,8 +47,8 @@ public class PlanServiceImpl implements PlanService {
     private final PythonService pythonService;
     private final PlaceService placeService;
     private final PlaceRepository placeRepository;
-    private final PlaceCacheService placeCacheService;
     private final RouteService routeService;
+    private final S3Service s3Service;
 
     @Override
     @Transactional
@@ -202,7 +203,7 @@ public class PlanServiceImpl implements PlanService {
         }
 
         return new PlanResponseDto.GenerateResultDto(
-                plan.getMooodSummary(),
+                plan.getMoodSummary(),
                 planId,
                 plan.getPeriod().getDuration(),
                 planPerDayDtoList
@@ -211,20 +212,48 @@ public class PlanServiceImpl implements PlanService {
     }
 
     @Override
+    @Transactional
     public PlanResponseDto.SummaryDto viewPlanSummary(CustomUserDetails userDetails, Long planId) {
         Plan plan = checkMemberAndPlan(userDetails, planId);
 
         String summary = gptService.summarizePlan(plan);
 
+        PlanSummary planSummary = PlanSummary.builder()
+                .summary(summary)
+                .build();
+
+        plan.updateSummary(planSummary);
+
         return new PlanResponseDto.SummaryDto(
-                plan.getMooodSummary(),
-                summary
+                plan.getMoodSummary(),
+                planSummary.getSummary()
         );
     }
     @Override
-    public PlanListResponseDto getTemplateList() {
-        List<Plan> planList = planRepository.findAll();
+    public PlanListResponseDto getTemplateList(CustomUserDetails userDetails) {
+        Member member = memberRepository.findById(userDetails.getId())
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+
+        List<Plan> planList = planRepository.findAllByMemberAndPlanSummary(member.getId());
         return PlanListResponseDto.fromEntityList(planList);
+    }
+
+    @Override
+    @Transactional
+    public PlanResponseDto.TemplateResultDto setTitleAndImg(CustomUserDetails userDetails, Long planId, PlanRequestDto.TitleDto request, MultipartFile image) {
+        Plan plan = checkMemberAndPlan(userDetails, planId);
+
+        if (plan.getSummary() == null) {
+            throw new GeneralException(ErrorStatus.PLAN_SUMMARY_NOT_GENERATED);
+        }
+
+        if (request.title() == null || request.title().isEmpty()) plan.getSummary().updateTitle(plan.getMoodSummary());
+        else plan.getSummary().updateTitle(request.title());
+
+        if (image != null) plan.getSummary().updateMainImg(s3Service.uploadImg(userDetails.getMember(), image));
+        else plan.getSummary().updateMainImg("");
+
+        return new PlanResponseDto.TemplateResultDto(plan.getId());
     }
 
     private Plan checkMemberAndPlan(CustomUserDetails userDetails, Long planId) {
