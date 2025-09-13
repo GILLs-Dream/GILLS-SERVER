@@ -10,6 +10,6 @@ import java.util.Optional;
 
 public interface PlanRepository extends JpaRepository<Plan, Integer> {
     Optional<Plan> findByIdAndMember(Long planId, Member member);
-    @Query("select p from Plan p where p.member.id = :memberId and p.summary.summary is not null")
-    List<Plan> findAllByMemberAndPlanSummary(Long memberId);
+    @Query("select p from Plan p where p.member.id = :memberId and p.generatedRoute is not null")
+    List<Plan> findAllByMemberAndGeneratedRoute(Long memberId);
 }

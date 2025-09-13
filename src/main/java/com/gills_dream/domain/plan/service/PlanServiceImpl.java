@@ -234,7 +234,7 @@ public class PlanServiceImpl implements PlanService {
         Member member = memberRepository.findById(userDetails.getId())
                 .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
 
-        List<Plan> planList = planRepository.findAllByMemberAndPlanSummary(member.getId());
+        List<Plan> planList = planRepository.findAllByMemberAndGeneratedRoute(member.getId());
         return PlanListResponseDto.fromEntityList(planList);
     }
 
