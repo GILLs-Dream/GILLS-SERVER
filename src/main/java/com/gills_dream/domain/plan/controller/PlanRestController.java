@@ -11,13 +11,15 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @Tag(name = "여행 생성", description = "여행 생성 관련 API")
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/plan/template")
+@RequestMapping("/v1/plan/template")
 public class PlanRestController {
     private final PlanService planService;
 
@@ -82,7 +84,7 @@ public class PlanRestController {
         return ApiResponse.onSuccess(planService.viewPlan(userDetails, planId));
     }
 
-    @GetMapping("/{planId}/plan-summary")
+    @PatchMapping("/{planId}/plan-summary")
     @Operation(summary = "생성된 여행의 요약 조회")
     public ApiResponse<PlanResponseDto.SummaryDto> viewPlanSummary (@AuthenticationPrincipal CustomUserDetails userDetails,
                                                          @PathVariable("planId") Long planId) {
@@ -91,7 +93,16 @@ public class PlanRestController {
 
     @GetMapping
     @Operation(summary = "사용자 여행 템플릿 리스트 조회")
-    public ApiResponse<PlanListResponseDto> getTemplateList (/*@AuthenticationPrincipal CustomUserDetails userDetails*/) {
-        return ApiResponse.onSuccess(planService.getTemplateList());
+    public ApiResponse<PlanListResponseDto> getTemplateList (@AuthenticationPrincipal CustomUserDetails userDetails) {
+        return ApiResponse.onSuccess(planService.getTemplateList(userDetails));
+    }
+
+    @PatchMapping(value = "/{planId}/profile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "생성된 여행에 제목과 대표 이미지 설정")
+    public ApiResponse<PlanResponseDto.TemplateResultDto> setTitleAndImg(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                                                         @PathVariable("planId") Long planId,
+                                                                       @RequestPart("title") @Valid PlanRequestDto.TitleDto request,
+                                                                      @RequestPart(value = "image", required = false) MultipartFile image) {
+        return ApiResponse.onSuccess(planService.setTitleAndImg(userDetails, planId, request, image));
     }
 }

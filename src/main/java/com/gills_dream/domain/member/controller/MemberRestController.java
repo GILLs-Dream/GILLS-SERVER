@@ -1,59 +1,74 @@
 package com.gills_dream.domain.member.controller;
 
+import com.gills_dream.domain.member.converter.MemberConverter;
 import com.gills_dream.domain.member.dto.MemberRequestDto;
 import com.gills_dream.domain.member.dto.MemberResponseDto;
-import com.gills_dream.domain.token.service.CustomTokenService;
 import com.gills_dream.global.apiPayload.code.status.SuccessStatus;
-import com.gills_dream.global.common.record.ResponsePair;
-import com.gills_dream.global.common.record.TokenPair;
 import com.gills_dream.domain.member.service.MemberService;
 import com.gills_dream.global.apiPayload.ApiResponse;
+import com.gills_dream.global.common.record.TokenPair;
 import com.gills_dream.global.jwt.CustomUserDetails;
 import com.gills_dream.global.jwt.JwtAuthenticationFilter;
+import com.gills_dream.global.jwt.TokenUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @Tag(name = "멤버", description = "멤버 로그인 관련 API")
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/member")
+@RequestMapping("/v1/member")
 public class MemberRestController {
     private final MemberService memberService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
-    private final CustomTokenService customTokenService;
+    private final TokenUtils tokenUtils;
 
     @PostMapping("/oauth/kakao/login")
-    @Operation(summary = "카카오 로그인, 회원가입", description = "백엔드에서 카카오 로그인/회원가입 처리")
-    public ResponseEntity<ApiResponse<MemberResponseDto.LoginResultDto>> kakaoLogin(@RequestParam("code") String code) {
-        TokenPair tokenPair= memberService.kakaoLogin(code);
-        ResponsePair responsePair = customTokenService.buildLoginResponse(tokenPair, new HttpHeaders());
+    @Operation(summary = "카카오 로그인, 회원가입", description = "엑세스 토큰 받아서 JWT 토큰 반환")
+    public ResponseEntity<?> kakaoLogin(@RequestParam("accessToken") String accessToken) {
+        TokenPair tokenPair = memberService.kakaoLoginWithToken(accessToken);
 
-        return ResponseEntity.ok().headers(responsePair.headers()).body(responsePair.body());
+        // Token 처리
+        HttpHeaders headers = new HttpHeaders();
+        tokenUtils.addToken(headers, tokenPair, true);
+
+        return ResponseEntity.ok().headers(headers).body(MemberConverter.toLoginResultWithTokenDto(tokenPair));
     }
 
-    @PostMapping("/oauth/kakao/logout")
-    @Operation(summary = "카카오 로그아웃")
-    public ApiResponse<MemberResponseDto.LoginResultDto> kakaoLogout(HttpServletRequest request, @AuthenticationPrincipal CustomUserDetails userDetails) {
-        memberService.kakaoLogout(jwtAuthenticationFilter.resolveToken(request), userDetails.getMember());
+    @PostMapping("/logout")
+    @Operation(summary = "로그아웃", description = "레디스에서 관련 키를 블랙리스트로 처리합니다.")
+    public ApiResponse<?> logout(HttpServletRequest request, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        memberService.logout(jwtAuthenticationFilter.resolveToken(request), userDetails.getMember());
         return ApiResponse.onSuccess(SuccessStatus._OK);
     }
 
-    @PatchMapping("/setting")
-    @Operation(summary = "프로필 설정 + 이용약관 동의")
-    public ApiResponse<MemberResponseDto.ProfileResultDto> setProfile(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                                                      @RequestBody @Valid MemberRequestDto.ProfileDto request) {
-        return ApiResponse.onSuccess(memberService.setProfile(userDetails.getMember(), request));
+    @DeleteMapping("/delete")
+    @Operation(summary = "탈퇴", description = "레디스에서 관련 키를 블랙리스트로 처리합니다.")
+    public ApiResponse<?> delete(HttpServletRequest request, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        memberService.delete(jwtAuthenticationFilter.resolveToken(request), userDetails.getMember());
+        return ApiResponse.onSuccess(SuccessStatus._OK);
     }
 
-//    @PostMapping("oauth/apple/login")
-//    @Operation(summary = "애플 로그인, 회원가입", description = "프론트가 애플 로그인 api를 호출하고 백엔드에게 인가 코드를 넘겨줍니다")
-//
+    @PatchMapping(value = "/setting", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "프로필 설정 + 이용약관 동의 + 프로필 이미지 설정(이미지 이름에 확장자 꼭 추가해주세요)")
+    public ApiResponse<MemberResponseDto.ProfileResultDto> setProfile(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                                                      @RequestPart("profile") @Valid MemberRequestDto.ProfileDto request,
+                                                                      @RequestPart(value = "image", required = false) MultipartFile image) {
+        return ApiResponse.onSuccess(memberService.setProfile(userDetails, request, image));
+    }
+
+    @GetMapping("/info")
+    @Operation(summary = "본인 닉네임, 이메일 조회")
+    public ApiResponse<MemberResponseDto.MemberInfoDto> info(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        return ApiResponse.onSuccess(memberService.info(userDetails));
+    }
 }
 

@@ -100,7 +100,6 @@ public class TokenProvider implements InitializingBean {
             if (redisService.checkExistsValue(token)) {
                 return false; // Redis에 이 토큰이 블랙리스트(“logout”)로 등록돼 있는지 확인
             }
-
             return true;
         } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
             throw new GeneralException(ErrorStatus.INVALID_SIGNATURE);

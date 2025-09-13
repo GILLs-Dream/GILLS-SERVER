@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -55,9 +56,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         } catch (JwtException e) {
             log.error("[JwtAuthenticationFilter] " + e.getMessage());
             writeErrorResponse(servletResponse, HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized - " + e.getMessage());
-        } catch (Exception e) {
+        } catch (GeneralException e) {
             log.error("[JwtAuthenticationFilter] " + e.getMessage());
-            writeErrorResponse(servletResponse, HttpServletResponse.SC_BAD_REQUEST, "Error processing request - " + e.getMessage());
+            String errorCode = e.getErrorReasonHttpStatus().getCode();
+
+            int httpCode = switch (errorCode) {
+                case "INVALID TOKEN", "EXPIRED TOKEN", "UNSUPPORTED TOKEN", "INVALID SIGNATURE" -> 401;
+                default -> 400;
+            };
+            writeErrorResponse(servletResponse, httpCode, e.getErrorReasonHttpStatus().getMessage());
         }
     }
 

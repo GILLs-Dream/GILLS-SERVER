@@ -7,20 +7,45 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 public class MemberResponseDto {
-    public record LoginResultDto(
+    public record MemberInfoDto(
             @Schema(description = "멤버 id", example = "1")
             Long memberId,
 
             @Schema(description = "멤버 이메일", example = "gillsoon@gmail.com")
-            String email
+            String email,
+
+            @Schema(description = "멤버 닉네임", example = "스미스키")
+            String nickname,
+
+            @Schema(description = "멤버 프로필 사진", example = "https://smiski...")
+            String img
     ) {}
+
+    public record LoginResultWithTokenDto(
+            @Schema(description = "멤버 id", example = "1")
+            Long memberId,
+
+            @Schema(description = "멤버 이메일", example = "gillsoon@gmail.com")
+            String email,
+
+            @Schema(description = "엑세스 토큰", example = "sdfsfsfsfsfdfds")
+            String accessToken,
+
+            @Schema(description = "리프레시 토큰", example = "jiljijililjilkl")
+            String refreshToken
+    ) {}
+
+
 
     public record ProfileResultDto (
         @Schema(description = "멤버 id", example = "1")
         Long memberId,
 
         @Schema(description = "멤버 닉네임", example = "길순이")
-        String nickname
+        String nickname,
+
+        @Schema(description = "정상적으로 업로드되면 활성화될 imageURL", example = "https://influy-s3...")
+        String imgUrl
     ) {}
 
 

@@ -45,7 +45,7 @@ public class Place {
     @Enumerated(EnumType.STRING)
     private PlaceType placeType;
 
-    @OneToMany(mappedBy = "place")
+    @OneToMany(mappedBy = "place", orphanRemoval = true)
     private List<PlanPlace> planPlaces = new ArrayList<>();
 
     @ElementCollection(fetch = FetchType.LAZY)

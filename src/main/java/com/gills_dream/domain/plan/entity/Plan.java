@@ -22,7 +22,8 @@ import java.util.List;
 
 @Getter
 @Entity
-@SQLDelete(sql = "UPDATE \"plan\" SET deleted_at = NOW() WHERE id = ?")
+@Table(name = "`plan`")
+@SQLDelete(sql = "UPDATE `plan` SET deleted_at = NOW() WHERE id = ?")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Plan extends BaseEntity {
 
@@ -51,7 +52,7 @@ public class Plan extends BaseEntity {
     private Long party;
 
     @Column(columnDefinition = "TEXT")
-    private String mooodSummary;
+    private String moodSummary;
 
     @Column(columnDefinition = "TEXT")
     private String region;
@@ -77,7 +78,7 @@ public class Plan extends BaseEntity {
     @Column(name = "category_type")
     private List<CategoryType> categories = new ArrayList<>();
 
-    @OneToMany(mappedBy = "plan", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "plan", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PlanPlace> planPlaces = new ArrayList<>();
 
     @ElementCollection(fetch = FetchType.LAZY)
@@ -98,7 +99,7 @@ public class Plan extends BaseEntity {
         this.member = member;
         this.team = team;
         this.summary = summary;
-        this.mooodSummary = moodSummary;
+        this.moodSummary = moodSummary;
         this.teamName = teamName;
         this.period = period;
         this.region = region;
@@ -130,5 +131,13 @@ public class Plan extends BaseEntity {
 
     public void updateGeneratedRoute(MapRouteByDayRes generatedRoute) {
         this.generatedRoute = generatedRoute;
+    }
+
+    public void updateMember(Member member) {
+        this.member = member;
+    }
+
+    public void updateSummary(PlanSummary summary) {
+        this.summary = summary;
     }
 }
