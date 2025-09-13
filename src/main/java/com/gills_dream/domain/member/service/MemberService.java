@@ -10,7 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 public interface MemberService {
     void logout(String accessToken, Member member);
-    MemberResponseDto.ProfileResultDto setProfile(Member member, MemberRequestDto.ProfileDto request);
+    MemberResponseDto.ProfileResultDto setProfile(CustomUserDetails userDetails, MemberRequestDto.ProfileDto request, MultipartFile image);
     TokenPair kakaoLogin(String accessToken);
     void delete(String accessToken, Member member);
     MemberResponseDto.MemberInfoDto info(CustomUserDetails userDetails);
