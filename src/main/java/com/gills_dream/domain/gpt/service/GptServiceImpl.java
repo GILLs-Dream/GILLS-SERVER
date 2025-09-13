@@ -112,7 +112,7 @@ public class GptServiceImpl implements GptService {
                     .replace("{{region}}", plan.getRegion())
                     .replace("{{duration}}", plan.getPeriod().getDuration().toString())
                     .replace("{{party}}", plan.getParty().toString())
-                    .replace("{{teamName}}", plan.getTeamName())
+                    .replace("{{teamName}}", plan.getTeamName()==null ? "" : plan.getTeamName())
                     .replace("{{categories}}", plan.getCategories().toString())
                     .replace("{{moods}}", plan.getMoods().toString())
                     .replace("{{moodSummary}}", plan.getMoodSummary())
