@@ -17,7 +17,6 @@ public enum ErrorStatus implements BaseCode {
     FORBIDDEN(HttpStatus.FORBIDDEN, "COMMON403", "금지된 요청입니다."),
 
     // 로그인 관련 에러 응답
-    WRONG_PASSWORD(HttpStatus.BAD_REQUEST, "WRONG PASSWORD", "비밀번호 입력이 틀렸습니다."),
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "INVALID TOKEN", "토큰이 유효하지 않습니다."),
     EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "EXPIRED TOKEN", "만료된 토큰입니다."),
     UNSUPPORTED_TOKEN(HttpStatus.UNAUTHORIZED, "UNSUPPORTED TOKEN", "지원하지 않는 토큰입니다."),
