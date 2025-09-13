@@ -56,6 +56,9 @@ dependencies {
 	implementation 'org.springframework.ai:spring-ai-openai'
 
 	implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+
+	// Apple Login
+	implementation 'com.nimbusds:nimbus-jose-jwt:10.0.2'
 }
 
 tasks.named('test') {
