@@ -8,7 +8,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientResponseException;
 
-
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -22,17 +21,23 @@ public class TmapRouteClient {
             .build();
 
     public PedestrianRouteRes findPedestrianRoute(PedestrianRouteReq req) {
-        return restClient.post()
-                .uri(uriBuilder -> uriBuilder
-                        .path("/tmap/routes/pedestrian")
-                        .queryParam("version", 1)
-                        .build())
-                .header("appKey", appKey)
-                .header("Content-Type", "application/json")
-                .header("Accept", "application/json")
-                .body(req)
-                .retrieve()
-                .body(PedestrianRouteRes.class);
+        try {
+            return restClient.post()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/tmap/routes/pedestrian")
+                            .queryParam("version", 1)
+                            .build())
+                    .header("appKey", appKey)
+                    .header("Content-Type", "application/json")
+                    .header("Accept", "application/json")
+                    .body(req)
+                    .retrieve()
+                    .body(PedestrianRouteRes.class);
+        } catch (RestClientResponseException e) {
+            String body = e.getResponseBodyAsString();
+            log.warn("[TMAP][PEDESTRIAN][{}] {}", e.getRawStatusCode(), body);
+            throw new RuntimeException(body, e);
+        }
     }
 
     public TransitRawRes findTransitRoute(TransitRouteReq req) {
@@ -44,7 +49,9 @@ public class TmapRouteClient {
                     .retrieve()
                     .body(TransitRawRes.class);
         } catch (RestClientResponseException e) {
-            throw new RuntimeException("대중교통 경로 탐색 실패: " + e.getResponseBodyAsString(), e);
+            String body = e.getResponseBodyAsString();
+            log.warn("[TMAP][TRANSIT][{}] {}", e.getRawStatusCode(), body);
+            throw new RuntimeException("대중교통 경로 탐색 실패: " + body, e);
         }
     }
 }
