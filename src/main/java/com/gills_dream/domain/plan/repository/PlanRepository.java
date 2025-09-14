@@ -12,4 +12,6 @@ public interface PlanRepository extends JpaRepository<Plan, Integer> {
     Optional<Plan> findByIdAndMember(Long planId, Member member);
     @Query("select p from Plan p where p.member.id = :memberId and p.generatedRoute is not null")
     List<Plan> findAllByMemberAndGeneratedRoute(Long memberId);
+    @Query("select p from Plan p left join fetch p.categories where p.id = :planId")
+    Optional<Plan> findByIdWithCategories(Long planId);
 }

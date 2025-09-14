@@ -29,7 +29,7 @@ public class SecurityConfig {
             "/swagger-resources/**",
             "/v3/api-docs/**",
             "/resources/**",
-            "/v1/member/oauth/kakao/login"
+            "/v1/member/oauth/kakao/login",
     };
 
     @Bean
