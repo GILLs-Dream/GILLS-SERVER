@@ -16,7 +16,8 @@ public interface PlanService {
     PlanResponseDto.VideoResultDto saveVideo(CustomUserDetails userDetails, Long planId, PlanRequestDto.VideoUrlDto request);
     MapRouteByDayRes generate(CustomUserDetails userDetails, Long planId);
     PlanResponseDto.GenerateResultDto viewPlan(CustomUserDetails userDetails, Long planId);
-    PlanResponseDto.SummaryDto viewPlanSummary(CustomUserDetails userDetails, Long planId);
+    PlanResponseDto.SummaryDto generatePlanSummary(CustomUserDetails userDetails, Long planId);
     PlanListResponseDto getTemplateList(CustomUserDetails userDetails);
     PlanResponseDto.TemplateResultDto setTitleAndImg(CustomUserDetails userDetails, Long planId, PlanRequestDto.TitleDto request, MultipartFile image);
+    PlanResponseDto.SummaryDto viewPlanSummary(CustomUserDetails userDetails, Long planId);
 }

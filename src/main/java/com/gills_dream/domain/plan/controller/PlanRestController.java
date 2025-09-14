@@ -85,10 +85,10 @@ public class PlanRestController {
     }
 
     @PatchMapping("/{planId}/plan-summary")
-    @Operation(summary = "생성된 여행의 요약 조회")
-    public ApiResponse<PlanResponseDto.SummaryDto> viewPlanSummary (@AuthenticationPrincipal CustomUserDetails userDetails,
+    @Operation(summary = "생성된 여행의 요약 생성")
+    public ApiResponse<PlanResponseDto.SummaryDto> generatePlanSummary (@AuthenticationPrincipal CustomUserDetails userDetails,
                                                          @PathVariable("planId") Long planId) {
-        return ApiResponse.onSuccess(planService.viewPlanSummary(userDetails, planId));
+        return ApiResponse.onSuccess(planService.generatePlanSummary(userDetails, planId));
     }
 
     @GetMapping
@@ -104,5 +104,12 @@ public class PlanRestController {
                                                                        @RequestPart("title") @Valid PlanRequestDto.TitleDto request,
                                                                       @RequestPart(value = "image", required = false) MultipartFile image) {
         return ApiResponse.onSuccess(planService.setTitleAndImg(userDetails, planId, request, image));
+    }
+
+    @GetMapping("/{planId}/plan-summary")
+    @Operation(summary = "생성된 여행의 요약 조회")
+    public ApiResponse<PlanResponseDto.SummaryDto> viewPlanSummary (@AuthenticationPrincipal CustomUserDetails userDetails,
+                                                                        @PathVariable("planId") Long planId) {
+        return ApiResponse.onSuccess(planService.viewPlanSummary(userDetails, planId));
     }
 }
