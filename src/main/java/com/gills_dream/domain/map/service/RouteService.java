@@ -63,270 +63,277 @@ public class RouteService {
      */
     @Transactional
     public MapRouteByDayRes getRoute(Long planId, TransportType transportation) throws GeneralException {
-        // 1) plan + categories
-        Plan plan = planRepository.findByIdWithCategories(planId)
-                .orElseThrow(() -> new GeneralException(ErrorStatus.PLAN_NOT_FOUND));
+        try {
+            // 1) plan + categories
+            Plan plan = planRepository.findByIdWithCategories(planId)
+                    .orElseThrow(() -> new GeneralException(ErrorStatus.PLAN_NOT_FOUND));
 
-        // plan category List<String>
-        List<String> categories = nset(plan.getCategories()).stream()
-                .filter(Objects::nonNull)
-                .map(c -> c.getDescription())
-                .filter(s -> !isBlank(s))
-                .distinct()
-                .toList();
-
-        // 2) places (PlanPlace, images 사전 로딩)
-        List<Place> places = nlist(placeRepository.findAllByPlanId(planId));
-        if (!places.isEmpty()) {
-            var ids = places.stream().map(Place::getId).filter(Objects::nonNull).toList();
-            if (!ids.isEmpty()) placeRepository.findAllWithImagesByIdIn(ids);
-        }
-
-        // Place -> PlaceCache (PlanPlace.period 매핑, 널-세이프)
-        List<PlaceCache> placeList = new ArrayList<>(places.size());
-        for (Place p : places) {
-            PlacePeriod period = p.getPlanPlaces().stream()
-                    .filter(pp -> pp != null && pp.getPlan() != null && planId.equals(pp.getPlan().getId()))
-                    .map(PlanPlace::getPeriod)
+            // plan category List<String>
+            List<String> categories = nset(plan.getCategories()).stream()
                     .filter(Objects::nonNull)
-                    .findFirst()
-                    .orElse(null);
-            placeList.add(PlaceCache.fromEntity(p, period));
-        }
-        log.info("placeList : {}", placeList);
+                    .map(c -> c.getDescription())
+                    .filter(s -> !isBlank(s))
+                    .distinct()
+                    .toList();
 
-        // 3) 캐시 병합
-        List<PlaceCache> cachePlaces = nlist(placeCacheService.getByPlanId(planId));
-        log.info("cachePlaces : {}", cachePlaces);
-        if (!cachePlaces.isEmpty()) {
-            Set<String> keys = placeList.stream()
-                    .map(pc -> (nz(pc.platform()) + ":" + nz(pc.contentId())))
-                    .collect(Collectors.toSet());
-            for (PlaceCache c : cachePlaces) {
-                String key = nz(c.platform()) + ":" + nz(c.contentId());
-                if (!keys.contains(key)) {
-                    placeList.add(c);
-                    keys.add(key);
+            // 2) places (PlanPlace, images 사전 로딩)
+            List<Place> places = nlist(placeRepository.findAllByPlanId(planId));
+            if (!places.isEmpty()) {
+                var ids = places.stream().map(Place::getId).filter(Objects::nonNull).toList();
+                if (!ids.isEmpty()) placeRepository.findAllWithImagesByIdIn(ids);
+            }
+
+            // Place -> PlaceCache (PlanPlace.period 매핑, 널-세이프)
+            List<PlaceCache> placeList = new ArrayList<>(places.size());
+            for (Place p : places) {
+                PlacePeriod period = p.getPlanPlaces().stream()
+                        .filter(pp -> pp != null && pp.getPlan() != null && planId.equals(pp.getPlan().getId()))
+                        .map(PlanPlace::getPeriod)
+                        .filter(Objects::nonNull)
+                        .findFirst()
+                        .orElse(null);
+                placeList.add(PlaceCache.fromEntity(p, period));
+            }
+            log.info("placeList : {}", placeList);
+
+            // 3) 캐시 병합
+            List<PlaceCache> cachePlaces = nlist(placeCacheService.getByPlanId(planId));
+            log.info("cachePlaces : {}", cachePlaces);
+            if (!cachePlaces.isEmpty()) {
+                Set<String> keys = placeList.stream()
+                        .map(pc -> (nz(pc.platform()) + ":" + nz(pc.contentId())))
+                        .collect(Collectors.toSet());
+                for (PlaceCache c : cachePlaces) {
+                    String key = nz(c.platform()) + ":" + nz(c.contentId());
+                    if (!keys.contains(key)) {
+                        placeList.add(c);
+                        keys.add(key);
+                    }
                 }
             }
-        }
-        log.info("cached placeList : {}", placeList);
+            log.info("cached placeList : {}", placeList);
 
-        // 4) PlaceCache -> MapRouteReq.Location
-        List<MapRouteReq.Location> locations = placeList.stream()
-                .map(p -> MapRouteReq.Location.of(
-                        parseDoubleSafe(p.lat()),
-                        parseDoubleSafe(p.lng()),
-                        p.name(),
-                        p.placeType() != null ? p.placeType() : null,
-                        p.period() == null ? null :
-                                MapRouteReq.Period.of(
-                                        p.period().startedAt(),
-                                        p.period().finishedAt(),
-                                        p.period().duration(),
-                                        p.period().dayOrder()
-                                ),
-                        p.contentId(),
-                        p.detailUrl(),
-                        p.imageUrl(),
-                        p.platform()
-                ))
-                .toList();
+            // 4) PlaceCache -> MapRouteReq.Location
+            List<MapRouteReq.Location> locations = placeList.stream()
+                    .map(p -> MapRouteReq.Location.of(
+                            parseDoubleSafe(p.lat()),
+                            parseDoubleSafe(p.lng()),
+                            p.name(),
+                            p.placeType() != null ? p.placeType() : null,
+                            p.period() == null ? null :
+                                    MapRouteReq.Period.of(
+                                            p.period().startedAt(),
+                                            p.period().finishedAt(),
+                                            p.period().duration(),
+                                            p.period().dayOrder()
+                                    ),
+                            p.contentId(),
+                            p.detailUrl(),
+                            p.imageUrl(),
+                            p.platform()
+                    ))
+                    .toList();
 
-        log.info("locations : {}", locations);
+            log.info("locations : {}", locations);
 
-        MapRouteReq route = MapRouteReq.of(plan.getRegion(), plan.getPeriod(), locations);
-        log.info("route : {}", route);
+            MapRouteReq route = MapRouteReq.of(plan.getRegion(), plan.getPeriod(), locations);
+            log.info("route : {}", route);
 
-        long count = nlist(route.locations()).stream()
-                .filter(l -> l != null && l.lat() != 0 && l.lng() != 0)
-                .count();
+            long count = nlist(route.locations()).stream()
+                    .filter(l -> l != null && l.lat() != 0 && l.lng() != 0)
+                    .count();
 
-        // 5) GPT로 재정렬 (빈 입력도 허용)
-        MapRouteByDayRes byDay = gptService.createRouteRequest(
-                route, transportation.toString(), count, categories, plan.getMoodSummary()
-        );
-        log.info("byDay (raw) : {}", byDay);
+            // 5) GPT로 재정렬 (빈 입력도 허용)
+            MapRouteByDayRes byDay = gptService.createRouteRequest(
+                    route, transportation.toString(), count, categories, plan.getMoodSummary()
+            );
+            log.info("byDay (raw) : {}", byDay);
 
-        if (byDay == null || byDay.days() == null) {
-            // 완전 빈 결과 폴백
-            return MapRouteByDayRes.builder()
-                    .mode(MapRouteByDayRes.Mode.INDEXED)
-                    .days(List.of(MapRouteByDayRes.Day.builder()
-                            .index(1).date(null).locations(nlist(route.locations()))
-                            .routes(Collections.emptyList()).build()))
-                    .build();
-        }
+            if (byDay == null || byDay.days() == null) {
+                // 완전 빈 결과 폴백
+                return MapRouteByDayRes.builder()
+                        .mode(MapRouteByDayRes.Mode.INDEXED)
+                        .days(List.of(MapRouteByDayRes.Day.builder()
+                                .index(1).date(null).locations(nlist(route.locations()))
+                                .routes(Collections.emptyList()).build()))
+                        .build();
+            }
 
-        // 6) DATED 정규화
-        if (byDay.mode() != null && "DATED".equalsIgnoreCase(byDay.mode().name())) {
+            // 6) DATED 정규화
+            if (byDay.mode() != null && "DATED".equalsIgnoreCase(byDay.mode().name())) {
+                for (var d : byDay.days()) {
+                    if (d == null) continue;
+                    var locs = d.locations();
+                    if (locs == null) continue;
+                    String dayDate = d.date();
+                    for (int i = 0; i < locs.size(); i++) {
+                        var loc = locs.get(i);
+                        if (loc == null) continue;
+                        var p = loc.period();
+                        MapRouteReq.Period np = MapRouteReq.Period.of(
+                                isBlank(dayDate) ? (p == null ? null : p.startedAt()) : dayDate,
+                                isBlank(dayDate) ? (p == null ? null : p.finishedAt()) : dayDate,
+                                (p != null) ? p.duration() : null,
+                                (p != null && p.dayOrder() != null) ? p.dayOrder() : d.index()
+                        );
+                        locs.set(i, MapRouteReq.Location.of(
+                                loc.lat(), loc.lng(), loc.name(), loc.placeType(), np,
+                                loc.contentId(), loc.detailUrl(), loc.imageUrl(), loc.platform()
+                        ));
+                    }
+                }
+            }
+
+            // 7) Kakao 보강 (예외/429 시 스킵)
             for (var d : byDay.days()) {
                 if (d == null) continue;
-                var locs = d.locations();
-                if (locs == null) continue;
-                String dayDate = d.date();
-                for (int i = 0; i < locs.size(); i++) {
-                    var loc = locs.get(i);
-                    if (loc == null) continue;
-                    var p = loc.period();
-                    MapRouteReq.Period np = MapRouteReq.Period.of(
-                            isBlank(dayDate) ? (p == null ? null : p.startedAt()) : dayDate,
-                            isBlank(dayDate) ? (p == null ? null : p.finishedAt()) : dayDate,
-                            (p != null) ? p.duration() : null,
-                            (p != null && p.dayOrder() != null) ? p.dayOrder() : d.index()
-                    );
-                    locs.set(i, MapRouteReq.Location.of(
-                            loc.lat(), loc.lng(), loc.name(), loc.placeType(), np,
-                            loc.contentId(), loc.detailUrl(), loc.imageUrl(), loc.platform()
-                    ));
-                }
-            }
-        }
+                var dlocs = d.locations();
+                if (dlocs == null || dlocs.isEmpty()) continue;
 
-        // 7) Kakao 보강 (예외/429 시 스킵)
-        for (var d : byDay.days()) {
-            if (d == null) continue;
-            var dlocs = d.locations();
-            if (dlocs == null || dlocs.isEmpty()) continue;
+                double[] ctr = centroid(dlocs); // {0,0}이면 지오펜스 체크 스킵
+                for (int i = 0; i < dlocs.size(); i++) {
+                    var loc = dlocs.get(i);
+                    if (loc == null || isBlank(loc.name())) continue;
+                    boolean needSearch = isBlank(loc.contentId());
+                    if (!needSearch) continue;
 
-            double[] ctr = centroid(dlocs); // {0,0}이면 지오펜스 체크 스킵
-            for (int i = 0; i < dlocs.size(); i++) {
-                var loc = dlocs.get(i);
-                if (loc == null || isBlank(loc.name())) continue;
-                boolean needSearch = isBlank(loc.contentId());
-                if (!needSearch) continue;
+                    List<MapSearchRes> results;
+                    try {
+                        results = kakaoMapClient.searchByKeyword(loc.name());
+                    } catch (Exception e) {
+                        log.warn("Kakao search skipped ({}): {}", loc.name(), e.getMessage());
+                        continue; // 검색 생략, 기존 값 유지
+                    }
+                    results = (results == null) ? List.of() : results;
 
-                List<MapSearchRes> results;
-                try {
-                    results = kakaoMapClient.searchByKeyword(loc.name());
-                } catch (Exception e) {
-                    log.warn("Kakao search skipped ({}): {}", loc.name(), e.getMessage());
-                    continue; // 검색 생략, 기존 값 유지
-                }
-                results = (results == null) ? List.of() : results;
-
-                List<MapSearchRes> candidates = results.stream()
-                        .filter(r -> parseDoubleSafe(r.lat()) != 0 && parseDoubleSafe(r.lng()) != 0)
-                        .filter(r -> {
-                            if (ctr[0] == 0 && ctr[1] == 0) return true; // 센트로이드 불명 → 패스
-                            return inGeofence(ctr[0], ctr[1], parseDoubleSafe(r.lat()), parseDoubleSafe(r.lng()));
-                        })
-                        .sorted(Comparator.comparingDouble(r ->
-                                haversineKm(loc.lat(), loc.lng(), parseDoubleSafe(r.lat()), parseDoubleSafe(r.lng()))
-                        ))
-                        .toList();
-
-                if (!candidates.isEmpty()) {
-                    MapSearchRes best = candidates.get(0);
-                    dlocs.set(i, MapRouteReq.Location.updateContent(
-                            loc,
-                            best.id(), best.detailUrl(), best.imageUrl(), "KAKAO",
-                            parseDoubleSafe(best.lat()), parseDoubleSafe(best.lng()), best.name()
-                    ));
-                } else {
-                    String genId = genContentId();
-                    dlocs.set(i, MapRouteReq.Location.updateContent(
-                            loc, genId, null, null, "GENERATED",
-                            loc.lat(), loc.lng(), loc.name()
-                    ));
-                    log.warn("contentId not found via Kakao. Generated contentId={} for name='{}'", genId, nz(loc.name()));
-                }
-            }
-        }
-
-        // 8) Provider 선택
-        Function<MapRouteReq, MapRouteRes> runner = switch (transportation) {
-            case CAR -> carRouteProvider::route;
-            case WALK -> walkRouteProvider::route;
-            case BICYCLE -> bicycleRouteProvider::route;
-            case TRANSPORT -> transitRouteProvider::route;
-            default -> throw new GeneralException(ErrorStatus.TRANSPORT_TYPE_NOT_FOUND);
-        };
-
-        // 9) 날짜별 경로 계산 + PlaceInfo 보강 + DB 반영(널-세이프)
-        List<MapRouteByDayRes.Day> enrichedDays = new ArrayList<>();
-        Map<String, Place> placeByContentId = new HashMap<>();
-
-        for (var day : byDay.days()) {
-            if (day == null) continue;
-            List<MapRouteReq.Location> dlocs = nlist(day.locations());
-            List<MapRouteRes> routes = new ArrayList<>();
-
-            if (dlocs.size() >= 2) {
-                MapRouteReq oneDayReq = MapRouteReq.of(plan.getRegion(), plan.getPeriod(), dlocs);
-                MapRouteRes dayRes = runner.apply(oneDayReq);
-
-                if (!RouteUtils.isEmpty(dayRes) && dayRes.legs() != null && !dayRes.legs().isEmpty()) {
-                    double[] ctr = centroid(dlocs);
-                    var filteredLegs = dayRes.legs().stream()
-                            .filter(Objects::nonNull)
-                            .filter(l -> {
-                                if (ctr[0] == 0 && ctr[1] == 0) return true; // 센트로이드 불명 → 필터 패스
-                                boolean okStart = inGeofence(ctr[0], ctr[1], l.startLat(), l.startLng());
-                                boolean okEnd = inGeofence(ctr[0], ctr[1], l.endLat(), l.endLng());
-                                return okStart && okEnd;
+                    List<MapSearchRes> candidates = results.stream()
+                            .filter(r -> parseDoubleSafe(r.lat()) != 0 && parseDoubleSafe(r.lng()) != 0)
+                            .filter(r -> {
+                                if (ctr[0] == 0 && ctr[1] == 0) return true; // 센트로이드 불명 → 패스
+                                return inGeofence(ctr[0], ctr[1], parseDoubleSafe(r.lat()), parseDoubleSafe(r.lng()));
                             })
+                            .sorted(Comparator.comparingDouble(r ->
+                                    haversineKm(loc.lat(), loc.lng(), parseDoubleSafe(r.lat()), parseDoubleSafe(r.lng()))
+                            ))
                             .toList();
 
-                    if (!filteredLegs.isEmpty()) {
-                        dayRes = MapRouteRes.builder()
-                                .distance(dayRes.distance())
-                                .duration(dayRes.duration())
-                                .polyline(dayRes.polyline())
-                                .legs(filteredLegs)
-                                .build();
-
-                        List<MapRouteRes> enrichedRoutes = enrichRoutesWithPlaceInfo(List.of(dayRes), dlocs);
-                        routes.addAll(enrichedRoutes);
+                    if (!candidates.isEmpty()) {
+                        MapSearchRes best = candidates.get(0);
+                        dlocs.set(i, MapRouteReq.Location.updateContent(
+                                loc,
+                                best.id(), best.detailUrl(), best.imageUrl(), "KAKAO",
+                                parseDoubleSafe(best.lat()), parseDoubleSafe(best.lng()), best.name()
+                        ));
                     } else {
-                        log.warn("day {}/{}: all legs removed by spike/geofence filter",
-                                nz(day.date()), String.valueOf(day.index()));
+                        String genId = genContentId();
+                        dlocs.set(i, MapRouteReq.Location.updateContent(
+                                loc, genId, null, null, "GENERATED",
+                                loc.lat(), loc.lng(), loc.name()
+                        ));
+                        log.warn("contentId not found via Kakao. Generated contentId={} for name='{}'", genId, nz(loc.name()));
                     }
                 }
             }
 
-            log.info("day {} routes: {}", nz(day.date()) + "/" + nz(String.valueOf(day.index())), routes);
+            // 8) Provider 선택
+            Function<MapRouteReq, MapRouteRes> runner = switch (transportation) {
+                case CAR -> carRouteProvider::route;
+                case WALK -> walkRouteProvider::route;
+                case BICYCLE -> bicycleRouteProvider::route;
+                case TRANSPORT -> transitRouteProvider::route;
+                default -> throw new GeneralException(ErrorStatus.TRANSPORT_TYPE_NOT_FOUND);
+            };
 
-            // DB 반영 (널-세이프)
-            for (MapRouteRes r : routes) {
-                if (r == null || r.legs() == null) continue;
-                for (var leg : r.legs()) {
-                    if (leg == null) continue;
+            // 9) 날짜별 경로 계산 + PlaceInfo 보강 + DB 반영(널-세이프)
+            List<MapRouteByDayRes.Day> enrichedDays = new ArrayList<>();
+            Map<String, Place> placeByContentId = new HashMap<>();
 
-                    var sp = leg.startPlace();
-                    if (sp != null && !isBlank(sp.contentId())) {
-                        Place startPlace = upsertPlaceEntity(
-                                placeByContentId, sp.contentId(), leg.startName(),
-                                leg.startLat(), leg.startLng(), safeType(sp.placeType()),
-                                sp.detailUrl(), sp.imageUrl()
-                        );
-                        upsertPlanPlacePeriod(plan, startPlace, sp.period());
-                    }
+            for (var day : byDay.days()) {
+                if (day == null) continue;
+                List<MapRouteReq.Location> dlocs = nlist(day.locations());
+                List<MapRouteRes> routes = new ArrayList<>();
 
-                    var ep = leg.endPlace();
-                    if (ep != null && !isBlank(ep.contentId())) {
-                        Place endPlace = upsertPlaceEntity(
-                                placeByContentId, ep.contentId(), leg.endName(),
-                                leg.endLat(), leg.endLng(), safeType(ep.placeType()),
-                                ep.detailUrl(), ep.imageUrl()
-                        );
-                        upsertPlanPlacePeriod(plan, endPlace, ep.period());
+                if (dlocs.size() >= 2) {
+                    MapRouteReq oneDayReq = MapRouteReq.of(plan.getRegion(), plan.getPeriod(), dlocs);
+                    MapRouteRes dayRes = runner.apply(oneDayReq);
+
+                    if (!RouteUtils.isEmpty(dayRes) && dayRes.legs() != null && !dayRes.legs().isEmpty()) {
+                        double[] ctr = centroid(dlocs);
+                        var filteredLegs = dayRes.legs().stream()
+                                .filter(Objects::nonNull)
+                                .filter(l -> {
+                                    if (ctr[0] == 0 && ctr[1] == 0) return true; // 센트로이드 불명 → 필터 패스
+                                    boolean okStart = inGeofence(ctr[0], ctr[1], l.startLat(), l.startLng());
+                                    boolean okEnd = inGeofence(ctr[0], ctr[1], l.endLat(), l.endLng());
+                                    return okStart && okEnd;
+                                })
+                                .toList();
+
+                        if (!filteredLegs.isEmpty()) {
+                            dayRes = MapRouteRes.builder()
+                                    .distance(dayRes.distance())
+                                    .duration(dayRes.duration())
+                                    .polyline(dayRes.polyline())
+                                    .legs(filteredLegs)
+                                    .build();
+
+                            List<MapRouteRes> enrichedRoutes = enrichRoutesWithPlaceInfo(List.of(dayRes), dlocs);
+                            routes.addAll(enrichedRoutes);
+                        } else {
+                            log.warn("day {}/{}: all legs removed by spike/geofence filter",
+                                    nz(day.date()), String.valueOf(day.index()));
+                        }
                     }
                 }
+
+                log.info("day {} routes: {}", nz(day.date()) + "/" + nz(String.valueOf(day.index())), routes);
+
+                // DB 반영 (널-세이프)
+                for (MapRouteRes r : routes) {
+                    if (r == null || r.legs() == null) continue;
+                    for (var leg : r.legs()) {
+                        if (leg == null) continue;
+
+                        var sp = leg.startPlace();
+                        if (sp != null && !isBlank(sp.contentId())) {
+                            Place startPlace = upsertPlaceEntity(
+                                    placeByContentId, sp.contentId(), leg.startName(),
+                                    leg.startLat(), leg.startLng(), safeType(sp.placeType()),
+                                    sp.detailUrl(), sp.imageUrl()
+                            );
+                            upsertPlanPlacePeriod(plan, startPlace, sp.period());
+                        }
+
+                        var ep = leg.endPlace();
+                        if (ep != null && !isBlank(ep.contentId())) {
+                            Place endPlace = upsertPlaceEntity(
+                                    placeByContentId, ep.contentId(), leg.endName(),
+                                    leg.endLat(), leg.endLng(), safeType(ep.placeType()),
+                                    ep.detailUrl(), ep.imageUrl()
+                            );
+                            upsertPlanPlacePeriod(plan, endPlace, ep.period());
+                        }
+                    }
+                }
+
+                enrichedDays.add(MapRouteByDayRes.Day.builder()
+                        .date(day.date())
+                        .index(day.index())
+                        .locations(dlocs)
+                        .routes(routes)
+                        .build());
             }
 
-            enrichedDays.add(MapRouteByDayRes.Day.builder()
-                    .date(day.date())
-                    .index(day.index())
-                    .locations(dlocs)
-                    .routes(routes)
-                    .build());
+            return MapRouteByDayRes.builder()
+                    .mode(byDay.mode())
+                    .days(enrichedDays)
+                    .build();
+        } catch (GeneralException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("RouteService.getRoute failed: {}", e.getMessage(), e);
+            throw e;
         }
-
-        return MapRouteByDayRes.builder()
-                .mode(byDay.mode())
-                .days(enrichedDays)
-                .build();
     }
 
     private String genContentId() {
