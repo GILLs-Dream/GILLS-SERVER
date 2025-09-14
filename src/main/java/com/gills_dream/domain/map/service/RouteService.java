@@ -85,9 +85,10 @@ public class RouteService {
         // Place -> PlaceCache (PlanPlace.period 매핑, 널-세이프)
         List<PlaceCache> placeList = new ArrayList<>(places.size());
         for (Place p : places) {
-            PlacePeriod period = nlist(p.getPlanPlaces()).stream()
-                    .filter(pp -> pp != null && pp.getPlan() != null && Objects.equals(planId, pp.getPlan().getId()))
+            PlacePeriod period = p.getPlanPlaces().stream()
+                    .filter(pp -> pp != null && pp.getPlan() != null && planId.equals(pp.getPlan().getId()))
                     .map(PlanPlace::getPeriod)
+                    .filter(Objects::nonNull)
                     .findFirst()
                     .orElse(null);
             placeList.add(PlaceCache.fromEntity(p, period));
