@@ -155,6 +155,7 @@ public class PlanServiceImpl implements PlanService {
 
         plan.updateGeneratedRoute(generated);
 
+        log.info("generated route: " + generated);
         return generated;
     }
 

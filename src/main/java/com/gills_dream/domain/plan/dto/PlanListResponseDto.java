@@ -20,9 +20,7 @@ public record PlanListResponseDto (
         public static PlanSummaryRes fromEntity(Plan plan) {
             return PlanSummaryRes.builder()
                     .planId(plan.getId())
-                    .title(plan.getSummary() != null && plan.getSummary().getTitle() != null
-                            ? plan.getSummary().getTitle()
-                            : "")
+                    .title(plan.getMoodSummary() != null ? plan.getMoodSummary() : "")
                     .startedAt(plan.getPeriod() != null && plan.getPeriod().getStartedAt() != null
                             ? plan.getPeriod().getStartedAt().toString()
                             : "")
