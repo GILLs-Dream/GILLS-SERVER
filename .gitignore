@@ -49,5 +49,7 @@ docker.yml
 **/._.DS_햣Store
 
 ### Prompt ###
-/src/main/resources/gpt-prompt/**
 /gpt-prompt/**
+
+### Apple Key ###
+/apple-key/**

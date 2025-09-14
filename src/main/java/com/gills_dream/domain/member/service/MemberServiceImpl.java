@@ -41,7 +41,7 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     @Transactional
-    public TokenPair kakaoLoginWithToken(String kakaoAccessToken) {
+    public TokenPair kakaoLogin(String kakaoAccessToken) {
         // 유저에 대한 정보 받기
         MemberResponseDto.KakaoUserInfoDto kakaoUser = kakaoService.getUserInfo(kakaoAccessToken);
 
@@ -64,6 +64,30 @@ public class MemberServiceImpl implements MemberService {
 
         return new TokenPair(member, accessToken, refreshToken);
     }
+
+    @Override
+    @Transactional
+    public TokenPair appleLogin(String identityToken) {
+        MemberResponseDto.AppleUserInfoDto appleUser = appleService.getUserInfo(identityToken);
+
+        String email = appleUser.getEmail();
+        if (email == null) throw new GeneralException(ErrorStatus.EMAIL_IS_REQUIRED);
+
+        Member member = memberRepository.findByEmail(email)
+                .orElseGet(() -> memberRepository.save(Member.builder()
+                        .email(email)
+                        .loginType(LoginType.APPLE)
+                        .roleType(decideRole(email))
+                        .build()));
+
+        String accessToken = tokenProvider.createAccessToken(member.getEmail());
+        String refreshToken = tokenProvider.createRefreshToken(member.getEmail());
+
+        redisService.setValue(member.getEmail(), refreshToken, Duration.ofDays(28).toMillis());
+
+        return new TokenPair(member, accessToken, refreshToken);
+    }
+
 
     @Override
     @Transactional
