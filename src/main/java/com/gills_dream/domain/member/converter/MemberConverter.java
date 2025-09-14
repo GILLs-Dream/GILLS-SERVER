@@ -15,12 +15,15 @@ public class MemberConverter {
         );
     }
 
-    public static MemberResponseDto.LoginResultWithTokenDto toLoginResultWithTokenDto(TokenPair tokenPair) {
+    public static MemberResponseDto.LoginResultWithTokenDto toLoginResultWithTokenDto(MemberResponseDto.TokenPairWithFlagDto tokenPairWithFlagDto) {
+        TokenPair tokenPair = tokenPairWithFlagDto.tokenPair();
         return new MemberResponseDto.LoginResultWithTokenDto(
                 tokenPair.member().getId(),
                 tokenPair.member().getEmail(),
                 tokenPair.accessToken(),
-                tokenPair.refreshToken()
+                tokenPair.refreshToken(),
+                tokenPairWithFlagDto.flag(),
+                tokenPair.member().getLoginType()
         );
     }
 }

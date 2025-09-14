@@ -177,7 +177,7 @@ public class PlanServiceImpl implements PlanService {
             log.info("plan not generated 3");
             MapRouteRes.Leg firstPlace = routes.legs().getFirst();
             log.info("from place: " + firstPlace.startName());
-            Place fromPlace = placeRepository.findByNameAndLatAndLngRounded(firstPlace.startName(), firstPlace.startLat(), firstPlace.startLng())
+            Place fromPlace = placeRepository.findByNameAndLatAndLngRoundedAndContentId(firstPlace.startName(), firstPlace.startLat(), firstPlace.startLng(), firstPlace.startPlace().contentId())
                     .orElseThrow(() -> new GeneralException(ErrorStatus.CANNOT_FIND_PLACE_FROM_DB));
 
             PlanResponseDto.PlaceDto from = new PlanResponseDto.PlaceDto(fromPlace.getId(), fromPlace.getName(), fromPlace.getImages().isEmpty() ? "" : fromPlace.getImages().getFirst());
@@ -186,7 +186,7 @@ public class PlanServiceImpl implements PlanService {
             if (routes.legs().size() == 1) {
                 MapRouteRes.Leg leg = routes.legs().getFirst();
                 log.info("last place: " + leg.endName());
-                Place lastPlace = placeRepository.findByNameAndLatAndLngRounded(leg.endName(), leg.endLat(), leg.endLng())
+                Place lastPlace = placeRepository.findByNameAndLatAndLngRoundedAndContentId(leg.endName(), leg.endLat(), leg.endLng(), leg.endPlace().contentId())
                         .orElseThrow(() -> new GeneralException(ErrorStatus.CANNOT_FIND_PLACE_FROM_DB));
                 PlanResponseDto.PlaceDto last = new PlanResponseDto.PlaceDto(lastPlace.getId(), lastPlace.getName(), lastPlace.getImages().isEmpty() ? "" : lastPlace.getImages().getFirst());
                 PlanResponseDto.RouteDto lastRoute = new PlanResponseDto.RouteDto(1, last, leg.distance(), leg.duration());
@@ -197,14 +197,14 @@ public class PlanServiceImpl implements PlanService {
                     MapRouteRes.Leg preLeg = routes.legs().get(j-1);
                     MapRouteRes.Leg leg = routes.legs().get(j);
                     log.info("to place: " + leg.startName());
-                    Place toPlace = placeRepository.findByNameAndLatAndLngRounded(leg.startName(), leg.startLat(), leg.startLng())
+                    Place toPlace = placeRepository.findByNameAndLatAndLngRoundedAndContentId(leg.startName(), leg.startLat(), leg.startLng(), leg.startPlace().contentId())
                             .orElseThrow(() -> new GeneralException(ErrorStatus.CANNOT_FIND_PLACE_FROM_DB));
                     PlanResponseDto.PlaceDto to = new PlanResponseDto.PlaceDto(toPlace.getId(), toPlace.getName(), toPlace.getImages().isEmpty() ? "" : toPlace.getImages().getFirst());
                     PlanResponseDto.RouteDto routeDto = new PlanResponseDto.RouteDto(j, to, preLeg.distance(), preLeg.duration());
                     routeDtoList.add(routeDto);
                     if (j == (routes.legs().size() - 1)) { // 하루의 마지막 경로
                         log.info("last place: " + leg.endName());
-                        Place lastPlace = placeRepository.findByNameAndLatAndLngRounded(leg.endName(), leg.endLat(), leg.endLng())
+                        Place lastPlace = placeRepository.findByNameAndLatAndLngRoundedAndContentId(leg.endName(), leg.endLat(), leg.endLng(), leg.endPlace().contentId())
                                 .orElseThrow(() -> new GeneralException(ErrorStatus.CANNOT_FIND_PLACE_FROM_DB));
                         PlanResponseDto.PlaceDto last = new PlanResponseDto.PlaceDto(lastPlace.getId(), lastPlace.getName(), lastPlace.getImages().isEmpty() ? "" : lastPlace.getImages().getFirst());
                         PlanResponseDto.RouteDto lastRoute = new PlanResponseDto.RouteDto(j+1, last, leg.distance(), leg.duration());
