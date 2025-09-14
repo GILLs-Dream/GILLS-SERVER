@@ -34,25 +34,25 @@ public class MemberRestController {
     @PostMapping("/oauth/kakao/login")
     @Operation(summary = "카카오 로그인, 회원가입", description = "access token 받아서 서버 JWT 토큰 반환")
     public ResponseEntity<?> kakaoLogin(@RequestParam("accessToken") String accessToken) {
-        TokenPair tokenPair = memberService.kakaoLogin(accessToken);
+        MemberResponseDto.TokenPairWithFlagDto tokenPairWithFlagDto = memberService.kakaoLogin(accessToken);
 
         // Token 처리
         HttpHeaders headers = new HttpHeaders();
-        tokenUtils.addToken(headers, tokenPair, true);
+        tokenUtils.addToken(headers, tokenPairWithFlagDto.tokenPair(), true);
 
-        return ResponseEntity.ok().headers(headers).body(MemberConverter.toLoginResultWithTokenDto(tokenPair));
+        return ResponseEntity.ok().headers(headers).body(MemberConverter.toLoginResultWithTokenDto(tokenPairWithFlagDto));
     }
 
     @PostMapping("/oauth/apple/login")
     @Operation(summary = "애플 로그인, 회원가입", description = "identity token 받아서 서버 JWT 토큰 반환")
     public ResponseEntity<?> appleLogin(@RequestParam("identityToken") String identityToken) {
-        TokenPair tokenPair = memberService.appleLogin(identityToken);
+        MemberResponseDto.TokenPairWithFlagDto tokenPairWithFlagDto = memberService.appleLogin(identityToken);
 
         // Token 처리
         HttpHeaders headers = new HttpHeaders();
-        tokenUtils.addToken(headers, tokenPair, true);
+        tokenUtils.addToken(headers, tokenPairWithFlagDto.tokenPair(), true);
 
-        return ResponseEntity.ok().headers(headers).body(MemberConverter.toLoginResultWithTokenDto(tokenPair));
+        return ResponseEntity.ok().headers(headers).body(MemberConverter.toLoginResultWithTokenDto(tokenPairWithFlagDto));
     }
 
     @PostMapping("/logout")

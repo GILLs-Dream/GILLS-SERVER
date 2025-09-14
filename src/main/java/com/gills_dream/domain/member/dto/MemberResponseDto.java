@@ -2,6 +2,8 @@ package com.gills_dream.domain.member.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.gills_dream.domain.member.entity.LoginType;
+import com.gills_dream.global.common.record.TokenPair;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -34,7 +36,21 @@ public class MemberResponseDto {
             String accessToken,
 
             @Schema(description = "리프레시 토큰", example = "jiljijililjilkl")
-            String refreshToken
+            String refreshToken,
+
+            @Schema(description = "needOnboarding", example = "true")
+            Boolean needOnboarding,
+
+            @Schema(description = "로그인 플랫폼 타입", example = "KAKAO")
+            LoginType loginType
+    ) {}
+
+    public record TokenPairWithFlagDto(
+            @Schema(description = "토큰 페어")
+            TokenPair tokenPair,
+
+            @Schema(description = "회원가입부터 해야하는지 여부", example = "true")
+            boolean flag
     ) {}
 
 

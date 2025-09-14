@@ -24,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.Duration;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Slf4j
 @Service
@@ -41,7 +42,9 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     @Transactional
-    public TokenPair kakaoLogin(String kakaoAccessToken) {
+    public MemberResponseDto.TokenPairWithFlagDto kakaoLogin(String kakaoAccessToken) {
+        AtomicBoolean flag = new AtomicBoolean(false);
+
         // 유저에 대한 정보 받기
         MemberResponseDto.KakaoUserInfoDto kakaoUser = kakaoService.getUserInfo(kakaoAccessToken);
 
@@ -50,11 +53,14 @@ public class MemberServiceImpl implements MemberService {
         if (email == null) throw new GeneralException(ErrorStatus.EMAIL_IS_REQUIRED);
 
         Member member = memberRepository.findByEmail(email)
-            .orElseGet(() -> memberRepository.save(Member.builder()
-                    .email(kakaoUser.getKakaoAccount().getEmail())
-                    .loginType(LoginType.KAKAO)
-                    .roleType(decideRole(email))
-                    .build()));
+                .orElseGet(() -> {
+                    flag.set(true);
+                    return memberRepository.save(Member.builder()
+                            .email(email)
+                            .loginType(LoginType.KAKAO)
+                            .roleType(decideRole(email))
+                            .build());
+                });
 
         String accessToken = tokenProvider.createAccessToken(member.getEmail());
         String refreshToken = tokenProvider.createRefreshToken(member.getEmail());
@@ -62,30 +68,40 @@ public class MemberServiceImpl implements MemberService {
         // Redis에 refresh token 저장
         redisService.setValue(member.getEmail(), refreshToken, Duration.ofDays(28).toMillis());
 
-        return new TokenPair(member, accessToken, refreshToken);
+        return new MemberResponseDto.TokenPairWithFlagDto(
+                new TokenPair(member, accessToken, refreshToken),
+                flag.get()
+        );
     }
 
     @Override
     @Transactional
-    public TokenPair appleLogin(String identityToken) {
+    public MemberResponseDto.TokenPairWithFlagDto appleLogin(String identityToken) {
+        AtomicBoolean flag = new AtomicBoolean(false);
         MemberResponseDto.AppleUserInfoDto appleUser = appleService.getUserInfo(identityToken);
 
         String email = appleUser.getEmail();
         if (email == null) throw new GeneralException(ErrorStatus.EMAIL_IS_REQUIRED);
 
         Member member = memberRepository.findByEmail(email)
-                .orElseGet(() -> memberRepository.save(Member.builder()
-                        .email(email)
-                        .loginType(LoginType.APPLE)
-                        .roleType(decideRole(email))
-                        .build()));
+                .orElseGet(() -> {
+                    flag.set(true);
+                    return memberRepository.save(Member.builder()
+                            .email(email)
+                            .loginType(LoginType.APPLE)
+                            .roleType(decideRole(email))
+                            .build());
+                });
 
         String accessToken = tokenProvider.createAccessToken(member.getEmail());
         String refreshToken = tokenProvider.createRefreshToken(member.getEmail());
 
         redisService.setValue(member.getEmail(), refreshToken, Duration.ofDays(28).toMillis());
 
-        return new TokenPair(member, accessToken, refreshToken);
+        return new MemberResponseDto.TokenPairWithFlagDto(
+                new TokenPair(member, accessToken, refreshToken),
+                flag.get()
+        );
     }
 
 
