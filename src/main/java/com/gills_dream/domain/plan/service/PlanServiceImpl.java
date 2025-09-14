@@ -225,7 +225,7 @@ public class PlanServiceImpl implements PlanService {
 
     @Override
     @Transactional
-    public PlanResponseDto.SummaryDto viewPlanSummary(CustomUserDetails userDetails, Long planId) {
+    public PlanResponseDto.SummaryDto generatePlanSummary(CustomUserDetails userDetails, Long planId) {
         Plan plan = checkMemberAndPlan(userDetails, planId);
 
         String summary = gptService.summarizePlan(plan);
@@ -266,6 +266,18 @@ public class PlanServiceImpl implements PlanService {
         else plan.getSummary().updateMainImg("");
 
         return new PlanResponseDto.TemplateResultDto(plan.getId());
+    }
+
+    @Override
+    public PlanResponseDto.SummaryDto viewPlanSummary(CustomUserDetails userDetails, Long planId) {
+        Plan plan = checkMemberAndPlan(userDetails, planId);
+
+        if (plan.getSummary() == null) throw new GeneralException(ErrorStatus.PLAN_SUMMARY_NOT_GENERATED);
+
+        return new PlanResponseDto.SummaryDto(
+                plan.getMoodSummary(),
+                plan.getSummary().getSummary()
+        );
     }
 
     private Plan checkMemberAndPlan(CustomUserDetails userDetails, Long planId) {
