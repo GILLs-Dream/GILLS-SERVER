@@ -166,11 +166,14 @@ public class PlanServiceImpl implements PlanService {
         List<PlanResponseDto.PlanPerDayDto> planPerDayDtoList = new ArrayList<>();
 
         if (generatedRoute == null) throw new GeneralException(ErrorStatus.PLAN_NOT_GENERATED);
+        log.info("plan not generated 1");
         for (int i=0; i<generatedRoute.days().size(); i++) {
             if (generatedRoute.days().get(i).routes().isEmpty()) throw new GeneralException(ErrorStatus.PLAN_NOT_GENERATED);
+            log.info("plan not generated 2");
             MapRouteRes routes = generatedRoute.days().get(i).routes().getFirst();
 
-            if (routes.legs().size() <= 1) throw new GeneralException(ErrorStatus.PLAN_NOT_GENERATED);
+            if (routes.legs().isEmpty()) throw new GeneralException(ErrorStatus.PLAN_NOT_GENERATED);
+            log.info("plan not generated 3");
             MapRouteRes.Leg firstPlace = routes.legs().getFirst();
             log.info("from place: " + firstPlace.startName());
             Place fromPlace = placeRepository.findByNameAndLatAndLngRounded(firstPlace.startName(), firstPlace.startLat(), firstPlace.startLng())
@@ -179,25 +182,35 @@ public class PlanServiceImpl implements PlanService {
             PlanResponseDto.PlaceDto from = new PlanResponseDto.PlaceDto(fromPlace.getId(), fromPlace.getName(), fromPlace.getImages().isEmpty() ? "" : fromPlace.getImages().getFirst());
 
             List<PlanResponseDto.RouteDto> routeDtoList = new ArrayList<>();
-            for (int j=1; j < routes.legs().size(); j++) { // 하루의 경로
-                MapRouteRes.Leg preLeg = routes.legs().get(j-1);
-                MapRouteRes.Leg leg = routes.legs().get(j);
-                log.info("to place: " + leg.startName());
-                Place toPlace = placeRepository.findByNameAndLatAndLngRounded(leg.startName(), leg.startLat(), leg.startLng())
+            if (routes.legs().size() == 1) {
+                MapRouteRes.Leg leg = routes.legs().getFirst();
+                log.info("last place: " + leg.endName());
+                Place lastPlace = placeRepository.findByNameAndLatAndLngRounded(leg.endName(), leg.endLat(), leg.endLng())
                         .orElseThrow(() -> new GeneralException(ErrorStatus.CANNOT_FIND_PLACE_FROM_DB));
-                PlanResponseDto.PlaceDto to = new PlanResponseDto.PlaceDto(toPlace.getId(), toPlace.getName(), toPlace.getImages().isEmpty() ? "" : toPlace.getImages().getFirst());
-                PlanResponseDto.RouteDto routeDto = new PlanResponseDto.RouteDto(j, to, preLeg.distance(), preLeg.duration());
-                routeDtoList.add(routeDto);
-                if (j == (routes.legs().size() - 1)) { // 하루의 마지막 경로
-                    log.info("last place: " + leg.endName());
-                    Place lastPlace = placeRepository.findByNameAndLatAndLngRounded(leg.endName(), leg.endLat(), leg.endLng())
+                PlanResponseDto.PlaceDto last = new PlanResponseDto.PlaceDto(lastPlace.getId(), lastPlace.getName(), lastPlace.getImages().isEmpty() ? "" : lastPlace.getImages().getFirst());
+                PlanResponseDto.RouteDto lastRoute = new PlanResponseDto.RouteDto(1, last, leg.distance(), leg.duration());
+                routeDtoList.add(lastRoute);
+            }
+            else if (routes.legs().size() > 1) {
+                for (int j=1; j < routes.legs().size(); j++) { // 하루의 경로
+                    MapRouteRes.Leg preLeg = routes.legs().get(j-1);
+                    MapRouteRes.Leg leg = routes.legs().get(j);
+                    log.info("to place: " + leg.startName());
+                    Place toPlace = placeRepository.findByNameAndLatAndLngRounded(leg.startName(), leg.startLat(), leg.startLng())
                             .orElseThrow(() -> new GeneralException(ErrorStatus.CANNOT_FIND_PLACE_FROM_DB));
-                    PlanResponseDto.PlaceDto last = new PlanResponseDto.PlaceDto(lastPlace.getId(), lastPlace.getName(), lastPlace.getImages().isEmpty() ? "" : lastPlace.getImages().getFirst());
-                    PlanResponseDto.RouteDto lastRoute = new PlanResponseDto.RouteDto(j+1, last, leg.distance(), leg.duration());
-                    routeDtoList.add(lastRoute);
+                    PlanResponseDto.PlaceDto to = new PlanResponseDto.PlaceDto(toPlace.getId(), toPlace.getName(), toPlace.getImages().isEmpty() ? "" : toPlace.getImages().getFirst());
+                    PlanResponseDto.RouteDto routeDto = new PlanResponseDto.RouteDto(j, to, preLeg.distance(), preLeg.duration());
+                    routeDtoList.add(routeDto);
+                    if (j == (routes.legs().size() - 1)) { // 하루의 마지막 경로
+                        log.info("last place: " + leg.endName());
+                        Place lastPlace = placeRepository.findByNameAndLatAndLngRounded(leg.endName(), leg.endLat(), leg.endLng())
+                                .orElseThrow(() -> new GeneralException(ErrorStatus.CANNOT_FIND_PLACE_FROM_DB));
+                        PlanResponseDto.PlaceDto last = new PlanResponseDto.PlaceDto(lastPlace.getId(), lastPlace.getName(), lastPlace.getImages().isEmpty() ? "" : lastPlace.getImages().getFirst());
+                        PlanResponseDto.RouteDto lastRoute = new PlanResponseDto.RouteDto(j+1, last, leg.distance(), leg.duration());
+                        routeDtoList.add(lastRoute);
+                    }
                 }
             }
-
             PlanResponseDto.PlanPerDayDto planPerDayDto = new PlanResponseDto.PlanPerDayDto(i+1, from , routeDtoList);
             planPerDayDtoList.add(planPerDayDto);
         }
@@ -208,7 +221,6 @@ public class PlanServiceImpl implements PlanService {
                 plan.getPeriod().getDuration(),
                 planPerDayDtoList
         );
-
     }
 
     @Override
@@ -234,7 +246,7 @@ public class PlanServiceImpl implements PlanService {
         Member member = memberRepository.findById(userDetails.getId())
                 .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
 
-        List<Plan> planList = planRepository.findAllByMemberAndPlanSummary(member.getId());
+        List<Plan> planList = planRepository.findAllByMemberAndGeneratedRoute(member.getId());
         return PlanListResponseDto.fromEntityList(planList);
     }
 
