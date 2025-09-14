@@ -58,6 +58,9 @@ dependencies {
 	// Object Mapper Serializer
 	implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
 
+	// Apple Login
+	implementation 'com.nimbusds:nimbus-jose-jwt:10.0.2'
+
 	// S3
 	implementation 'software.amazon.awssdk:s3:2.31.40'
 }

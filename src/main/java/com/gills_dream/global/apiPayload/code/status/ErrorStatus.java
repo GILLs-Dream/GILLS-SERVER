@@ -24,6 +24,8 @@ public enum ErrorStatus implements BaseCode {
     INVALID_SIGNATURE(HttpStatus.UNAUTHORIZED, "INVALID SIGNATURE", "잘못된 JWT 서명입니다"),
     CANNOT_LOAD_USER_FROM_KAKAO(HttpStatus.NOT_FOUND, "CANNOT LOAD USER FROM KAKAO", "Kakao에서 해당 유저를 불러오지 못했습니다."),
     EMAIL_IS_REQUIRED(HttpStatus.BAD_REQUEST, "EMAIL IS REQUIRED", "이메일은 필수입니다."),
+    INVALID_APPLE_TOKEN(HttpStatus.BAD_REQUEST, "INVALID APPLE TOKEN", "애플의 토큰이 유효하지 않습니다"),
+    INVALID_APPLE_PUBLIC_KEY(HttpStatus.BAD_REQUEST, "INVALID APPLE PUBLIC KEY", "애플의 공개키가 유효하지 않습니다"),
 
     // 멤버 관련 에러 응답
     MEMBER_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "USER ALREADY EXISTS", "유저가 이미 존재합니다."),
