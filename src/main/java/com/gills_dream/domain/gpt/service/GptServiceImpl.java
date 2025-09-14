@@ -123,35 +123,50 @@ public class GptServiceImpl implements GptService {
     }
 
     @Override
-    public MapRouteByDayRes createRouteRequest(MapRouteReq routeReq, String transportType, Long count, List<String> categories, String moodSummary) {
+    public MapRouteByDayRes createRouteRequest(
+            MapRouteReq routeReq,
+            String transportType,
+            Long count,
+            List<String> categories,
+            String moodSummary
+    ) {
         try {
-            // 1) 입력을 JSON 문자열로 직렬화
             String inputJson = objectMapper.writeValueAsString(routeReq);
 
-            // 2) 프롬프트 템플릿 파일 읽고 {{input}} 치환
-            String prompt = buildPrompt(routeReq.region(), String.valueOf(routeReq.planPeriod()), inputJson, transportType, categories, moodSummary, promptProperties.getCreateRoute());
+            String prompt = buildPrompt(
+                    routeReq.region(),
+                    String.valueOf(routeReq.planPeriod()),
+                    inputJson,
+                    transportType,
+                    categories,
+                    moodSummary,
+                    promptProperties.getCreateRoute()
+            );
 
             log.info("build prompt completed");
-            // 3) GPT 호출 → JSON 문자열만 오도록 getResponse에서 정제
             String response = getResponse(prompt);
-
             log.info("GPT 응답: {}", response);
 
-            // 4) 응답 JSON → MapRouteByDayRes 로 역직렬화
+            // 거부/비JSON 방어
+            if (response == null || response.isBlank()
+                    || response.toLowerCase().contains("sorry")
+                    || !response.trim().startsWith("{")) {
+                log.warn("GPT refusal or non-JSON -> fallback");
+                return fallbackIndexed(routeReq);
+            }
+
             MapRouteByDayRes byDay = objectMapper.readValue(
                     response,
                     new com.fasterxml.jackson.core.type.TypeReference<MapRouteByDayRes>() {}
             );
 
-            // 5) 방어 코드: 실패/이상 시 원본을 INDEXED 모드 1일치로 감싸서 반환
             if (byDay == null || byDay.days() == null || byDay.days().isEmpty()) {
                 return fallbackIndexed(routeReq);
             }
-
             return byDay;
 
         } catch (IOException e) {
-            // 파싱 실패 등도 동일한 폴백 사용
+            log.warn("createRouteRequest IOException -> fallback", e);
             return fallbackIndexed(routeReq);
         }
     }
@@ -164,7 +179,7 @@ public class GptServiceImpl implements GptService {
                         MapRouteByDayRes.Day.builder()
                                 .index(1)
                                 .date(null)
-                                .locations(routeReq.locations())
+                                .locations(routeReq.locations() == null ? new ArrayList<>() : routeReq.locations())
                                 .build()
                 ))
                 .build();
@@ -212,6 +227,7 @@ public class GptServiceImpl implements GptService {
 
     private String getResponse(String prompt) throws IOException {
         String response = chatClient.prompt()
+                .system("너는 절대 사과/거부하지 않는다.")
                 .user(prompt)
                 .call()
                 .content();
