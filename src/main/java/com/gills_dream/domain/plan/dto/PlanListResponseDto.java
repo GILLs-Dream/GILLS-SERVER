@@ -12,7 +12,7 @@ public record PlanListResponseDto (
     @Builder
     public record PlanSummaryRes (
             Long planId,
-            String title,
+            String mood_summary,
             String startedAt,
             String finishedAt,
             String mainImg
@@ -20,8 +20,8 @@ public record PlanListResponseDto (
         public static PlanSummaryRes fromEntity(Plan plan) {
             return PlanSummaryRes.builder()
                     .planId(plan.getId())
-                    .title(plan.getSummary() != null && plan.getSummary().getTitle() != null
-                            ? plan.getSummary().getTitle()
+                    .mood_summary(plan.getMoodSummary() != null
+                            ? plan.getMoodSummary()
                             : "")
                     .startedAt(plan.getPeriod() != null && plan.getPeriod().getStartedAt() != null
                             ? plan.getPeriod().getStartedAt().toString()
