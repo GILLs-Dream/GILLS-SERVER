@@ -15,5 +15,5 @@ public interface GptService {
     String summarizeInput(String input);
     String summarizePlan(Plan plan);
     PlacePair filterPlace(PythonResponseDto.ProcessResultDto processDto, String region);
-    MapRouteByDayRes createRouteRequest(MapRouteReq routeReq, String transportType, Long count);
+    MapRouteByDayRes createRouteRequest(MapRouteReq routeReq, String transportType, Long count, List<String> categories, String moodSummary);
 }

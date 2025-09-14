@@ -58,8 +58,16 @@ public class RouteService {
     @Transactional
     public MapRouteByDayRes getRoute(Long planId, TransportType transportation) throws GeneralException {
         // 1) plan + places(planPlaces까지 fetch)
-        Plan plan = planRepository.findById(Math.toIntExact(planId))
+        Plan plan = planRepository.findByIdWithCategories(planId)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.PLAN_NOT_FOUND));
+
+        // plan category List<String>
+        List<String> categories = plan.getCategories().stream()
+                .filter(Objects::nonNull)
+                .map(c -> c.getDescription()!= null ? c.getDescription() : "")
+                .filter(c -> !c.isBlank())
+                .distinct()
+                .toList();
 
         // 패치 조인으로 planPlaces(+plan) 미리 로딩되는 메서드 사용 권장
         // findAllByPlanId는 planPlaces를 fetch-join, findAllWithImagesByIdIn는 images 초기화용
@@ -136,7 +144,7 @@ public class RouteService {
 
         // 3) GPT로 날짜/인덱스별 재정렬 결과
         MapRouteByDayRes byDay = gptService.createRouteRequest(
-                route, transportation.toString(), count
+                route, transportation.toString(), count, categories, plan.getMoodSummary()
         );
 
         log.info("byDay (raw) : {}", byDay);
