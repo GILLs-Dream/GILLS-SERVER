@@ -43,7 +43,7 @@ public class MemberServiceImpl implements MemberService {
     @Override
     @Transactional
     public MemberResponseDto.TokenPairWithFlagDto kakaoLogin(String kakaoAccessToken) {
-        AtomicBoolean flag = new AtomicBoolean(false);
+        boolean flag = false;
 
         // 유저에 대한 정보 받기
         MemberResponseDto.KakaoUserInfoDto kakaoUser = kakaoService.getUserInfo(kakaoAccessToken);
@@ -53,14 +53,15 @@ public class MemberServiceImpl implements MemberService {
         if (email == null) throw new GeneralException(ErrorStatus.EMAIL_IS_REQUIRED);
 
         Member member = memberRepository.findByEmail(email)
-                .orElseGet(() -> {
-                    flag.set(true);
-                    return memberRepository.save(Member.builder()
+                .orElseGet(() ->
+                    memberRepository.save(Member.builder()
                             .email(email)
                             .loginType(LoginType.KAKAO)
                             .roleType(decideRole(email))
-                            .build());
-                });
+                            .build())
+                );
+
+        if (member.getNickname() == null) flag = true;
 
         String accessToken = tokenProvider.createAccessToken(member.getEmail());
         String refreshToken = tokenProvider.createRefreshToken(member.getEmail());
@@ -70,28 +71,29 @@ public class MemberServiceImpl implements MemberService {
 
         return new MemberResponseDto.TokenPairWithFlagDto(
                 new TokenPair(member, accessToken, refreshToken),
-                flag.get()
+                flag
         );
     }
 
     @Override
     @Transactional
     public MemberResponseDto.TokenPairWithFlagDto appleLogin(String identityToken) {
-        AtomicBoolean flag = new AtomicBoolean(false);
+        boolean flag = false;
         MemberResponseDto.AppleUserInfoDto appleUser = appleService.getUserInfo(identityToken);
 
         String email = appleUser.getEmail();
         if (email == null) throw new GeneralException(ErrorStatus.EMAIL_IS_REQUIRED);
 
         Member member = memberRepository.findByEmail(email)
-                .orElseGet(() -> {
-                    flag.set(true);
-                    return memberRepository.save(Member.builder()
+                .orElseGet(() ->
+                    memberRepository.save(Member.builder()
                             .email(email)
                             .loginType(LoginType.APPLE)
                             .roleType(decideRole(email))
-                            .build());
-                });
+                            .build())
+                );
+
+        if (member.getNickname() == null) flag = true;
 
         String accessToken = tokenProvider.createAccessToken(member.getEmail());
         String refreshToken = tokenProvider.createRefreshToken(member.getEmail());
@@ -100,7 +102,7 @@ public class MemberServiceImpl implements MemberService {
 
         return new MemberResponseDto.TokenPairWithFlagDto(
                 new TokenPair(member, accessToken, refreshToken),
-                flag.get()
+                flag
         );
     }
 
