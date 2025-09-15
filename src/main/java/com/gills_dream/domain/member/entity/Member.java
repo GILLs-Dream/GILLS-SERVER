@@ -23,6 +23,8 @@ public class Member {
     @Column(nullable = false)
     private String email;
 
+    private String sub;
+
     private Boolean marketingAgreement = false;
 
     @Column(nullable = false)
@@ -37,10 +39,11 @@ public class Member {
     private List<Plan> planList = new ArrayList<>();
 
     @Builder
-    public Member(String email, LoginType loginType, RoleType roleType) {
+    public Member(String email, LoginType loginType, RoleType roleType, String sub) {
         this.email = email;
         this.loginType = loginType;
         this.roleType = roleType;
+        this.sub = sub;
     }
 
     public void updateNickname(String nickname) {
