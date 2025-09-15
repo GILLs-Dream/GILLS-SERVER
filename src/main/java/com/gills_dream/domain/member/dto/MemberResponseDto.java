@@ -105,5 +105,6 @@ public class MemberResponseDto {
     @AllArgsConstructor
     public static class AppleUserInfoDto {
         private String email;
+        private String sub;
     }
 }

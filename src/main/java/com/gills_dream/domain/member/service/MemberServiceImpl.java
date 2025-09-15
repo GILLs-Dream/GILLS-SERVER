@@ -80,18 +80,24 @@ public class MemberServiceImpl implements MemberService {
     public MemberResponseDto.TokenPairWithFlagDto appleLogin(String identityToken) {
         boolean flag = false;
         MemberResponseDto.AppleUserInfoDto appleUser = appleService.getUserInfo(identityToken);
+        String sub = appleUser.getSub();
 
-        String email = appleUser.getEmail();
-        if (email == null) throw new GeneralException(ErrorStatus.EMAIL_IS_REQUIRED);
+        Member member;
+        Optional<Member> existing = memberRepository.findByAppleSub(sub);
 
-        Member member = memberRepository.findByEmail(email)
-                .orElseGet(() ->
-                    memberRepository.save(Member.builder()
-                            .email(email)
-                            .loginType(LoginType.APPLE)
-                            .roleType(decideRole(email))
-                            .build())
-                );
+        if (existing.isPresent()) {
+            member = existing.get();
+        } else {
+            String email = appleUser.getEmail();
+            if (email == null) throw new GeneralException(ErrorStatus.EMAIL_IS_REQUIRED);
+
+            member = memberRepository.save(Member.builder()
+                    .email(email)
+                    .sub(sub)
+                    .loginType(LoginType.APPLE)
+                    .roleType(decideRole(email))
+                    .build());
+        }
 
         if (member.getNickname() == null) flag = true;
 

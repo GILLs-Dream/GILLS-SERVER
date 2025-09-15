@@ -35,9 +35,11 @@ public class AppleServiceImpl implements AppleService {
                 throw new GeneralException(ErrorStatus.INVALID_APPLE_TOKEN);
             }
 
+            String sub = claims.getSubject();
             String email = claims.getStringClaim("email");
 
             return MemberResponseDto.AppleUserInfoDto.builder()
+                    .sub(sub)
                     .email(email)
                     .build();
         } catch (Exception e) {
