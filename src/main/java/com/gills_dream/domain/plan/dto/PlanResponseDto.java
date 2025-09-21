@@ -82,7 +82,8 @@ public class PlanResponseDto {
             Double distance,
             @Schema(description = "소요 시간 (second)", example = "30")
             double time
-    ) {}
+    ) {
+    }
 
     public record PlaceDto (
             @Schema(description = "장소 id", example = "1")

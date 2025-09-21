@@ -15,13 +15,9 @@
             color:#001D4C;
             font-family:"Noto Sans KR", sans-serif;
         }
-        @page {
-            size: A4;
-            margin: 24px;
-            @bottom-right { content: counter(page) " / " counter(pages); }
-        }
     </style>
 </head>
+<div class="doc-footer">제작 · 배포: 길동이의 꿈</div>
 <body>
 <h1 class="h1" th:text="${title}">여행 제목</h1>
 <div class="meta">총 <span th:text="${duration}">0</span>일</div>

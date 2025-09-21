@@ -38,3 +38,19 @@
     white-space:nowrap;
     line-height:1.2;
 }
+.doc-footer{
+    position: running(footer);
+    font-family:"Noto Sans KR", sans-serif;
+    font-size:9px;           /* 살짝 작게 */
+    line-height:1.2;
+    color:#5F6B7A;
+    margin:0; padding:0;     /* ★ 여백 절대 넣지 말기 */
+}
+
+/* 페이지 마진을 하단만 넉넉히 */
+@page{
+    size: A4;
+    margin: 24px 24px 48px 24px;    /* ★ bottom 48px 등 넉넉하게 */
+    @bottom-left  { content: element(footer); }
+    @bottom-right { content: counter(page) " / " counter(pages); }
+}
