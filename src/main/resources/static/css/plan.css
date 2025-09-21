@@ -1,0 +1,56 @@
+/* 제목/메타 */
+.h1 { font-size:22px; margin:0 0 6px; color:#001D4C; }
+.h2 { font-size:16px; margin:16px 0 10px; color:#001D4C; }
+.meta { color:#5F6B7A; margin-bottom:10px; }
+.divider { height:1px; background:#D5DBE7; margin:14px 0; }
+
+/* 타임라인 */
+.timeline { position:relative; margin:12px 0 18px; }
+
+/* 노드(오렌지 점 + 라벨) */
+.node { position:relative; padding-left:44px; margin:0 0 10px; }
+.dot {
+    position:absolute; left:10px; top:4px;
+    width:12px; height:12px; border-radius:50%;
+    background:#FB5C25; border:3px solid #FB5C25; box-sizing:border-box;
+}
+.name { font-weight:bold; color:#001D4C; }
+
+/* 구간(점선 + 구간 정보) */
+.edge {
+    position:relative;
+    padding-left:44px;
+    height:34px;         /* 노드 간 간격(점선 길이) */
+    margin:2px 0 6px;    /* 위/아래 여백 타이트하게 */
+}
+.dash {
+    position:absolute; left:16px; top:0;
+    height:100%;
+    border-left:2px dashed #003488;   /* 남색 점선 */
+}
+
+/* 거리·시간을 점선 바로 옆, 이름 아래에 붙이기 */
+.edge-info {
+    position:absolute;
+    left:30px;           /* 점선에서 살짝 오른쪽 */
+    top:8px;             /* 위 노드명과 간격 */
+    color:#6B7280;
+    white-space:nowrap;
+    line-height:1.2;
+}
+.doc-footer{
+    position: running(footer);
+    font-family:"Noto Sans KR", sans-serif;
+    font-size:9px;           /* 살짝 작게 */
+    line-height:1.2;
+    color:#5F6B7A;
+    margin:0; padding:0;     /* ★ 여백 절대 넣지 말기 */
+}
+
+/* 페이지 마진을 하단만 넉넉히 */
+@page{
+    size: A4;
+    margin: 24px 24px 48px 24px;    /* ★ bottom 48px 등 넉넉하게 */
+    @bottom-left  { content: element(footer); }
+    @bottom-right { content: counter(page) " / " counter(pages); }
+}
