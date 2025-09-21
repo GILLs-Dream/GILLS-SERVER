@@ -32,6 +32,7 @@ public enum ErrorStatus implements BaseCode {
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "MEMBER NOT FOUND", "유저를 찾을 수 없습니다."),
     NICKNAME_IS_NECESSARY(HttpStatus.BAD_REQUEST, "NICKNAME IS NECESSARY", "닉네임은 필수입니다."),
     DATE_INDEX_MISMATCH(HttpStatus.BAD_REQUEST, "DATE INDEX MISMATCH", "날짜와 인덱스 모드가 일치하지 않습니다."),
+    SAME_EMAIL_EXISTS(HttpStatus.BAD_REQUEST, "SAME EMAIL EXISTS", "이미 같은 이메일을 가진 유저가 존재합니다."),
 
     // 플랜 관련 에러 응답
     PLAN_NOT_FOUND(HttpStatus.NOT_FOUND, "PLAN NOT FOUND", "계획을 찾을 수 없습니다."),

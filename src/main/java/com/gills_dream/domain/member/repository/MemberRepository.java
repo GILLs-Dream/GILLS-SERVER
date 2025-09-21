@@ -11,4 +11,6 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 
     @Query("select m from Member m where m.loginType = 'APPLE' and m.sub = :sub")
     Optional<Member> findByAppleSub(String sub);
+
+    boolean existsByEmail(String newEmail);
 }

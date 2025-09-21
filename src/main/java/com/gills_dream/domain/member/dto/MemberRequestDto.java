@@ -10,4 +10,9 @@ public class MemberRequestDto {
             @Schema(description = "마켓팅 수신 동의 여부", example = "true")
             Boolean marketingAgreement
     ) {}
+
+    public record EmailDto (
+            @Schema(description = "이메일", example = "smiski@gmail.com")
+            String email
+    ) {}
 }

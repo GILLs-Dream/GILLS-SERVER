@@ -82,5 +82,26 @@ public class MemberRestController {
     public ApiResponse<MemberResponseDto.MemberInfoDto> info(@AuthenticationPrincipal CustomUserDetails userDetails) {
         return ApiResponse.onSuccess(memberService.info(userDetails));
     }
+
+    @PatchMapping(value = "/setting/edit", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "프로필 이미지, 이용약관 동의, 닉네임 수정")
+    public ApiResponse<MemberResponseDto.ProfileResultDto> editProfile(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                                                      @RequestPart("profile") @Valid MemberRequestDto.ProfileDto request,
+                                                                      @RequestPart(value = "image", required = false) MultipartFile image) {
+        return ApiResponse.onSuccess(memberService.editProfile(userDetails, request, image));
+    }
+
+    @PatchMapping(value = "/setting/edit-email")
+    @Operation(summary = "이메일 수정")
+    public ResponseEntity<?> editEmail(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                    @Valid @RequestBody MemberRequestDto.EmailDto request) {
+        MemberResponseDto.EmailWithTokenDto emailWithTokenDto = memberService.editEmail(userDetails, request);
+
+        // Token 처리
+        HttpHeaders headers = new HttpHeaders();
+        tokenUtils.addToken(headers, emailWithTokenDto.tokenPair(), true);
+
+        return ResponseEntity.ok().headers(headers).body(MemberConverter.toEditEmailResultWithTokenDto(emailWithTokenDto.tokenPair()));
+    }
 }
 

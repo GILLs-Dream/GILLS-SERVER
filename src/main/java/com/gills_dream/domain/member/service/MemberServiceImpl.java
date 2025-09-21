@@ -8,6 +8,7 @@ import com.gills_dream.domain.member.entity.RoleType;
 import com.gills_dream.domain.plan.entity.Plan;
 import com.gills_dream.domain.plan.repository.PlanRepository;
 import com.gills_dream.domain.s3.service.S3Service;
+import com.gills_dream.domain.token.service.CustomTokenService;
 import com.gills_dream.global.apiPayload.code.status.ErrorStatus;
 import com.gills_dream.global.apiPayload.exception.GeneralException;
 import com.gills_dream.global.common.properties.AdminProperties;
@@ -39,6 +40,7 @@ public class MemberServiceImpl implements MemberService {
     private final AdminProperties adminProperties;
     private final PlanRepository planRepository;
     private final S3Service s3Service;
+    private final CustomTokenService tokenService;
 
     @Override
     @Transactional
@@ -112,7 +114,6 @@ public class MemberServiceImpl implements MemberService {
         );
     }
 
-
     @Override
     @Transactional
     public void delete(String accessToken, Member memberDet) {
@@ -179,7 +180,75 @@ public class MemberServiceImpl implements MemberService {
         return new MemberResponseDto.ProfileResultDto(
                 member.getId(),
                 member.getNickname(),
-                member.getProfileImg()
+                member.getProfileImg(),
+                member.getMarketingAgreement()
+        );
+    }
+
+    @Override
+    @Transactional
+    public MemberResponseDto.ProfileResultDto editProfile(CustomUserDetails userDetails, MemberRequestDto.ProfileDto request, MultipartFile image) {
+        Member member = memberRepository.findById(userDetails.getId())
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+
+        if (request.nickname() != null) member.updateNickname(request.nickname());
+        if (request.marketingAgreement() != null) member.updateMarketingAgreement(request.marketingAgreement());
+        if (image != null) {
+            if (member.getProfileImg() != null) {
+                s3Service.deleteImg(member.getProfileImg());
+            }
+            String imageUrl = s3Service.uploadImg(member, image);
+            member.updateProfileImg(imageUrl);
+        }
+
+        memberRepository.save(member);
+        return new MemberResponseDto.ProfileResultDto(
+                member.getId(),
+                member.getNickname(),
+                member.getProfileImg(),
+                member.getMarketingAgreement()
+        );
+    }
+
+    @Override
+    @Transactional
+    public MemberResponseDto.EmailWithTokenDto editEmail(CustomUserDetails userDetails, MemberRequestDto.EmailDto request) {
+        log.info(userDetails.getId() + "");
+        Member member = memberRepository.findById(userDetails.getId())
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+
+        String oldEmail = member.getEmail();
+        String newEmail = request.email();
+
+        TokenPair tokenPair;
+        boolean flag = false;
+        if (request.email() != null && !member.getEmail().equals(request.email())) {
+            if (memberRepository.existsByEmail(newEmail)) throw new GeneralException(ErrorStatus.SAME_EMAIL_EXISTS);
+
+            // Member의 email 수정
+            member.updateEmail(newEmail);
+
+            // 새로운 이메일에 대한 토큰 발급
+            String accessToken = tokenProvider.createAccessToken(newEmail);
+            String refreshToken = tokenProvider.createRefreshToken(newEmail);
+
+            // Redis에 refresh token 저장
+            redisService.setValue(newEmail, refreshToken, Duration.ofDays(28).toMillis());
+
+            tokenPair = new TokenPair(member, accessToken, refreshToken);
+            flag = true;
+
+            // 기존 이메일에 대한 레디스 토큰 삭제
+            redisService.deleteValue(oldEmail);
+        } else {
+            tokenPair = tokenService.reissue(redisService.getValue(oldEmail));
+        }
+
+        return new MemberResponseDto.EmailWithTokenDto(
+                member.getId(),
+                member.getEmail(),
+                tokenPair,
+                flag
         );
     }
 

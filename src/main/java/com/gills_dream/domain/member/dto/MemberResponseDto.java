@@ -53,6 +53,11 @@ public class MemberResponseDto {
             boolean flag
     ) {}
 
+    public record TokenPairDto(
+            @Schema(description = "토큰 페어")
+            TokenPair tokenPair
+    ) {}
+
 
 
     public record ProfileResultDto (
@@ -63,7 +68,10 @@ public class MemberResponseDto {
         String nickname,
 
         @Schema(description = "정상적으로 업로드되면 활성화될 imageURL", example = "https://influy-s3...")
-        String imgUrl
+        String imgUrl,
+
+        @Schema(description = "마켓팅 동의 여부", example = "true")
+        boolean marketingAgreement
     ) {}
 
 
@@ -107,4 +115,32 @@ public class MemberResponseDto {
         private String email;
         private String sub;
     }
+
+    public record EmailWithTokenDto (
+            @Schema(description = "멤버 id", example = "1")
+            Long memberId,
+
+            @Schema(description = "멤버 이메일", example = "gillsoon@gmail.com")
+            String email,
+
+            @Schema(description = "토큰 페어")
+            TokenPair tokenPair,
+
+            @Schema(description = "이메일 수정 여부", example = "true")
+            boolean flag
+    ) {}
+
+    public record EditEmailResultWithTokenDto (
+            @Schema(description = "멤버 id", example = "1")
+            Long memberId,
+
+            @Schema(description = "멤버 이메일", example = "gillsoon@gmail.com")
+            String email,
+
+            @Schema(description = "엑세스 토큰", example = "sdfsfsfsfsfdfds")
+            String accessToken,
+
+            @Schema(description = "리프레시 토큰", example = "jiljijililjilkl")
+            String refreshToken
+    ) {}
 }
