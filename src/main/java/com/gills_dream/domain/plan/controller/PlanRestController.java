@@ -23,11 +23,12 @@ import org.springframework.web.multipart.MultipartFile;
 public class PlanRestController {
     private final PlanService planService;
 
-    @PostMapping("/mood")
-    @Operation(summary = "여행 분위기 ai로 저장, Plan 생성", description = "MoodType 선택, 문장 요약")
+    @PostMapping("/{planId}/mood")
+    @Operation(summary = "여행 분위기 ai로 저장", description = "MoodType 선택, 문장 요약")
     public ApiResponse<PlanResponseDto.MoodResultDto> selectMood (@AuthenticationPrincipal CustomUserDetails userDetails,
+                                                                  @PathVariable("planId") Long planId,
                                                                   @Valid @RequestBody PlanRequestDto.MoodTextDto request) {
-        return ApiResponse.onSuccess(planService.selectAndSummarizeMood(userDetails, request));
+        return ApiResponse.onSuccess(planService.selectAndSummarizeMood(userDetails, planId, request));
     }
 
     @PatchMapping("/{planId}/duration")
@@ -62,12 +63,11 @@ public class PlanRestController {
         return ApiResponse.onSuccess(planService.saveDestination(userDetails, planId, request));
     }
 
-    @PatchMapping("/{planId}/region")
-    @Operation(summary = "여행 장소 추천 위한 지역 받음")
-    public ApiResponse<PlanResponseDto.RegionDto> saveVideo (@AuthenticationPrincipal CustomUserDetails userDetails,
-                                                                  @PathVariable("planId") Long planId,
+    @PatchMapping("/region")
+    @Operation(summary = "여행 장소 추천 위한 지역 받음, Plan 생성")
+    public ApiResponse<PlanResponseDto.RegionDto> saveRegion (@AuthenticationPrincipal CustomUserDetails userDetails,
                                                                   @Valid @RequestBody PlanRequestDto.RegionDto request) {
-        return ApiResponse.onSuccess(planService.saveRegion(userDetails, planId, request));
+        return ApiResponse.onSuccess(planService.saveRegion(userDetails, request));
     }
 
     @PatchMapping("/{planId}/videos")

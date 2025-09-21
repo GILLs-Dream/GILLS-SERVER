@@ -140,4 +140,12 @@ public class Plan extends BaseEntity {
     public void updateSummary(PlanSummary summary) {
         this.summary = summary;
     }
+
+    public void updateMoods(List<MoodType> moodTypeList) {
+        this.moods.addAll(moodTypeList);
+    }
+
+    public void updateMoodSummary(String summary) {
+        this.moodSummary = summary;
+    }
 }

@@ -33,13 +33,14 @@ public class SecurityConfig {
             "/v1/member/oauth/apple/login",
             "/v1/plan/template/*/generate",
             "/v1/plan/template/*/destination",
-            "/v1/plan/template/mood",
+            "/v1/plan/template/*/mood",
             "/v1/plan/template/*/videos",
             "/v1/plan/template/*/style",
             "/v1/plan/template/*/plan-summary",
             "/v1/plan/template/*/duration",
             "/v1/plan/template/*/companion",
-            "/v1/plan/template/*/plan"
+            "/v1/plan/template/*/plan",
+            "/v1/plan/template/region"
     };
 
     @Bean

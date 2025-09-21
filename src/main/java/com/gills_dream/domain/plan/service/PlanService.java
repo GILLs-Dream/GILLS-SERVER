@@ -8,7 +8,7 @@ import com.gills_dream.global.jwt.CustomUserDetails;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface PlanService {
-    PlanResponseDto.MoodResultDto selectAndSummarizeMood(CustomUserDetails userDetails, PlanRequestDto.MoodTextDto request);
+    PlanResponseDto.MoodResultDto selectAndSummarizeMood(CustomUserDetails userDetails, Long planId, PlanRequestDto.MoodTextDto request);
     PlanResponseDto.TemplateResultDto saveDuration(CustomUserDetails userDetails, Long planId, PlanRequestDto.DurationDto request);
     PlanResponseDto.TemplateResultDto saveCompanion(CustomUserDetails userDetails, Long planId, PlanRequestDto.CompanionDto request);
     PlanResponseDto.TemplateResultDto saveDestination(CustomUserDetails userDetails, Long planId, PlanRequestDto.DestinationDto request);
@@ -20,5 +20,5 @@ public interface PlanService {
     PlanListResponseDto getTemplateList(CustomUserDetails userDetails);
     PlanResponseDto.TemplateResultDto setTitleAndImg(CustomUserDetails userDetails, Long planId, PlanRequestDto.TitleDto request, MultipartFile image);
     PlanResponseDto.SummaryDto viewPlanSummary(CustomUserDetails userDetails, Long planId);
-    PlanResponseDto.RegionDto saveRegion(CustomUserDetails userDetails, Long planId, PlanRequestDto.RegionDto request);
+    PlanResponseDto.RegionDto saveRegion(CustomUserDetails userDetails, PlanRequestDto.RegionDto request);
 }
