@@ -296,6 +296,7 @@ public class PlanServiceImpl implements PlanService {
                 .orElseThrow(() -> new GeneralException(ErrorStatus.PLAN_NOT_FOUND));
     }
 
+    @Transactional
     public PlanResponseDto.RegionDto saveRegion(CustomUserDetails userDetails, Long planId, PlanRequestDto.RegionDto request) {
         Boolean isDomestic;
         try {
