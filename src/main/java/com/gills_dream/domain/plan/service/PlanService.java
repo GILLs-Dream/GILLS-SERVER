@@ -20,4 +20,5 @@ public interface PlanService {
     PlanListResponseDto getTemplateList(CustomUserDetails userDetails);
     PlanResponseDto.TemplateResultDto setTitleAndImg(CustomUserDetails userDetails, Long planId, PlanRequestDto.TitleDto request, MultipartFile image);
     PlanResponseDto.SummaryDto viewPlanSummary(CustomUserDetails userDetails, Long planId);
+    PlanResponseDto.RegionDto saveRegion(CustomUserDetails userDetails, Long planId, PlanRequestDto.RegionDto request);
 }
