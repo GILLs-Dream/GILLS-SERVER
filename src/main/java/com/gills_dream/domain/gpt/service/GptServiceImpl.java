@@ -28,6 +28,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.gills_dream.global.apiPayload.code.status.ErrorStatus.*;
@@ -84,6 +86,67 @@ public class GptServiceImpl implements GptService {
             throw new RuntimeException("Failed to process GPT response", e);
         }
         return summary;
+    }
+
+    @Override
+    public Boolean checkRegion(String region) {
+        try {
+            String prompt = buildRegionPrompt(region, promptProperties.getCheckRegion());
+            System.out.println("GPT PROMPT => [" + prompt + "]");
+
+            String response = getResponse(prompt);
+            System.out.println("GPT RAW => [" + response + "]");
+
+            Boolean parsed = parseStrictBoolean(response);
+            if (parsed != null) return parsed;
+
+            // 형식 위반 시 명시적으로 실패 처리 (상위에서 INVALID_REGION 변환)
+            throw new RuntimeException("Non-boolean output: " + String.valueOf(response));
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to process GPT response", e);
+        }
+    }
+
+    private static Boolean parseStrictBoolean(String raw) {
+        if (raw == null) return null;
+
+        // 1) 1차 정규화
+        String s = raw.replace("```", "")      // 코드펜스 제거
+                .replace("`", "")        // 단일 백틱 제거
+                .replaceAll("[\\[\\]\"]", "") // [, ], " 제거
+                .trim()
+                .toLowerCase();
+
+        // 2) 여러 줄이면 첫 줄만
+        int nl = s.indexOf('\n');
+        if (nl >= 0) s = s.substring(0, nl).trim();
+
+        // 3) 완전 일치만 허용
+        if ("true".equals(s))  return Boolean.TRUE;
+        if ("false".equals(s)) return Boolean.FALSE;
+
+        // 4) 마지막 방어선: 원문에서 true/false '단어'의 마지막 등장 채택
+        Matcher m = Pattern.compile("\\b(true|false)\\b", Pattern.CASE_INSENSITIVE).matcher(raw);
+        String last = null;
+        while (m.find()) last = m.group(1).toLowerCase();
+        if ("true".equals(last))  return Boolean.TRUE;
+        if ("false".equals(last)) return Boolean.FALSE;
+
+        return null; // 결정 불가
+    }
+
+    /**
+     * 프롬프트 템플릿의 {{region}} 자리 치환.
+     * template이 null이어도 NPE 안 나도록 방어.
+     */
+    private String buildRegionPrompt(String region, String templatePath) throws IOException {
+        try {
+            Resource resource = new FileSystemResource(templatePath);
+            String templateContent = new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+            return templateContent.replace("{{region}}", region == null ? "" : region);
+        } catch (IOException e) {
+            throw new IOException("Failed to read prompt text", e);
+        }
     }
 
     @Override

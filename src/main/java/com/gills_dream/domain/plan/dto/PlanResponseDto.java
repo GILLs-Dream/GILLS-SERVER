@@ -100,4 +100,8 @@ public class PlanResponseDto {
             @Schema(description = "여행 경로 요약", example = "이 여행은 ... 어쩌고")
             String summary
             ) {}
+    public record RegionDto(
+            @Schema(description = "여행 지역", example = "제주도") String region,
+            @Schema(description = "여행 id", example = "1") Long planId
+    ){}
 }

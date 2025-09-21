@@ -62,8 +62,16 @@ public class PlanRestController {
         return ApiResponse.onSuccess(planService.saveDestination(userDetails, planId, request));
     }
 
+    @PatchMapping("/{planId}/region")
+    @Operation(summary = "여행 장소 추천 위한 지역 받음")
+    public ApiResponse<PlanResponseDto.RegionDto> saveVideo (@AuthenticationPrincipal CustomUserDetails userDetails,
+                                                                  @PathVariable("planId") Long planId,
+                                                                  @Valid @RequestBody PlanRequestDto.RegionDto request) {
+        return ApiResponse.onSuccess(planService.saveRegion(userDetails, planId, request));
+    }
+
     @PatchMapping("/{planId}/videos")
-    @Operation(summary = "여행 장소 추천 위한 유튜브 링크 받음 (지역 선택 포함)")
+    @Operation(summary = "여행 장소 추천 위한 유튜브 링크 받음")
     public ApiResponse<PlanResponseDto.VideoResultDto> saveVideo (@AuthenticationPrincipal CustomUserDetails userDetails,
                                                                       @PathVariable("planId") Long planId,
                                                                       @Valid @RequestBody PlanRequestDto.VideoUrlDto request) {

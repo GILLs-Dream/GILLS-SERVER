@@ -41,7 +41,7 @@ public enum ErrorStatus implements BaseCode {
     PLACE_CONTENT_MISMATCH(HttpStatus.BAD_REQUEST, "PLAN CONTENT MISMATCH", "플랜의 내용이 올바르지 않습니다."),
     PLAN_NOT_GENERATED(HttpStatus.BAD_REQUEST, "PLAN NOT GENERATED", "여행이 생성되지 않았습니다."),
     PLAN_SUMMARY_NOT_GENERATED(HttpStatus.BAD_REQUEST, "PLAN SUMMARY NOT GENERATED", "여행 요약이 생성되지 않았습니다."),
-
+    INVALID_REGION(HttpStatus.BAD_REQUEST, "INVALID REGION", "유효하지 않은 지역입니다."),
     // Enum 관련 에러 응답
     NO_SUCH_CATEGORY(HttpStatus.NOT_FOUND, "NO SUCH CATEGORY", "해당 카테고리가 존재하지 않습니다."),
     NO_SUCH_REGION(HttpStatus.NOT_FOUND, "NO SUCH REGION", "해당 지역이 존재하지 않습니다."),

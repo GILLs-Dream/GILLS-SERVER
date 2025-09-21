@@ -128,8 +128,6 @@ public class PlanServiceImpl implements PlanService {
     public PlanResponseDto.VideoResultDto saveVideo(CustomUserDetails userDetails, Long planId, PlanRequestDto.VideoUrlDto request) {
         Plan plan = checkMemberAndPlan(userDetails, planId);
 
-        plan.updateRegion(request.getRegion());
-
         // 비디오에서 장소 추출
         List<PlaceAddedDto> placeAddedDtoList = new ArrayList<>();
         if (!request.getVideoUrlList().isEmpty()) {
@@ -137,7 +135,7 @@ public class PlanServiceImpl implements PlanService {
             plan.getVideoIds().addAll(processDto.getVideoResultDtoList().stream().map(PythonResponseDto.VideoResultDto::getVideoId).toList());
 
             // 비디오에서 추출된 장소 필터링
-            PlacePair placePair = gptService.filterPlace(processDto, request.getRegion());
+            PlacePair placePair = gptService.filterPlace(processDto, plan.getRegion());
 
             // 비디오에서 추출된 장소를 tour&kakao api에서 검색
             List<PlaceCacheWithContentId> placeCacheList = placeService.searchPlaces(plan, placePair);
@@ -296,5 +294,24 @@ public class PlanServiceImpl implements PlanService {
 
         return planRepository.findByIdAndMember(planId, member)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.PLAN_NOT_FOUND));
+    }
+
+    public PlanResponseDto.RegionDto saveRegion(CustomUserDetails userDetails, Long planId, PlanRequestDto.RegionDto request) {
+        Boolean isDomestic;
+        try {
+            isDomestic = gptService.checkRegion(request.getRegion());
+        } catch (GeneralException e) {
+            throw new GeneralException(ErrorStatus.INVALID_REGION);
+        }
+
+        // 해외 지역이면 저장하지 않고 예외 처리
+        if (!Boolean.TRUE.equals(isDomestic)) {
+            throw new GeneralException(ErrorStatus.INVALID_REGION);
+        }
+        Plan plan = checkMemberAndPlan(userDetails, planId);
+
+        plan.updateRegion(request.getRegion());
+
+        return new PlanResponseDto.RegionDto(plan.getRegion(), plan.getId());
     }
 }
