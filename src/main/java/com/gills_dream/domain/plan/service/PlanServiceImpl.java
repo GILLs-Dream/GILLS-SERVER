@@ -52,24 +52,14 @@ public class PlanServiceImpl implements PlanService {
 
     @Override
     @Transactional
-    public PlanResponseDto.MoodResultDto selectAndSummarizeMood(CustomUserDetails userDetails, PlanRequestDto.MoodTextDto request) {
-        Member member = null;
-        if (userDetails != null) {
-            member = memberRepository.findById(userDetails.getMember().getId())
-                    .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
-        }
+    public PlanResponseDto.MoodResultDto selectAndSummarizeMood(CustomUserDetails userDetails, Long planId, PlanRequestDto.MoodTextDto request) {
+        Plan plan = checkMemberAndPlan(userDetails, planId);
 
         List<MoodType> moodTypeList = gptService.selectMood(request.inputText());
         String summary = gptService.summarizeInput(request.inputText());
 
-        Plan plan = Plan.builder()
-                .member(member)
-                .moods(moodTypeList)
-                .moodSummary(summary)
-                .build();
-        planRepository.save(plan);
-
-        if (member != null) member.getPlanList().add(plan);
+        plan.updateMoods(moodTypeList);
+        plan.updateMoodSummary(summary);
 
         return new PlanResponseDto.MoodResultDto(
                 plan.getId(),
@@ -283,21 +273,8 @@ public class PlanServiceImpl implements PlanService {
         );
     }
 
-    private Plan checkMemberAndPlan(CustomUserDetails userDetails, Long planId) {
-        if (userDetails == null) {
-            return planRepository.findById(planId)
-                    .orElseThrow(() -> new GeneralException(ErrorStatus.PLAN_NOT_FOUND));
-        }
-
-        Member member = memberRepository.findById(userDetails.getId())
-                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
-
-        return planRepository.findByIdAndMember(planId, member)
-                .orElseThrow(() -> new GeneralException(ErrorStatus.PLAN_NOT_FOUND));
-    }
-
     @Transactional
-    public PlanResponseDto.RegionDto saveRegion(CustomUserDetails userDetails, Long planId, PlanRequestDto.RegionDto request) {
+    public PlanResponseDto.RegionDto saveRegion(CustomUserDetails userDetails, PlanRequestDto.RegionDto request) {
         Boolean isDomestic;
         try {
             isDomestic = gptService.checkRegion(request.getRegion());
@@ -309,10 +286,34 @@ public class PlanServiceImpl implements PlanService {
         if (!Boolean.TRUE.equals(isDomestic)) {
             throw new GeneralException(ErrorStatus.INVALID_REGION);
         }
-        Plan plan = checkMemberAndPlan(userDetails, planId);
 
-        plan.updateRegion(request.getRegion());
+        Member member = null;
+        if (userDetails != null) {
+            member = memberRepository.findById(userDetails.getId())
+                    .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+        }
+
+        Plan plan = Plan.builder()
+                .member(member)
+                .region(request.getRegion())
+                .build();
+        planRepository.save(plan);
+
+        if (member != null) member.getPlanList().add(plan);
 
         return new PlanResponseDto.RegionDto(plan.getRegion(), plan.getId());
+    }
+
+    private Plan checkMemberAndPlan(CustomUserDetails userDetails, Long planId) {
+        if (userDetails == null) {
+            return planRepository.findById(planId)
+                    .orElseThrow(() -> new GeneralException(ErrorStatus.PLAN_NOT_FOUND));
+        }
+
+        Member member = memberRepository.findById(userDetails.getId())
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+
+        return planRepository.findByIdAndMember(planId, member)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.PLAN_NOT_FOUND));
     }
 }
