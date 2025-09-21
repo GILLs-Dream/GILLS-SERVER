@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title th:text="${title}">여행 계획</title>
+
+    <link rel="stylesheet" href="css/plan.css"/>
+
+    <style>
+        html, body { margin:0; padding:0; }
+        body {
+            margin:24px;
+            font-size:12px;
+            line-height:1.6;
+            color:#001D4C;
+            font-family:"Noto Sans KR", sans-serif;
+        }
+        @page {
+            size: A4;
+            margin: 24px;
+            @bottom-right { content: counter(page) " / " counter(pages); }
+        }
+    </style>
+</head>
+<body>
+<h1 class="h1" th:text="${title}">여행 제목</h1>
+<div class="meta">총 <span th:text="${duration}">0</span>일</div>
+
+<div th:if="${summary != null and #strings.isNotEmpty(summary)}" class="summary">
+    <div class="pill"><span class="dot-sm"></span><span>여행 요약</span></div>
+    <p th:text="${summary}" class="summary-text">이 여행은 …</p>
+</div>
+
+<!-- 일차 루프 -->
+<div th:each="day : ${days}">
+    <div class="divider"></div>
+    <h2 class="h2"><span th:text="${day.dayNum}">1</span>일차</h2>
+
+    <!-- 세로 타임라인 -->
+    <div class="timeline">
+
+        <!-- 시작 노드 -->
+        <div th:if="${day.from != null}" class="node">
+            <div class="dot"></div>
+            <div class="label">
+                <div class="name" th:text="${day.fromText}">시작 장소</div>
+            </div>
+        </div>
+
+        <!-- [구간] + [도착 노드] 반복 -->
+        <div th:each="r : ${day.routes}">
+            <!-- 구간(점선 + 구간 정보) -->
+            <div class="edge">
+                <div class="dash"></div>
+                <div class="edge-info" th:text="${r.infoText}">0.8 km , 30 min</div>
+            </div>
+
+            <!-- 도착 노드 -->
+            <div class="node">
+                <div class="dot"></div>
+                <div class="label">
+                    <div class="name" th:text="${r.toText}">도착 장소</div>
+                </div>
+            </div>
+        </div>
+        <!-- /구간 반복 -->
+
+    </div>
+    <!-- /timeline -->
+</div>
+<!-- /일차 루프 -->
+
+</body>
+</html>
