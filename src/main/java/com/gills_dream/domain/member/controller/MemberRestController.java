@@ -103,5 +103,11 @@ public class MemberRestController {
 
         return ResponseEntity.ok().headers(headers).body(MemberConverter.toEditEmailResultWithTokenDto(emailWithTokenDto.tokenPair()));
     }
+
+    @GetMapping(value = "/check")
+    @Operation(summary = "이메일 중복 체크")
+    public ApiResponse<MemberResponseDto.CheckDto> check(@RequestParam("email") String email) {
+        return ApiResponse.onSuccess(memberService.check(email));
+    }
 }
 

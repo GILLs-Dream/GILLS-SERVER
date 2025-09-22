@@ -252,6 +252,13 @@ public class MemberServiceImpl implements MemberService {
         );
     }
 
+    @Override
+    public MemberResponseDto.CheckDto check(String email) {
+        return new MemberResponseDto.CheckDto(
+                memberRepository.existsByEmail(email)
+        );
+    }
+
     private RoleType decideRole(String email) {
         return adminProperties.getEmails().stream()
                 .anyMatch(em -> em.equals(email))

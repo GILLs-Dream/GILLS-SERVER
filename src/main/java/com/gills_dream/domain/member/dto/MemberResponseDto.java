@@ -143,4 +143,9 @@ public class MemberResponseDto {
             @Schema(description = "리프레시 토큰", example = "jiljijililjilkl")
             String refreshToken
     ) {}
+
+    public record CheckDto (
+            @Schema(description = "이메일 중복 여부", example = "false")
+            boolean isDuplicate
+    ) {}
 }

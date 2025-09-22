@@ -18,4 +18,5 @@ public interface MemberService {
     MemberResponseDto.TokenPairWithFlagDto appleLogin(String identityToken);
     MemberResponseDto.ProfileResultDto editProfile(CustomUserDetails userDetails, MemberRequestDto.ProfileDto request, MultipartFile image);
     MemberResponseDto.EmailWithTokenDto editEmail(CustomUserDetails userDetails, MemberRequestDto.EmailDto request);
+    MemberResponseDto.CheckDto check(String email);
 }
