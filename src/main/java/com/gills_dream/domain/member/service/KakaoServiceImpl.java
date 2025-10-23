@@ -25,6 +25,7 @@ public class KakaoServiceImpl implements KakaoService {
 
     @Override
     public MemberResponseDto.KakaoUserInfoDto getUserInfo(String accessToken) {
+        log.info("Kakao Access Token: {}", accessToken);
         MemberResponseDto.KakaoUserInfoDto userInfoDto = restClient
                 .get()
                 .uri(kakaoProperties.getUserInfoUri())
@@ -32,6 +33,7 @@ public class KakaoServiceImpl implements KakaoService {
                 .retrieve()
                 .body(MemberResponseDto.KakaoUserInfoDto.class);
 
+        log.info("Kakao User Info: {}", userInfoDto);
         if (userInfoDto == null) throw new GeneralException(ErrorStatus.CANNOT_LOAD_USER_FROM_KAKAO);
 
         return Objects.requireNonNull(userInfoDto);
