@@ -116,6 +116,8 @@ public class PlanServiceImpl implements PlanService {
     @Override
     @Transactional
     public PlanResponseDto.VideoResultDto saveVideo(CustomUserDetails userDetails, Long planId, PlanRequestDto.VideoUrlDto request) {
+        log.info("video url list: " + request.getVideoUrlList());
+
         Plan plan = checkMemberAndPlan(userDetails, planId);
 
         // 비디오에서 장소 추출
@@ -126,6 +128,8 @@ public class PlanServiceImpl implements PlanService {
 
             // 비디오에서 추출된 장소 필터링
             PlacePair placePair = gptService.filterPlace(processDto, plan.getRegion());
+
+            log.info("placePair from video: " + placePair);
 
             // 비디오에서 추출된 장소를 tour&kakao api에서 검색
             List<PlaceCacheWithContentId> placeCacheList = placeService.searchPlaces(plan, placePair);
