@@ -248,6 +248,34 @@ public class GptServiceImpl implements GptService {
                 .build();
     }
 
+    public String getKakaoPlaceDetail(String kakaoPlaceName, String kakaoPlaceCategory, String address) {
+        try {
+            String prompt = buildKaKaoPlaceDetailPrompt(
+                    kakaoPlaceName,
+                    kakaoPlaceCategory,
+                    address,
+                    promptProperties.getKakaoPlaceDetail()
+            );
+            String response = getResponse(prompt);
+            return response.trim();
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to process GPT response", e);
+        }
+    }
+
+    private String buildKaKaoPlaceDetailPrompt(String kakaoPlaceName, String kakaoPlaceCategory, String address, String promptProperties) throws IOException {
+        try {
+            Resource resource = new FileSystemResource(promptProperties);
+            String template = new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+            return template
+                    .replace("{{kakaoPlaceName}}", kakaoPlaceName)
+                    .replace("{{kakaoPlaceCategory}}", kakaoPlaceCategory)
+                    .replace("{{address}}", address);
+        } catch (IOException e) {
+            throw new IOException("Failed to read prompt text", e);
+        }
+    }
+
     private String buildPrompt(String input, String promptProperties) throws IOException {
         try {
             Resource resource = new FileSystemResource(promptProperties);

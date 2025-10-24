@@ -45,6 +45,16 @@ public class MapController {
         return kakaoMapClient.searchByKeyword(keyword);
     }
 
+    @Operation(summary = "KAKAO 장소 상세정보", description = "KAKAO 장소 ID로 장소의 상세 정보를 조회합니다.")
+    @GetMapping("/search/kakao/detail")
+    public String searchKakaoPlaceDetail(
+            @Parameter(description = "KAKAO 장소명", example = "데코아발림") @RequestParam String kakaoPlaceName,
+            @Parameter(description = "KAKAO 장소 카테고리", example = "카페") @RequestParam String kakaoPlaceCategory,
+            @Parameter(description = "KAKAO 장소 주소", example = "서울 마포구 독막로15길 13-6") @RequestParam(required = false) String address
+    ) {
+        return mapService.getKakaoPlaceDetail(kakaoPlaceName, kakaoPlaceCategory, address);
+    }
+
     @Operation(summary = "KAKAO 주소로 좌표 검색", description = "주소를 입력하여 KAKAO의 좌표 데이터를 검색합니다.")
     @GetMapping("/search/kakao/address")
     public List<MapSearchRes> searchKakaoByAddress(
