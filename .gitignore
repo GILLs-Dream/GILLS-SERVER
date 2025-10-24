@@ -51,5 +51,5 @@ docker.yml
 ### Prompt ###
 /gpt-prompt/**
 
-### Apple Key ###
-/apple-key/**
+### docker-compose ###
+docker-compose.yml

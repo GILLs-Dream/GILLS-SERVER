@@ -57,4 +57,8 @@ public class Member {
     public void updateMarketingAgreement(Boolean marketingAgreement) {
         this.marketingAgreement = marketingAgreement;
     }
+
+    public void updateEmail(String email) {
+        this.email = email;
+    }
 }

@@ -40,7 +40,8 @@ public class SecurityConfig {
             "/v1/plan/template/*/duration",
             "/v1/plan/template/*/companion",
             "/v1/plan/template/*/plan",
-            "/v1/plan/template/region"
+            "/v1/plan/template/region",
+            "/v1/member/check"
     };
 
     @Bean

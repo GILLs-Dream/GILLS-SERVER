@@ -26,4 +26,13 @@ public class MemberConverter {
                 tokenPair.member().getLoginType()
         );
     }
+
+    public static MemberResponseDto.EditEmailResultWithTokenDto toEditEmailResultWithTokenDto(TokenPair tokenPair) {
+        return new MemberResponseDto.EditEmailResultWithTokenDto(
+                tokenPair.member().getId(),
+                tokenPair.member().getEmail(),
+                tokenPair.accessToken(),
+                tokenPair.refreshToken()
+        );
+    }
 }
