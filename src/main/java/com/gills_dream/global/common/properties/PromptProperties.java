@@ -16,4 +16,5 @@ public class PromptProperties {
     private String summarizePlan;
     private String createRoute;
     private String checkRegion;
+    private String kakaoPlaceDetail;
 }

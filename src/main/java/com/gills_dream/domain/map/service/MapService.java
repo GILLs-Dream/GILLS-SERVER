@@ -1,5 +1,6 @@
 package com.gills_dream.domain.map.service;
 
+import com.gills_dream.domain.gpt.service.GptService;
 import com.gills_dream.domain.map.dto.MapSearchRes;
 import com.gills_dream.domain.map.dto.MapSearchResWithPlatform;
 import com.gills_dream.domain.place.enumerate.Platform;
@@ -19,6 +20,7 @@ import java.util.Optional;
 public class MapService {
     private final TourApiClient tourApiClient;
     private final KakaoMapClient kakaoMapClient;
+    private final GptService gptService;
 
     /**
      * 키워드로 관광지 검색
@@ -68,6 +70,22 @@ public class MapService {
                     .platform(null)
                     .mapSearchResList(List.of())
                     .build();  // 예외 발생 시 빈 리스트 반환
+        }
+    }
+
+    /**
+     * 카카오 장소 ID로 장소 상세정보 조회
+     * @param kakaoPlaceName 카카오 장소명
+     * @param kakaoPlaceCategory 카카오 장소 카테고리
+     * @return 장소 상세정보
+     */
+    public String getKakaoPlaceDetail(String kakaoPlaceName, String kakaoPlaceCategory, String address) {
+        try {
+            log.info("Fetching Kakao place detail for Name: {}", kakaoPlaceName, kakaoPlaceCategory);
+            return gptService.getKakaoPlaceDetail(kakaoPlaceName, kakaoPlaceCategory, address);
+        } catch (Exception e) {
+            log.error("Error fetching Kakao place detail for Name: {}, error: {}", kakaoPlaceName, e.getMessage());
+            return null;  // 예외 발생 시 null 반환
         }
     }
 }

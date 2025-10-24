@@ -17,4 +17,5 @@ public interface GptService {
     PlacePair filterPlace(PythonResponseDto.ProcessResultDto processDto, String region);
     Boolean checkRegion(String region);
     MapRouteByDayRes createRouteRequest(MapRouteReq routeReq, String transportType, Long count, List<String> categories, String moodSummary);
+    String getKakaoPlaceDetail(String kakaoPlaceName, String kakaoPlaceCategory, String address);
 }
