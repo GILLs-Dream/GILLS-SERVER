@@ -91,7 +91,11 @@ public class PlanResponseDto {
             @Schema(description = "장소 이름", example = "동궁과월지")
             String name,
             @Schema(description = "장소 대표 이미지", example = "https://...")
-            String mainImg
+            String mainImg,
+            @Schema(description = "latitude", example = "37.579617")
+            String lat,
+            @Schema(description = "longitude", example = "126.977041")
+            String lng
     ) {}
 
     public record SummaryDto (
