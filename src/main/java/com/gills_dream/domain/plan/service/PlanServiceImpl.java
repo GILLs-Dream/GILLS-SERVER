@@ -163,14 +163,11 @@ public class PlanServiceImpl implements PlanService {
         List<PlanResponseDto.PlanPerDayDto> planPerDayDtoList = new ArrayList<>();
 
         if (generatedRoute == null) throw new GeneralException(ErrorStatus.PLAN_NOT_GENERATED);
-        log.info("plan not generated 1");
         for (int i=0; i<generatedRoute.days().size(); i++) {
             if (generatedRoute.days().get(i).routes().isEmpty()) throw new GeneralException(ErrorStatus.PLAN_NOT_GENERATED);
-            log.info("plan not generated 2");
             MapRouteRes routes = generatedRoute.days().get(i).routes().getFirst();
 
             if (routes.legs().isEmpty()) throw new GeneralException(ErrorStatus.PLAN_NOT_GENERATED);
-            log.info("plan not generated 3");
             MapRouteRes.Leg firstPlace = routes.legs().getFirst();
             log.info("from place: " + firstPlace.startName());
             Place fromPlace = placeRepository.findByNameAndLatAndLngRoundedAndContentId(firstPlace.startName(), firstPlace.startLat(), firstPlace.startLng(), firstPlace.startPlace().contentId())

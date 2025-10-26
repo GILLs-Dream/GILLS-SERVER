@@ -28,48 +28,49 @@ public class MapService {
      * @return 검색 결과 리스트
      */
     public MapSearchResWithPlatform searchByKeyword(String keyword, int pageNo, int numOfRows) {
-        try {
-            log.info("Searching for keyword: {}, pageNo: {}, numOfRows: {}", keyword, pageNo, numOfRows);
+        log.info("Searching for keyword: {}, pageNo: {}, numOfRows: {}", keyword, pageNo, numOfRows);
 
-            // 1. 관광지 API로 검색
-            List<MapSearchRes> tour = Optional
+        // 1. 관광지 API 시도
+        List<MapSearchRes> tour;
+        try {
+            tour = Optional
                     .ofNullable(tourApiClient.searchByKeyword(keyword, null, pageNo, numOfRows))
                     .orElse(List.of());
-
-            // 2. 관광지 API 결과가 없으면 카카오 API로 검색
             log.info("Tour search result size: {}", tour.size());
-            if (!tour.isEmpty()) {
-                return MapSearchResWithPlatform.builder()
-                        .platform(Platform.TOUR)
-                        .mapSearchResList(tour)
-                        .build();  // 관광지 API에서 결과가 있으면 반환
-            }
+        } catch (Exception te) {
+            // 관광공사 API가 500 등으로 터져도 여기서 먹고 감싸줌
+            log.warn("Tour API failed for keyword {}: {}", keyword, te.getMessage());
+            tour = List.of();
+        }
 
-            // 3. 관광지 API 결과가 없으면 카카오 API로 검색
-            log.info("Tour search returned no results, falling back to Kakao search");
+        // 2. 관광지 API에 결과가 있으면 그대로 리턴
+        if (!tour.isEmpty()) {
+            return MapSearchResWithPlatform.builder()
+                    .platform(Platform.TOUR)
+                    .mapSearchResList(tour)
+                    .build();
+        }
 
-            try {
-                List<MapSearchRes> kakao = Optional
-                        .ofNullable(kakaoMapClient.searchByKeyword(keyword))
-                        .orElse(List.of());
-                log.info("Kakao search result size: {}", kakao.size());
-                return MapSearchResWithPlatform.builder()
-                        .platform(Platform.KAKAO)
-                        .mapSearchResList(kakao)
-                        .build();  // 카카오 API 결과 반환
-            } catch (Exception e) {
-                log.warn("Kakao fallback failed: {}", e.getMessage());
-                return MapSearchResWithPlatform.builder()
-                        .platform(null)
-                        .mapSearchResList(List.of())
-                        .build();  // 카카오 API도 실패하면 빈 리스트 반환
-            }
-        } catch (Exception e) {
-            log.error("Error searching by keyword: {}, pageNo: {}, numOfRows: {}, error: {}", keyword, pageNo, numOfRows, e.getMessage());
+        // 3. 관광지 API 결과 없거나 실패 -> 카카오 API fallback
+        log.info("Tour search returned no results, falling back to Kakao search");
+
+        try {
+            List<MapSearchRes> kakao = Optional
+                    .ofNullable(kakaoMapClient.searchByKeyword(keyword))
+                    .orElse(List.of());
+            log.info("Kakao search result size: {}", kakao.size());
+
+            return MapSearchResWithPlatform.builder()
+                    .platform(Platform.KAKAO)
+                    .mapSearchResList(kakao)
+                    .build();
+        } catch (Exception ke) {
+            // 카카오도 실패하면 최종 빈 결과
+            log.warn("Kakao fallback failed for keyword {}: {}", keyword, ke.getMessage());
             return MapSearchResWithPlatform.builder()
                     .platform(null)
                     .mapSearchResList(List.of())
-                    .build();  // 예외 발생 시 빈 리스트 반환
+                    .build();
         }
     }
 

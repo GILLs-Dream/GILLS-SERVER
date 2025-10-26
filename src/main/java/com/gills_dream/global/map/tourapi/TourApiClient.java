@@ -44,10 +44,13 @@ public class TourApiClient {
                 .build(true)
                 .toUri();
 
+        log.info("TourAPI Request URI: {}", uri);
         String json = restClient.get()
                 .uri(uri)
                 .retrieve()
                 .body(String.class);
+
+        log.info("TourAPI raw response (searchKeyword2):\n{}", json);
 
         return parseJsonResponse(json);
     }
